@@ -1,0 +1,2 @@
+﻿# Ensure bash files use LF.
+*.sh         eol=lf
