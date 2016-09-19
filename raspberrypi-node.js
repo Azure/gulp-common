@@ -87,7 +87,7 @@ function initTasks(gulp) {
     var startFile = config.start_file ? config.start_file : 'az-blink.js';
     ssh.exec('sudo nodejs ' + targetFolder + '/' + startFile, {
       pty: true,
-      out: function (o) { if (args.verbose) console.log(o); },
+      out: function (o) { console.log(o); }, // Always log to console when running.
       exit: function() { deferred.resolve(); }
     }).start();
 
