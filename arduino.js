@@ -156,7 +156,7 @@ function cloneLibrary(name, url, cb) {
     console.log('Library ' + name + ' was already installed...');
     cb();
   } else {
-    all.runLocalCmd('git clone ' + url + ' ' + getLibraryFolder(), args.verbose, function (err) {
+    all.runLocalCmd('git clone ' + url + ' ' + getLibraryFolder() + '/' + name, args.verbose, function (err) {
       if (err) return cb(err);
       cb();
     });
