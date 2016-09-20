@@ -77,7 +77,7 @@ function initTasks(gulp) {
 
   gulp.task('build', 'Builds sample code', function (cb) {
     updateConfigHeaderFileSync();
-    all.azhRunLocalCmd(getArduinoCommand() + ' --verify --board ' + board.descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
+    all.runLocalCmd(getArduinoCommand() + ' --verify --board ' + board.descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
