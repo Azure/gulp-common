@@ -1,6 +1,6 @@
 ﻿var all = require('./all.js');
-var config = require('../config.json');
-var board = require('../board.json');
+var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
+var board = (all.fileExistsSync('../board.json')) ? require('../board.json') : require('../../board.json');
 var fs = require('fs');
 var args = require('get-gulp-args')();
 var runSequence = require('run-sequence');
