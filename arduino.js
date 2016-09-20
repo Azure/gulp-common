@@ -83,7 +83,7 @@ function initTasks(gulp) {
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
     updateConfigHeaderFileSync();
     if (!!config.device_port.trim()) {
-      all.azhRunLocalCmd(getArduinoCommand() + ' --upload --board ' + board.descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
+      all.runLocalCmd(getArduinoCommand() + ' --upload --board ' + board.descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
       cb(new Error('Port is not defined in config.json file'));
     }
