@@ -28,7 +28,6 @@ function initTasks(gulp) {
         fs.mkdirSync(all.getToolsFolder());
         all.downloadAndUnzip('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', all.getToolsFolder() + '/arduino.zip', all.getToolsFolder(), function() {
           console.log("ARDUINO INSTALLATION SUCCESSFUL IN : " + all.getToolsFolder());
-          updateToolchain('arduino-1.6.11-windows');
           cb();
         }, function(err) {
           console.log("ARDUINO INSTALLATION FAILED" + err);
@@ -93,19 +92,6 @@ function initTasks(gulp) {
   gulp.task('default', 'Installs tools, builds and deploys sample to the board', function(callback) {
     runSequence('install-tools', 'deploy', callback);
   })
-
-  function updateToolchain(toolchain) {
-    if (null != config) {
-      config.toolchain = toolchain;
-      writeConfig(config);
-    }
-  }
-
-  function writeConfig() {
-    if (config != null) {
-      fs.writeFile('config.json', JSON.stringify(config));
-    }
-  }
 
   function updateConfigHeaderFileSync() {
     /*  String containing Hostname, Device Id & Device Key in the format:                       */
