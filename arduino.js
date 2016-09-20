@@ -177,7 +177,7 @@ function installPackage(name, subname, addUrl, cb) {
   } else {
     all.runLocalCmd(getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + addUrl, args.verbose, function (err) {
       if (err) return cb(err);
-      all.runLocalCmd(getArduinoCommand() + ' --install-boards "' + name + ':' + subname + '"', args.verbose, function (err) {
+      all.runLocalCmd(getArduinoCommand() + ' --install-boards ' + name + ':' + subname, args.verbose, function (err) {
         cb();
       });
     });
