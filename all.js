@@ -143,7 +143,7 @@ function runLocalCmd(cmd, verbose, cb) {
     cp.on('close', function(code) {
       
       if (cb) {
-        if (code) {
+        if (0 == code) {
           cb();
         } else {
           var e = new Error("External command failed");
