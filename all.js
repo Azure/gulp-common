@@ -124,6 +124,41 @@ function azhRunLocalCmd(cmd, verbose, cb) {
   }
 }
 
+// this is a new version of azhRunLocalCmd
+// azhRunLocalCmd is now obsolete and will be removed when all references disappear
+function runLocalCmd(cmd, verbose, cb) {
+  try {
+    var args = cmd.split(' ');
+    cmd = args.splice(0, 1);
+    var cp = require('child_process').spawn(cmd[0], args);
+
+    cp.stdout.on('data', function(data) {
+      if (verbose) console.log(String(data));
+    });
+
+    cp.stderr.on('data', function(data) {
+      if (verbose) console.log("ERR: " + String(data));
+    });
+
+    cp.on('close', function(code) {
+      
+      if (cb) {
+        if (code) {
+          cb();
+        } else {
+          var e = new Error("External command failed");
+          e.stack = "exit code: " + code;
+          cb(e);
+        }
+      }
+    });
+  } catch (e) {
+    e.stack = "ERROR: " + e;
+    if (cb) cb(e);
+  }
+}
+
+
 function azhSshExec(cmd, config, verbose, cb) {
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
@@ -219,6 +254,7 @@ function getToolsFolder() {
 module.exports.uploadFiles = uploadFiles;
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
 module.exports.azhRunLocalCmd = azhRunLocalCmd;
+module.exports.runLocalCmd = runLocalCmd;
 module.exports.azhSshExec = azhSshExec;
 module.exports.deleteFolderRecursivelySync = deleteFolderRecursivelySync;
 module.exports.fileExistsSync = fileExistsSync;

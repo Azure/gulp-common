@@ -61,7 +61,7 @@ function initTasks(gulp) {
     // When installing libraries via arduino for the first time, library_index.json doesn't exist
     // apparently this causes operation to fail. So this is a workaround, we will attemp to install
     // nonexisting 'dummy' library to prevent subsequent failure
-    all.azhRunLocalCmd(getArduinoCommand() + ' --install-library dummy', args.verbose, function (err) {
+    all.runLocalCmd(getArduinoCommand() + ' --install-library dummy', args.verbose, function (result) {
       cb();
     });
   });
