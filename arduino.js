@@ -144,7 +144,7 @@ function installLibrary(name, cb) {
     cb();
   } else {
 
-    all.azhRunLocalCmd(getArduinoCommand() + ' --install-library ' + name, args.verbose, function (err) {
+    all.runLocalCmd(getArduinoCommand() + ' --install-library ' + name, args.verbose, function (err) {
       if (err) return cb(err);
       cb();
     });
@@ -156,17 +156,10 @@ function cloneLibrary(name, url, cb) {
     console.log('Library ' + name + ' was already installed...');
     cb();
   } else {
-    if (process.platform == 'win32') {
-      all.azhRunLocalCmd('cd ' + getLibraryFolder() + ' & git clone ' + url, args.verbose, function (err) {
-        if (err) return cb(err);
-        cb();
-      });
-    } else if (process.platform == 'linux') {
-      all.azhRunLocalCmd('cd ' + getLibraryFolder() + '; git clone ' + url, args.verbose, function (err) {
-        if (err) return cb(err);
-        cb();
-      });
-    }
+    all.runLocalCmd('git clone ' + url + ' ' + getLibraryFolder(), args.verbose, function (err) {
+      if (err) return cb(err);
+      cb();
+    });
   }
 }
 
