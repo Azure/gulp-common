@@ -3,9 +3,10 @@ var config = (all.fileExistsSync('../config.json')) ? require('../config.json') 
 var board = (all.fileExistsSync('../board.json')) ? require('../board.json') : require('../../board.json');
 var fs = require('fs');
 var args = require('get-gulp-args')();
-var runSequence = require('run-sequence');
 
 function initTasks(gulp) {
+  var runSequence = require('run-sequence').use(gulp);
+  
   gulp.task('install-tools-java', false, function (cb) {
     if (process.platform == 'win32') {
       cb();

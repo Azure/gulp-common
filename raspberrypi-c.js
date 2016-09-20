@@ -4,7 +4,6 @@ var config = (all.fileExistsSync('../config.json')) ? require('../config.json') 
 var simssh = require('simple-ssh');
 var fs = require('fs');
 var Q = require('q');
-var runSequence = require('run-sequence');
 var args = require('get-gulp-args')();
 var SAMPLE_NAME = 'main';
 var PREBUILT_FOLDER = all.getToolsFolder() + '/prebuilt-libs';
@@ -23,6 +22,7 @@ var COMPILER_FOLDER = all.getToolsFolder() + '/' + COMPILER_NAME + '/bin';
 //}
 
 function initTasks(gulp) {
+  var runSequence = require('run-sequence').use(gulp);
 
   gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function () {
 

@@ -1,8 +1,9 @@
 ﻿
 var arduino = require('./arduino.js');
-var runSequence = require('run-sequence');
 
 function initTasks(gulp) {
+  var runSequence = require('run-sequence').use(gulp);
+
   arduino.initTasks(gulp);
 
   gulp.task('install-tools-adafruit-via-arduino', false, function(cb) {

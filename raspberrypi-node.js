@@ -2,10 +2,11 @@
 var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 var simssh = require('simple-ssh');
 var Q = require('q');
-var runSequence = require('run-sequence');
 var args = require('get-gulp-args')();
 
 function initTasks(gulp) {
+  var runSequence = require('run-sequence').use(gulp);
+
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', 'az-blink');
   }
