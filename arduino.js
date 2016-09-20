@@ -175,9 +175,9 @@ function installPackage(name, subname, addUrl, cb) {
     console.log('Package ' + name + ':' + subname + ' was already installed...');
     cb();
   } else {
-    all.azhRunLocalCmd(getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + addUrl, args.verbose, function (err) {
+    all.runLocalCmd(getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + addUrl, args.verbose, function (err) {
       if (err) return cb(err);
-      all.azhRunLocalCmd(getArduinoCommand() + ' --install-boards "' + name + ':' + subname + '"', args.verbose, function (err) {
+      all.runLocalCmd(getArduinoCommand() + ' --install-boards "' + name + ':' + subname + '"', args.verbose, function (err) {
         cb();
       });
     });
