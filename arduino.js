@@ -175,7 +175,8 @@ function installPackage(name, subname, addUrl, cb) {
     console.log('Package ' + name + ':' + subname + ' was already installed...');
     cb();
   } else {
-    all.runLocalCmd(getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + addUrl, args.verbose, function (err) {
+    // add all known urls, if we remove any, packages will become invisible by arduino
+    all.runLocalCmd(getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json', args.verbose, function (err) {
       if (err) return cb(err);
       all.runLocalCmd(getArduinoCommand() + ' --install-boards ' + name + ':' + subname, args.verbose, function (err) {
         cb();
