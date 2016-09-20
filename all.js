@@ -133,11 +133,11 @@ function runLocalCmd(cmd, verbose, cb) {
     var cp = require('child_process').spawn(cmd[0], args);
 
     cp.stdout.on('data', function(data) {
-      if (verbose) console.log(String(data));
+      if (verbose) process.stdout.write(String(data));
     });
 
     cp.stderr.on('data', function(data) {
-      if (verbose) console.log("ERR: " + String(data));
+      if (verbose) process.stdout.write("ERR: " + String(data));
     });
 
     cp.on('close', function(code) {
