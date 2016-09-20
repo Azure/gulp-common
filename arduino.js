@@ -179,6 +179,7 @@ function installPackage(name, subname, addUrl, cb) {
     all.runLocalCmd(getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json', args.verbose, function (err) {
       if (err) return cb(err);
       all.runLocalCmd(getArduinoCommand() + ' --install-boards ' + name + ':' + subname, args.verbose, function (err) {
+        if (err) return cb(err);
         cb();
       });
     });
