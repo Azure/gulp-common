@@ -1,5 +1,5 @@
-﻿var config = require('../config.json');
-var all = require('./all.js');
+﻿var all = require('./all.js');
+var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 
 var simssh = require('simple-ssh');
 var fs = require('fs');
