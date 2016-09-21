@@ -166,7 +166,7 @@ function cloneLibrary(name, url, cb) {
 function installPackage(name, subname, addUrl, cb) {
 
   // make sure package index exists, if it doesn't exist, try to clean up directory to make sure no uncomplete installation exists
-  if (!all.folderExistsSync(getPackageFolder() + '/package_' + name + '_index.json')) {
+  if (!all.fileExistsSync(getPackageFolder() + '/package_' + name + '_index.json')) {
     all.deleteFolderRecursivelySync(getPackageFolder() + '/' + name);
   }
 
