@@ -128,14 +128,18 @@ function getLibraryFolder() {
   }
 }
 
-function getPackageFolder() {
+function getArduino15Folder() {
   if (process.platform === 'win32') {
-      return process.env['USERPROFILE'] + '/AppData/Local/Arduino15/packages';
+      return process.env['USERPROFILE'] + '/AppData/Local/Arduino15';
   } else if (process.platform === 'linux') {
-      return process.env['HOME'] + '/.arduino15/packages';
+      return process.env['HOME'] + '/.arduino15';
   } else if (process.platform === 'darwin') {
-      return process.env['HOME'] + '/Library/Arduino15/packages';
+      return process.env['HOME'] + '/Library/Arduino15';
   }
+}
+
+function getPackageFolder() {
+  return getArduino15Folder() + '/packages';
 }
 
 function installLibrary(name, cb) {
@@ -166,7 +170,7 @@ function cloneLibrary(name, url, cb) {
 function installPackage(name, subname, addUrl, cb) {
 
   // make sure package index exists, if it doesn't exist, try to clean up directory to make sure no uncomplete installation exists
-  if (!all.fileExistsSync(getPackageFolder() + '/' + addUrl.split('/').slice(-1)[0])) {
+  if (!all.fileExistsSync(getArduino15Folder() + '/' + addUrl.split('/').slice(-1)[0])) {
     all.deleteFolderRecursivelySync(getPackageFolder() + '/' + name);
   }
 
