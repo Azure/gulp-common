@@ -1,11 +1,12 @@
-var all = require('./all.js');
-var config = require('../config.json');
+﻿var all = require('./all.js');
+var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 var simssh = require('simple-ssh');
 var Q = require('q');
-var runSequence = require('run-sequence');
 var args = require('get-gulp-args')();
 
 function initTasks(gulp) {
+  var runSequence = require('run-sequence').use(gulp);
+
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', 'az-blink');
   }
@@ -87,7 +88,7 @@ function initTasks(gulp) {
     var startFile = config.start_file ? config.start_file : 'az-blink.js';
     ssh.exec('sudo nodejs ' + targetFolder + '/' + startFile, {
       pty: true,
-      out: function (o) { if (args.verbose) console.log(o); },
+      out: function (o) { console.log(o); }, // Always log to console when running.
       exit: function() { deferred.resolve(); }
     }).start();
 

@@ -1,10 +1,9 @@
-﻿var config = require('../config.json');
-var all = require('./all.js');
+﻿var all = require('./all.js');
+var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 
 var simssh = require('simple-ssh');
 var fs = require('fs');
 var Q = require('q');
-var runSequence = require('run-sequence');
 var args = require('get-gulp-args')();
 var SAMPLE_NAME = 'main';
 var PREBUILT_FOLDER = all.getToolsFolder() + '/prebuilt-libs';
@@ -23,6 +22,7 @@ var COMPILER_FOLDER = all.getToolsFolder() + '/' + COMPILER_NAME + '/bin';
 //}
 
 function initTasks(gulp) {
+  var runSequence = require('run-sequence').use(gulp);
 
   gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function () {
 
@@ -43,7 +43,7 @@ function initTasks(gulp) {
         var deferred = Q.defer();
 
         all.downloadAndUnzip('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', TOOLCHAIN_ZIP_FILE,
-        all.getToolsFolder(), function(){/*updateToolchain('arm-linux-gnueabihf');*/ deferred.resolve();}, 
+        all.getToolsFolder(), function() { deferred.resolve();}, 
         function(err){deferred.reject(err);});
         
         return deferred.promise; 
@@ -61,9 +61,6 @@ function initTasks(gulp) {
         all.azhRunLocalCmd('sudo apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386', args.verbose, function (result) {});
         all.azhRunLocalCmd('sudo apt-get -y install lib32z1', args.verbose, function (result) {});
       }
-          
-      // update toolchain in config if everything completed successfully
-      /*updateToolchain('arm-linux-gnueabihf');*/
     } else {
       console.log('We dont have tools for your operating system at this time');
     }

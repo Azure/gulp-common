@@ -1,11 +1,17 @@
 ﻿var all = require('./all.js');
-var config = require('../config.json');
-var board = require('../board.json');
+var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 var fs = require('fs');
 var args = require('get-gulp-args')();
-var runSequence = require('run-sequence');
 
-function initTasks(gulp) {
+function initTasks(gulp, options) {
+  var runSequence = require('run-sequence').use(gulp);
+
+  // package:arch:board[:parameters]
+  var board_descriptor = options.board.package + ':' + 
+                         options.board.arch + ":" + 
+                         options.board.board + 
+                         ((options.board.parameters.length > 0) ? (':' + options.board.parameters) : '');
+
   gulp.task('install-tools-java', false, function (cb) {
     if (process.platform == 'win32') {
       cb();
@@ -27,7 +33,6 @@ function initTasks(gulp) {
         fs.mkdirSync(all.getToolsFolder());
         all.downloadAndUnzip('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', all.getToolsFolder() + '/arduino.zip', all.getToolsFolder(), function() {
           console.log("ARDUINO INSTALLATION SUCCESSFUL IN : " + all.getToolsFolder());
-          updateToolchain('arduino-1.6.11-windows');
           cb();
         }, function(err) {
           console.log("ARDUINO INSTALLATION FAILED" + err);
@@ -61,7 +66,7 @@ function initTasks(gulp) {
     // When installing libraries via arduino for the first time, library_index.json doesn't exist
     // apparently this causes operation to fail. So this is a workaround, we will attemp to install
     // nonexisting 'dummy' library to prevent subsequent failure
-    all.azhRunLocalCmd(getArduinoCommand() + ' --install-library dummy', args.verbose, function (err) {
+    all.runLocalCmd(getArduinoCommand() + ' --install-library dummy', args.verbose, function (result) {
       cb();
     });
   });
@@ -77,13 +82,13 @@ function initTasks(gulp) {
 
   gulp.task('build', 'Builds sample code', function (cb) {
     updateConfigHeaderFileSync();
-    all.azhRunLocalCmd(getArduinoCommand() + ' --verify --board ' + board.descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
+    all.runLocalCmd(getArduinoCommand() + ' --verify --board ' + board_descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
     updateConfigHeaderFileSync();
     if (!!config.device_port.trim()) {
-      all.azhRunLocalCmd(getArduinoCommand() + ' --upload --board ' + board.descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
+      all.runLocalCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
       cb(new Error('Port is not defined in config.json file'));
     }
@@ -92,19 +97,6 @@ function initTasks(gulp) {
   gulp.task('default', 'Installs tools, builds and deploys sample to the board', function(callback) {
     runSequence('install-tools', 'deploy', callback);
   })
-
-  function updateToolchain(toolchain) {
-    if (null != config) {
-      config.toolchain = toolchain;
-      writeConfig(config);
-    }
-  }
-
-  function writeConfig() {
-    if (config != null) {
-      fs.writeFile('config.json', JSON.stringify(config));
-    }
-  }
 
   function updateConfigHeaderFileSync() {
     /*  String containing Hostname, Device Id & Device Key in the format:                       */
@@ -141,14 +133,18 @@ function getLibraryFolder() {
   }
 }
 
-function getPackageFolder() {
+function getArduino15Folder() {
   if (process.platform === 'win32') {
-      return process.env['USERPROFILE'] + '/AppData/Local/Arduino15/packages';
+      return process.env['USERPROFILE'] + '/AppData/Local/Arduino15';
   } else if (process.platform === 'linux') {
-      return process.env['HOME'] + '/.arduino15/packages';
+      return process.env['HOME'] + '/.arduino15';
   } else if (process.platform === 'darwin') {
-      return process.env['HOME'] + '/Library/Arduino15/packages';
+      return process.env['HOME'] + '/Library/Arduino15';
   }
+}
+
+function getPackageFolder() {
+  return getArduino15Folder() + '/packages';
 }
 
 function installLibrary(name, cb) {
@@ -157,7 +153,7 @@ function installLibrary(name, cb) {
     cb();
   } else {
 
-    all.azhRunLocalCmd(getArduinoCommand() + ' --install-library ' + name, args.verbose, function (err) {
+    all.runLocalCmd(getArduinoCommand() + ' --install-library ' + name, args.verbose, function (err) {
       if (err) return cb(err);
       cb();
     });
@@ -169,28 +165,30 @@ function cloneLibrary(name, url, cb) {
     console.log('Library ' + name + ' was already installed...');
     cb();
   } else {
-    if (process.platform == 'win32') {
-      all.azhRunLocalCmd('cd ' + getLibraryFolder() + ' & git clone ' + url, args.verbose, function (err) {
-        if (err) return cb(err);
-        cb();
-      });
-    } else if (process.platform == 'linux') {
-      all.azhRunLocalCmd('cd ' + getLibraryFolder() + '; git clone ' + url, args.verbose, function (err) {
-        if (err) return cb(err);
-        cb();
-      });
-    }
+    all.runLocalCmd('git clone ' + url + ' ' + getLibraryFolder() + '/' + name, args.verbose, function (err) {
+      if (err) return cb(err);
+      cb();
+    });
   }
 }
 
 function installPackage(name, subname, addUrl, cb) {
+
+  // make sure package index exists, if it doesn't exist, try to clean up directory to make sure no uncomplete installation exists
+  if (!all.fileExistsSync(getArduino15Folder() + '/' + addUrl.split('/').slice(-1)[0])) {
+    all.deleteFolderRecursivelySync(getPackageFolder() + '/' + name);
+  }
+
+  // now check if appropriate package folder exists
   if (all.folderExistsSync(getPackageFolder() + '/' + name + '/hardware/' + subname )) {
     console.log('Package ' + name + ':' + subname + ' was already installed...');
     cb();
   } else {
-    all.azhRunLocalCmd(getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + addUrl, args.verbose, function (err) {
+    // add all known urls, if we remove any, packages will become invisible by arduino
+    all.runLocalCmd(getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json', args.verbose, function (err) {
       if (err) return cb(err);
-      all.azhRunLocalCmd(getArduinoCommand() + ' --install-boards "' + name + ':' + subname + '"', args.verbose, function (err) {
+      all.runLocalCmd(getArduinoCommand() + ' --install-boards ' + name + ':' + subname, args.verbose, function (err) {
+        if (err) return cb(err);
         cb();
       });
     });
