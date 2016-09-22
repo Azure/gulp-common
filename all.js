@@ -137,7 +137,7 @@ function runLocalCmd(cmd, verbose, cb) {
     });
 
     cp.stderr.on('data', function(data) {
-      if (verbose) process.stdout.write("ERR: " + String(data));
+      if (verbose) process.stdout.write(String(data));
     });
 
     cp.on('close', function(code) {
