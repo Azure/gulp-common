@@ -1,12 +1,13 @@
 var raspberrypi = require('./raspberrypi-node.js');
 
 // For DEMO purpose. We can discuss later whether we should put it to gulp-common.
+var all = require('./all.js');
 var exec = require('child_process').exec;
 var moment = require('moment');
 var storage = require('azure-storage');
 
 var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
-var params = (all.fileExistsSync('../arm-template-param.json')) ? require('../arm-template-param.json')..parameters : require('../../arm-template-param.json').parameters;
+var params = (all.fileExistsSync('../arm-template-param.json')) ? require('../arm-template-param.json').parameters : require('../../arm-template-param.json').parameters;
 
 function initTasks(gulp) {
   raspberrypi.initTasks(gulp);
