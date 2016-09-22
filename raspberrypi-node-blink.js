@@ -6,7 +6,7 @@ var args = require('get-gulp-args')();
 
 function initTasks(gulp) {
   var runSequence = require('run-sequence').use(gulp);
-  
+
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', 'blink');
   }
@@ -77,3 +77,5 @@ function initTasks(gulp) {
   })
 }
 
+module.exports = initTasks;
+module.exports.initTasks = initTasks;
