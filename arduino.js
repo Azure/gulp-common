@@ -1,12 +1,17 @@
 ﻿var all = require('./all.js');
 var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
-var board = (all.fileExistsSync('../board.json')) ? require('../board.json') : require('../../board.json');
 var fs = require('fs');
 var args = require('get-gulp-args')();
 
-function initTasks(gulp) {
+function initTasks(gulp, options) {
   var runSequence = require('run-sequence').use(gulp);
-  
+
+  // package:arch:board[:parameters]
+  var board_descriptor = options.board.package + ':' + 
+                         options.board.arch + ":" + 
+                         options.board.board + 
+                         ((options.board.parameters.length > 0) ? (':' + options.board.parameters) : '');
+
   gulp.task('install-tools-java', false, function (cb) {
     if (process.platform == 'win32') {
       cb();
@@ -77,13 +82,13 @@ function initTasks(gulp) {
 
   gulp.task('build', 'Builds sample code', function (cb) {
     updateConfigHeaderFileSync();
-    all.runLocalCmd(getArduinoCommand() + ' --verify --board ' + board.descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
+    all.runLocalCmd(getArduinoCommand() + ' --verify --board ' + board_descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
     updateConfigHeaderFileSync();
     if (!!config.device_port.trim()) {
-      all.runLocalCmd(getArduinoCommand() + ' --upload --board ' + board.descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
+      all.runLocalCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
       cb(new Error('Port is not defined in config.json file'));
     }
