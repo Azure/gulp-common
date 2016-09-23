@@ -12,7 +12,7 @@ function initTasks(gulp) {
   }
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
-    all.azhSshExec('sudo apt-get -y update && sudo apt-get -y install npm && (curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -) && sudo apt-get -y install nodejs', config, args.verbose, cb);
+    all.azhSshExec('(curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -) && sudo apt-get -y install nodejs', config, args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys sample code to the board', function(){
