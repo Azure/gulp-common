@@ -63,7 +63,11 @@ function initTasks(gulp) {
 
     var targetFolder = config.project_folder ? config.project_folder : '.';
     var startFile = config.start_file ? config.start_file : 'blink.js';
-    ssh.exec('sudo nodejs ' + targetFolder + '/' + startFile + ' && exit', {
+    var nodeCommand = 'nodejs';
+    if (args.debug) {
+      nodeCommand += ' --debug-brk=5858';
+    }
+    ssh.exec('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + ' && exit', {
       pty: true,
       out: console.log.bind(console),
       exit: function () { deferred.resolve(); }
