@@ -1,4 +1,6 @@
-﻿var arduino = require('./arduino.js');
+﻿'use strict';
+
+var arduino = require('./arduino.js');
 
 function initTasks(gulp, options) {
   options.board.package = 'esp8266';

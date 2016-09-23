@@ -1,4 +1,5 @@
-﻿
+﻿'use strict';
+
 var arduino = require('./arduino.js');
 
 function initTasks(gulp, options) {

@@ -1,4 +1,6 @@
-﻿var all = require('./all.js');
+﻿'use strict';
+
+var all = require('./all.js');
 var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 
 var simssh = require('simple-ssh');
