@@ -2,17 +2,17 @@ var all = require('./all.js');
 var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 var simssh = require('simple-ssh');
 var Q = require('q');
-varÂ argsÂ =Â require('get-gulp-args')();
+var args = require('get-gulp-args')();
 
 function initTasks(gulp) {
-  varÂ runSequenceÂ =Â require('run-sequence').use(gulp);
+  var runSequence = require('run-sequence').use(gulp);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', 'blink');
   }
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
-    all.azhSshExec('sudo apt-get -y update && sudo apt-get -y install npm', config, args.verbose, cb);
+    all.azhSshExec('sudo apt-get -y update && sudo apt-get -y install npm && (curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -) && sudo apt-get -y install nodejs', config, args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys sample code to the board', function(){
