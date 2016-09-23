@@ -11,6 +11,7 @@
   "dependencies": {
     "az-iot-bi-test": "0.0.2",
     "az-iot-helper": "^0.1.1",
+    "azure-event-hubs": "0.0.2",
     "get-gulp-args": "0.0.1",
     "gulp": "^3.9.1",
     "gulp-help": "^1.6.1",

@@ -15,13 +15,13 @@ function initTasks(gulp) {
     all.azhSshExec('(curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -) && sudo apt-get -y install nodejs', config, args.verbose, cb);
   });
 
-  gulp.task('deploy', 'Deploys sample code to the board', function(){
+  gulp.task('deploy', 'Deploys sample code to the board', function () {
     var deferred = Q.defer();
-    
+
     var targetFolder = config.project_folder ? config.project_folder : '.';
-    all.uploadFilesViaScp(config, ["./blink.js", "./device-package.json"], [targetFolder + "/blink.js", targetFolder + "/package.json"], function(){
+    all.uploadFilesViaScp(config, ["./blink.js", "./device-package.json"], [targetFolder + "/blink.js", targetFolder + "/package.json"], function () {
       console.log("- Installing npm packages on device");
-      
+
       var ssh = new simssh({
         host: config.device_host_name_or_ip_address,
         user: config.device_user_name,
@@ -38,10 +38,10 @@ function initTasks(gulp) {
       ssh.exec('cd ' + targetFolder + ' && npm install', {
         pty: true,
         out: function (o) { if (args.verbose) console.log(o); },
-        exit: function() { deferred.resolve(); }
+        exit: function () { deferred.resolve(); }
       }).start();
     });
-    
+
     return deferred.promise;
   });
 
@@ -66,13 +66,13 @@ function initTasks(gulp) {
     ssh.exec('sudo nodejs ' + targetFolder + '/' + startFile + ' && exit', {
       pty: true,
       out: console.log.bind(console),
-      exit: function() { deferred.resolve(); }
+      exit: function () { deferred.resolve(); }
     }).start();
 
     return deferred.promise;
   });
 
-  gulp.task('default', 'Builds, deploys and runs sample on the board', function(callback) {
+  gulp.task('default', 'Builds, deploys and runs sample on the board', function (callback) {
     runSequence('install-tools', 'deploy', 'run', callback);
   })
 }
