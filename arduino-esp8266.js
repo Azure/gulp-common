@@ -12,5 +12,4 @@ function initTasks(gulp, options) {
   })
 }
 
-module.exports = initTasks;
 module.exports.initTasks = initTasks;
