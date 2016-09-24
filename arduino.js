@@ -173,15 +173,7 @@ function installLibrary(name, cb) {
 }
 
 function cloneLibrary(name, url, cb) {
-  if (all.folderExistsSync(getLibraryFolder() + '/' + name)) {
-    console.log('Library ' + name + ' was already installed...');
-    cb();
-  } else {
-    all.localExecCmd('git clone ' + url + ' ' + getLibraryFolder() + '/' + name, args.verbose, function (err) {
-      if (err) return cb(err);
-      cb();
-    });
-  }
+  all.localClone(url, getLibraryFolder() + '/' + name, args.verbose, cb);
 }
 
 function installOrCloneLibrary(lib, cb) {

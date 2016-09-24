@@ -165,6 +165,15 @@ function localExecCmds(cmds, verbose, cb) {
   })
 }
 
+function localClone(url, folder, verbose, cb) {
+  if (all.folderExistsSync(folder)) {
+    console.log('Repo ' + url + ' was already cloned...');
+    cb();
+  } else {
+    all.localExecCmd('git clone ' + url + ' ' + folder, verbose, cb);
+  }
+}
+
 
 function azhSshExec(cmd, config, verbose, cb) {
   var ssh = new simssh({
@@ -262,6 +271,7 @@ module.exports.uploadFiles = uploadFiles;
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
 module.exports.localExecCmd = localExecCmd;
 module.exports.localExecCmds = localExecCmds;
+module.exports.localClone = localClone;
 module.exports.azhSshExec = azhSshExec;
 module.exports.deleteFolderRecursivelySync = deleteFolderRecursivelySync;
 module.exports.fileExistsSync = fileExistsSync;
