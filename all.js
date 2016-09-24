@@ -113,7 +113,7 @@ function uploadFilesViaScp(config, sourceFileList, targetFileList, callback)
   scp2.scp(sourceFileList[0], prefix + targetFileList[0], onClose);
 }
 
-function runLocalCmd(cmd, verbose, cb) {
+function localExecCmd(cmd, verbose, cb) {
   try {
     var args = cmd.split(' ');
     cmd = args.splice(0, 1);
@@ -143,6 +143,26 @@ function runLocalCmd(cmd, verbose, cb) {
     e.stack = "ERROR: " + e;
     if (cb) cb(e);
   }
+}
+
+function localExecCmds(cmds, verbose, cb) {
+
+  // check if there are any commands to execute
+  if (cmds.length == 0) {
+    cb();
+    return;
+  }
+
+  // execute first command
+  localExecCmds(cmds.splice(0, 1)[0], verbose, function (e) {
+    if (e) {
+      cb(e);
+      return;
+    }
+
+    // continue with remaining commands
+    localExecCmds(cmds, verbose, cb);
+  })
 }
 
 
@@ -240,8 +260,8 @@ function getToolsFolder() {
 
 module.exports.uploadFiles = uploadFiles;
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
-module.exports.azhRunLocalCmd = azhRunLocalCmd;
-module.exports.runLocalCmd = runLocalCmd;
+module.exports.localExecCmd = localExec;
+module.exports.localExecCmds = localExecCmds;
 module.exports.azhSshExec = azhSshExec;
 module.exports.deleteFolderRecursivelySync = deleteFolderRecursivelySync;
 module.exports.fileExistsSync = fileExistsSync;

@@ -5,18 +5,6 @@ var config = (all.fileExistsSync('../config.json')) ? require('../config.json') 
 var fs = require('fs');
 var args = require('get-gulp-args')();
 
-// XXX - this function shall be replaced
-function azhRunLocalCmd(cmd, verbose, cb) {
-  try {
-    var ret = require('child_process').execSync(cmd);
-    if (verbose) console.log(String(ret));
-    if (cb) cb();
-  } catch (e) {
-    e.stack = "ERROR: " + e;
-    if (cb) cb(e);
-  }
-}
-
 function initTasks(gulp, options) {
 
   var runSequence = require('run-sequence').use(gulp);
@@ -32,7 +20,9 @@ function initTasks(gulp, options) {
       cb();
     } else if (process.platform == 'linux') {
       // install java and a few other things
-      azhRunLocalCmd('sudo apt-get update && sudo apt-get install -y default-jre xvfb libxtst6', args.verbose, cb);
+      all.localExecCmds([ 'sudo apt-get update',
+                          'sudo apt-get install -y default-jre xvfb libxtst6'],
+                        args.verbose, cb);
     } else if (process.platform == 'darwin') {
       // at the moment don't install java for OS X, it's probably there anyway
       cb();
@@ -56,7 +46,12 @@ function initTasks(gulp, options) {
       }
     } else if (process.platform == 'linux') {
       // install arduino
-      azhRunLocalCmd('sudo apt-get update && sudo apt-get install -y wget xz-utils; sudo wget -q -O- https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz | sudo tar xJ -C /opt; ln -s /opt/arduino-1.6.11/arduino /usr/local/bin/; ln -s /opt/arduino-1.6.11/arduino-builder /usr/local/bin/; chmod 777 gulp-common/arduino-headless.sh', args.verbose, cb);
+      all.localExecCmds([ 'sudo apt-get update',
+                          'sudo apt-get install -y wget xz-utils',
+                          'sudo wget -q -O- https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz',
+                          'sudo tar xJ -C /opt; ln -s /opt/arduino-1.6.11/arduino /usr/local/bin/',
+                          'ln -s /opt/arduino-1.6.11/arduino-builder /usr/local/bin/',
+                          'chmod 777 gulp-common/arduino-headless.sh'], args.verbose, cb);
     } else if (process.platform == 'darwin') {
       // at the moment we will attempt the same approach as for windows
       if (all.folderExistsSync(all.getToolsFolder() + '/Arduino.app')) {
@@ -68,7 +63,7 @@ function initTasks(gulp, options) {
         }
 
         all.download('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', all.getToolsFolder() + '/arduino.zip', function() {
-          azhRunLocalCmd('open --wait-apps ' + all.getToolsFolder() + '/arduino.zip', args.verbose, cb);
+          all.localExecCmd('open --wait-apps ' + all.getToolsFolder() + '/arduino.zip', args.verbose, cb);
         }, function(err) {
           console.log("ARDUINO INSTALLATION FAILED" + err);
           cb(err);
@@ -81,7 +76,7 @@ function initTasks(gulp, options) {
     // When installing libraries via arduino for the first time, library_index.json doesn't exist
     // apparently this causes operation to fail. So this is a workaround, we will attemp to install
     // nonexisting 'dummy' library to prevent subsequent failure
-    all.runLocalCmd(getArduinoCommand() + ' --install-library dummy', args.verbose, function (result) {
+    all.localExecCmd(getArduinoCommand() + ' --install-library dummy', args.verbose, function (result) {
       cb();
     });
   });
@@ -97,13 +92,13 @@ function initTasks(gulp, options) {
 
   gulp.task('build', 'Builds sample code', function (cb) {
     updateConfigHeaderFileSync();
-    all.runLocalCmd(getArduinoCommand() + ' --verify --board ' + board_descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
+    all.localExecCmd(getArduinoCommand() + ' --verify --board ' + board_descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
     updateConfigHeaderFileSync();
     if (!!config.device_port.trim()) {
-      all.runLocalCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
+      all.localExecCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
       cb(new Error('Port is not defined in config.json file'));
     }
@@ -168,7 +163,7 @@ function installLibrary(name, cb) {
     cb();
   } else {
 
-    all.runLocalCmd(getArduinoCommand() + ' --install-library ' + name, args.verbose, function (err) {
+    all.localExecCmd(getArduinoCommand() + ' --install-library ' + name, args.verbose, function (err) {
       if (err) return cb(err);
       cb();
     });
@@ -180,7 +175,7 @@ function cloneLibrary(name, url, cb) {
     console.log('Library ' + name + ' was already installed...');
     cb();
   } else {
-    all.runLocalCmd('git clone ' + url + ' ' + getLibraryFolder() + '/' + name, args.verbose, function (err) {
+    all.localExecCmd('git clone ' + url + ' ' + getLibraryFolder() + '/' + name, args.verbose, function (err) {
       if (err) return cb(err);
       cb();
     });
@@ -200,13 +195,9 @@ function installPackage(name, subname, addUrl, cb) {
     cb();
   } else {
     // add all known urls, if we remove any, packages will become invisible by arduino
-    all.runLocalCmd(getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json', args.verbose, function (err) {
-      if (err) return cb(err);
-      all.runLocalCmd(getArduinoCommand() + ' --install-boards ' + name + ':' + subname, args.verbose, function (err) {
-        if (err) return cb(err);
-        cb();
-      });
-    });
+    all.localExecCmds( [ getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json',
+                         getArduinoCommand() + ' --install-boards ' + name + ':' + subname ],
+                      args.verbose, cb);
   }
 }
 
