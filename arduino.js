@@ -188,10 +188,10 @@ function installOrCloneLibrary(lib, cb) {
   var repo = lib.split('.git');
 
   if (repo.length > 1) {
-    repo = repo.split('/');
+    repo = repo[0].split('/');
     cloneLibrary(repo[repo.length - 1], lib, cb);
   } else {
-    installLibrary(name, cb);
+    installLibrary(lib, cb);
   }
 }
 
