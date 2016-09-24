@@ -5,7 +5,20 @@ var config = (all.fileExistsSync('../config.json')) ? require('../config.json') 
 var fs = require('fs');
 var args = require('get-gulp-args')();
 
+// XXX - this function shall be replaced
+function azhRunLocalCmd(cmd, verbose, cb) {
+  try {
+    var ret = require('child_process').execSync(cmd);
+    if (verbose) console.log(String(ret));
+    if (cb) cb();
+  } catch (e) {
+    e.stack = "ERROR: " + e;
+    if (cb) cb(e);
+  }
+}
+
 function initTasks(gulp, options) {
+
   var runSequence = require('run-sequence').use(gulp);
 
   // package:arch:board[:parameters]
@@ -19,7 +32,7 @@ function initTasks(gulp, options) {
       cb();
     } else if (process.platform == 'linux') {
       // install java and a few other things
-      all.azhRunLocalCmd('sudo apt-get update && sudo apt-get install -y default-jre xvfb libxtst6', args.verbose, cb);
+      azhRunLocalCmd('sudo apt-get update && sudo apt-get install -y default-jre xvfb libxtst6', args.verbose, cb);
     } else if (process.platform == 'darwin') {
       // at the moment don't install java for OS X, it's probably there anyway
       cb();
@@ -43,7 +56,7 @@ function initTasks(gulp, options) {
       }
     } else if (process.platform == 'linux') {
       // install arduino
-      all.azhRunLocalCmd('sudo apt-get update && sudo apt-get install -y wget xz-utils; sudo wget -q -O- https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz | sudo tar xJ -C /opt; ln -s /opt/arduino-1.6.11/arduino /usr/local/bin/; ln -s /opt/arduino-1.6.11/arduino-builder /usr/local/bin/; chmod 777 gulp-common/arduino-headless.sh', args.verbose, cb);
+      azhRunLocalCmd('sudo apt-get update && sudo apt-get install -y wget xz-utils; sudo wget -q -O- https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz | sudo tar xJ -C /opt; ln -s /opt/arduino-1.6.11/arduino /usr/local/bin/; ln -s /opt/arduino-1.6.11/arduino-builder /usr/local/bin/; chmod 777 gulp-common/arduino-headless.sh', args.verbose, cb);
     } else if (process.platform == 'darwin') {
       // at the moment we will attempt the same approach as for windows
       if (all.folderExistsSync(all.getToolsFolder() + '/Arduino.app')) {
@@ -55,7 +68,7 @@ function initTasks(gulp, options) {
         }
 
         all.download('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', all.getToolsFolder() + '/arduino.zip', function() {
-          all.azhRunLocalCmd('open --wait-apps ' + all.getToolsFolder() + '/arduino.zip', args.verbose, cb);
+          azhRunLocalCmd('open --wait-apps ' + all.getToolsFolder() + '/arduino.zip', args.verbose, cb);
         }, function(err) {
           console.log("ARDUINO INSTALLATION FAILED" + err);
           cb(err);

@@ -23,6 +23,18 @@ var COMPILER_FOLDER = all.getToolsFolder() + '/' + COMPILER_NAME + '/bin';
 //  all.gulpTaskBI(gulp, 'c', 'RaspberryPi', 'az-blink');
 //}
 
+// XXX - this function shall be replaced
+function azhRunLocalCmd(cmd, verbose, cb) {
+  try {
+    var ret = require('child_process').execSync(cmd);
+    if (verbose) console.log(String(ret));
+    if (cb) cb();
+  } catch (e) {
+    e.stack = "ERROR: " + e;
+    if (cb) cb(e);
+  }
+}
+
 function initTasks(gulp) {
   var runSequence = require('run-sequence').use(gulp);
 
@@ -34,7 +46,7 @@ function initTasks(gulp) {
 
     // clone helper repository to tools folder -- if it doesn't exists
     if (!all.folderExistsSync(PREBUILT_FOLDER + '/.git')) {
-      all.azhRunLocalCmd('git clone ' + PREBUILT_SDK_REPO + ' ' + PREBUILT_FOLDER, args.verbose, function(result) {
+      azhRunLocalCmd('git clone ' + PREBUILT_SDK_REPO + ' ' + PREBUILT_FOLDER, args.verbose, function(result) {
         // XXX - handle result
       });
     }
@@ -54,14 +66,14 @@ function initTasks(gulp) {
 
       // just use wget and tar commands sequentially
       // trying to find reliable gulp tools may be very time consuming
-      all.azhRunLocalCmd('cd ' + all.getToolsFolder() + '; wget https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz; tar xf gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz; rm gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz', args.verbose, function (result) {});
+      azhRunLocalCmd('cd ' + all.getToolsFolder() + '; wget https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz; tar xf gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz; rm gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz', args.verbose, function (result) {});
 
       // below are compiler's dependencies on 64-bit platform
       if (process.arch == 'x64') {
-        all.azhRunLocalCmd('sudo dpkg --add-architecture i386', args.verbose, function (result) {});
-        all.azhRunLocalCmd('sudo apt-get -y update', args.verbose, function (result) {});
-        all.azhRunLocalCmd('sudo apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386', args.verbose, function (result) {});
-        all.azhRunLocalCmd('sudo apt-get -y install lib32z1', args.verbose, function (result) {});
+        azhRunLocalCmd('sudo dpkg --add-architecture i386', args.verbose, function (result) {});
+        azhRunLocalCmd('sudo apt-get -y update', args.verbose, function (result) {});
+        azhRunLocalCmd('sudo apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386', args.verbose, function (result) {});
+        azhRunLocalCmd('sudo apt-get -y install lib32z1', args.verbose, function (result) {});
       }
     } else {
       console.log('We dont have tools for your operating system at this time');
@@ -103,7 +115,7 @@ function initTasks(gulp) {
               '-o out/' + SAMPLE_NAME + '.o ' +
               '-c ' + SAMPLE_NAME + '.c';
 
-    all.azhRunLocalCmd(cmd, args.verbose, function (result) {});
+    azhRunLocalCmd(cmd, args.verbose, function (result) {});
 
     // second step -- link with prebuild libraries
     cmd = COMPILER_FOLDER + '/arm-linux-gnueabihf-gcc ' +
@@ -127,7 +139,7 @@ function initTasks(gulp) {
               '-lcrypto ' +
               '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot';
 
-    all.azhRunLocalCmd(cmd, args.verbose, function (result) {});
+    azhRunLocalCmd(cmd, args.verbose, function (result) {});
   });
 
   gulp.task('check-raspbian', false, function() {

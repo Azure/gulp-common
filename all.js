@@ -113,19 +113,6 @@ function uploadFilesViaScp(config, sourceFileList, targetFileList, callback)
   scp2.scp(sourceFileList[0], prefix + targetFileList[0], onClose);
 }
 
-function azhRunLocalCmd(cmd, verbose, cb) {
-  try {
-    var ret = require('child_process').execSync(cmd);
-    if (verbose) console.log(String(ret));
-    if (cb) cb();
-  } catch (e) {
-    e.stack = "ERROR: " + e;
-    if (cb) cb(e);
-  }
-}
-
-// this is a new version of azhRunLocalCmd
-// azhRunLocalCmd is now obsolete and will be removed when all references disappear
 function runLocalCmd(cmd, verbose, cb) {
   try {
     var args = cmd.split(' ');
