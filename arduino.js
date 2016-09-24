@@ -84,7 +84,7 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('install-libraries', false, function(cb) {    
+  gulp.task('install-tools-libraries', false, function(cb) {    
     installLibraries(options.libraries, cb);
   })
 
