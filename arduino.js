@@ -1,10 +1,16 @@
 ﻿'use strict';
 
 var all = require('./all.js');
+// [REVIEW] this can be simplified now
 var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 var fs = require('fs');
 var args = require('get-gulp-args')();
 
+/**
+ * Main entry point for all Arduino configurations.
+ * @param {object} gulp     - Gulp instance
+ * @param {object} options  - Arduino specific options
+ */
 function initTasks(gulp, options) {
 
   var runSequence = require('run-sequence').use(gulp);
@@ -123,6 +129,10 @@ function initTasks(gulp, options) {
   }
 }
 
+/**
+ * Get Arduino command prefix for underlying operating system.
+ * @returns {string}
+ */
 function getArduinoCommand() {
   if (process.platform === 'win32') {
     // we don't have arduino setup for windows yet, so in current version
@@ -135,6 +145,10 @@ function getArduinoCommand() {
   }
 }
 
+/**
+ * Get Arduino library folder for underlying operating system.
+ * @returns {string}
+ */
 function getLibraryFolder() {
   if (process.platform === 'win32') {
       return process.env['USERPROFILE'] + '/Documents/Arduino/libraries';
@@ -145,6 +159,10 @@ function getLibraryFolder() {
   }
 }
 
+/**
+ * Get Arduino 'arduino15' folder for underlying operating system.
+ * @returns {string}
+ */
 function getArduino15Folder() {
   if (process.platform === 'win32') {
       return process.env['USERPROFILE'] + '/AppData/Local/Arduino15';
@@ -155,10 +173,19 @@ function getArduino15Folder() {
   }
 }
 
+/**
+ * Get Arduino package folder for underlying operating system.
+ * @returns {string}
+ */
 function getPackageFolder() {
   return getArduino15Folder() + '/packages';
 }
 
+/**
+ * Install library using Arduino toolchain.
+ * @param {string} name   - library name
+ * @param {callback} cb   - callback
+ */
 function installLibrary(name, cb) {
   if (all.folderExistsSync(getLibraryFolder() + '/' + name)) {
     console.log('Library ' + name + ' was already installed...');
@@ -172,10 +199,21 @@ function installLibrary(name, cb) {
   }
 }
 
+/**
+ * Installs library using 'git clone'
+ * @param {string} name   - library name
+ * @param {string} url    - Git URL
+ * @param {callback} cb   - callback
+ */
 function cloneLibrary(name, url, cb) {
   all.localClone(url, getLibraryFolder() + '/' + name, args.verbose, cb);
 }
 
+/**
+ * Installs library (using Arduino toolchain or 'git clone')
+ * @param {string} lib    - library name or Git URL
+ * @param {callback} cb   - callback
+ */
 function installOrCloneLibrary(lib, cb) {
   var repo = lib.split('.git');
 
@@ -187,6 +225,11 @@ function installOrCloneLibrary(lib, cb) {
   }
 }
 
+/**
+ * Installs list of libraries (using Arduino toolchain or 'git clone')
+ * @param {string[]} libs - list library names or Git URLs
+ * @param {callback} cb   - callback
+ */
 function installLibraries(libs, cb) {
   // check if there are any libraries to install
   if (libs.length == 0) {
@@ -210,7 +253,14 @@ function installLibraries(libs, cb) {
   })
 }
 
-function installPackage(name, subname, addUrl, cb) {
+/**
+ * Installs package
+ * @param {string} name   - package name
+ * @param {string} arch   - architecture
+ * @param {string} addUrl - additional package URL to be added to Arduino preferences
+ * @param {callback} cb   - callback
+ */
+function installPackage(name, arch, addUrl, cb) {
 
   // make sure package index exists, if it doesn't exist, try to clean up directory to make sure no uncomplete installation exists
   if (!all.fileExistsSync(getArduino15Folder() + '/' + addUrl.split('/').slice(-1)[0])) {
@@ -218,13 +268,13 @@ function installPackage(name, subname, addUrl, cb) {
   }
 
   // now check if appropriate package folder exists
-  if (all.folderExistsSync(getPackageFolder() + '/' + name + '/hardware/' + subname )) {
-    console.log('Package ' + name + ':' + subname + ' was already installed...');
+  if (all.folderExistsSync(getPackageFolder() + '/' + name + '/hardware/' + arch )) {
+    console.log('Package ' + name + ':' + arch + ' was already installed...');
     cb();
   } else {
     // add all known urls, if we remove any, packages will become invisible by arduino
     all.localExecCmds( [ getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json',
-                         getArduinoCommand() + ' --install-boards ' + name + ':' + subname ],
+                         getArduinoCommand() + ' --install-boards ' + name + ':' + arch ],
                       args.verbose, cb);
   }
 }

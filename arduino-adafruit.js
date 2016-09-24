@@ -1,9 +1,16 @@
 ﻿'use strict';
 
-var arduino = require('./arduino.js');
+// [REVIEW] remove install-tools-board-specific - this should be done via options
 
+/**
+ * Main entry point for all Arduino Adafruit SAMD configurations.
+ * @param {object} gulp     - Gulp instance
+ * @param {object} options  - Arduino specific options
+ */
 function initTasks(gulp, options) {
 
+  var arduino = require('./arduino.js');
+  
   // set board options
   options.board.package = 'adafruit';
   options.board.arch = 'samd';
