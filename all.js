@@ -260,7 +260,7 @@ function getToolsFolder() {
 
 module.exports.uploadFiles = uploadFiles;
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
-module.exports.localExecCmd = localExec;
+module.exports.localExecCmd = localExecCmd;
 module.exports.localExecCmds = localExecCmds;
 module.exports.azhSshExec = azhSshExec;
 module.exports.deleteFolderRecursivelySync = deleteFolderRecursivelySync;
