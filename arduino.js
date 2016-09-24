@@ -15,6 +15,9 @@ function initTasks(gulp, options) {
                          options.board.board + 
                          ((options.board.parameters.length > 0) ? (':' + options.board.parameters) : '');
 
+  // add Azure IoT Hub Library by default
+  options.libraries.push('AzureIoTHub');
+
   gulp.task('install-tools-java', false, function (cb) {
     if (process.platform == 'win32') {
       cb();
@@ -81,13 +84,12 @@ function initTasks(gulp, options) {
     });
   });
 
-
-  gulp.task('install-tools-azure', false, function(cb) {
-    installLibrary('AzureIoTHub', cb);
-  });
+  gulp.task('install-libraries', false, function(cb) {    
+    installLibraries(options.libraries, cb);
+  })
 
   gulp.task('install-tools', 'Installs Arduino, boards specific and Azure tools', function (callback) {
-    runSequence('install-tools-java', 'install-tools-arduino', 'install-tools-arduino-init-libraries', 'install-tools-board-specific', 'install-tools-azure', callback);
+    runSequence('install-tools-java', 'install-tools-arduino', 'install-tools-arduino-init-libraries',  'install-tools-board-specific', 'install-tools-libraries', callback);
   });
 
   gulp.task('build', 'Builds sample code', function (cb) {
@@ -182,6 +184,40 @@ function cloneLibrary(name, url, cb) {
   }
 }
 
+function installOrCloneLibrary(lib, cb) {
+  var repo = lib.split('.git');
+
+  if (repo.length > 1) {
+    repo = repo.split('/');
+    cloneLibrary(repo[repo.length - 1], lib, cb);
+  } else {
+    installLibrary(name, cb);
+  }
+}
+
+function installLibraries(libs, cb) {
+  // check if there are any libraries to install
+  if (libs.length == 0) {
+    cb();
+    return;
+  }
+
+  // install first library from the list
+  var lib = libs.splice(0, 1)[0];
+  
+  installOrCloneLibrary(lib, function (e) {
+
+    // stop installing libraries if error occured
+    if (e) {
+      cb(e);
+      return;
+    }
+
+    // continue with remaining commands
+    installLibraries(libs, cb);
+  })
+}
+
 function installPackage(name, subname, addUrl, cb) {
 
   // make sure package index exists, if it doesn't exist, try to clean up directory to make sure no uncomplete installation exists
@@ -202,9 +238,4 @@ function installPackage(name, subname, addUrl, cb) {
 }
 
 module.exports.initTasks = initTasks;
-module.exports.getArduinoCommand = getArduinoCommand;
-module.exports.getLibraryFolder = getLibraryFolder;
-module.exports.getPackageFolder = getPackageFolder;
-module.exports.installLibrary = installLibrary;
-module.exports.cloneLibrary = cloneLibrary;
 module.exports.installPackage = installPackage;
