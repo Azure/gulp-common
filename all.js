@@ -166,11 +166,11 @@ function localExecCmds(cmds, verbose, cb) {
 }
 
 function localClone(url, folder, verbose, cb) {
-  if (all.folderExistsSync(folder)) {
+  if (folderExistsSync(folder)) {
     console.log('Repo ' + url + ' was already cloned...');
     cb();
   } else {
-    all.localExecCmd('git clone ' + url + ' ' + folder, verbose, cb);
+    localExecCmd('git clone ' + url + ' ' + folder, verbose, cb);
   }
 }
 
