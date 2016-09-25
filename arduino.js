@@ -57,8 +57,9 @@ function initTasks(gulp, options) {
       // install arduino
       all.localExecCmds([ 'sudo apt-get update',
                           'sudo apt-get install -y wget xz-utils',
-                          'sudo wget -q -O- https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz',
-                          'sudo tar xJ -C /opt; ln -s /opt/arduino-1.6.11/arduino /usr/local/bin/',
+                          'sudo wget -q -O '  + all.getToolsFolder + '/arduino.tar.xz' + ' https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz',
+                          'sudo tar xJ -C /opt ' + all.getToolsFolder + '/arduino.tar.xz' ,
+                          'ln -s /opt/arduino-1.6.11/arduino /usr/local/bin/',
                           'ln -s /opt/arduino-1.6.11/arduino-builder /usr/local/bin/',
                           'chmod 777 gulp-common/arduino-headless.sh'], args.verbose, cb);
     } else if (process.platform == 'darwin') {
