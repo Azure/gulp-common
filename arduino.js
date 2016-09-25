@@ -58,7 +58,7 @@ function initTasks(gulp, options) {
       all.localExecCmds([ 'sudo apt-get update',
                           'sudo apt-get install -y wget xz-utils',
                           'sudo wget --output-document='  + all.getToolsFolder() + '/arduino.tar.xz' + ' https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz',
-                          'sudo tar xJ --file=' + all.getToolsFolder() + '/arduino/tar.xz -C ' + all.getToolsFolder() ,
+                          'sudo tar xJ --file=' + all.getToolsFolder() + '/arduino.tar.xz -C ' + all.getToolsFolder() ,
                           'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
                           'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
                           'chmod 777 gulp-common/arduino-headless.sh'], args.verbose, cb);
