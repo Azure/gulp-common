@@ -90,12 +90,16 @@ function initTasks(gulp, options) {
     });
   });
 
+  gulp.task('install-tools-package', false, function(cb) {    
+    installPackage(options.board.package, options.board.arch, options.board.packageUrl, cb);
+  })
+
   gulp.task('install-tools-libraries', false, function(cb) {    
     installLibraries(options.libraries, cb);
   })
 
   gulp.task('install-tools', 'Installs Arduino, boards specific and Azure tools', function (callback) {
-    runSequence('install-tools-java', 'install-tools-arduino', 'install-tools-arduino-init-libraries',  'install-tools-board-specific', 'install-tools-libraries', callback);
+    runSequence('install-tools-java', 'install-tools-arduino', 'install-tools-arduino-init-libraries',  'install-tools-package', 'install-tools-libraries', callback);
   });
 
   gulp.task('build', 'Builds sample code', function (cb) {
@@ -279,5 +283,4 @@ function installPackage(name, arch, addUrl, cb) {
   }
 }
 
-module.exports.initTasks = initTasks;
-module.exports.installPackage = installPackage;
+module.exports = initTasks;
