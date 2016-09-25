@@ -61,7 +61,7 @@ function initTasks(gulp, options) {
                           'sudo tar xJ --file=' + all.getToolsFolder() + '/arduino.tar.xz -C ' + all.getToolsFolder() ,
                           'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
                           'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
-                          'chmod 777 gulp-common/arduino-headless.sh'], args.verbose, cb);
+                          'chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
     } else if (process.platform == 'darwin') {
       // at the moment we will attempt the same approach as for windows
       if (all.folderExistsSync(all.getToolsFolder() + '/Arduino.app')) {
@@ -144,7 +144,7 @@ function getArduinoCommand() {
     // i assume that that it's available in the path
     return all.getToolsFolder() + '/arduino-1.6.11/arduino_debug.exe';
   } else if (process.platform === 'linux') {
-    return 'sudo ./gulp-common/arduino-headless.sh';
+    return 'sudo ./node_modules/gulp-common/arduino-headless.sh';
   } else if (process.platform === 'darwin') {
     return 'open ' + all.getToolsFolder() + '/Arduino.app --wait-apps --args';
   }
