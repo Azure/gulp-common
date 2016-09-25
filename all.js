@@ -183,10 +183,8 @@ function localExecCmds(cmds, verbose, cb) {
     return;
   }
 
-  console.log("COMMANDS: " + cmds);
-
   // execute first command
-  localExecCmds(cmds.splice(0, 1)[0], verbose, function (e) {
+  localExecCmd(cmds.splice(0, 1)[0], verbose, function (e) {
     if (e) {
       cb(e);
       return;
