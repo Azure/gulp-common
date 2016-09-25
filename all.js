@@ -351,7 +351,13 @@ function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, successCB, fail
  * @returns {string}
  */
 function getToolsFolder() {
-  return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/vsc-iot-tools';
+  var folder = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/vsc-iot-tools';
+
+  if (!folderExistsSync(folder)) {
+    fs.mkdirSync(folder);
+  }
+
+  return folder;
 }
 
 module.exports.uploadFiles = uploadFiles;
