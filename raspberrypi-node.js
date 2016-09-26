@@ -1,7 +1,7 @@
 'use strict';
 
 var all = require('./all.js');
-var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
+var config = require('../../config.json');
 var args = require('get-gulp-args')();
 var fs = require('fs');
 
@@ -34,15 +34,15 @@ function initTasks(gulp) {
     });
   });
 
-  gulp.task('run', 'Runs deployed sample on the board', function () {
+  gulp.task('run', 'Runs deployed sample on the board', function (cb) {
     var targetFolder = config.project_folder ? config.project_folder : '.';
-    var startFile = config.start_file ? config.start_file : 'blink.js';
+    var startFile = config.start_file ? config.start_file : 'app.js';
     var nodeCommand = 'nodejs';
     if (args.debug) {
       nodeCommand += ' --debug-brk=5858';
     }
 
-    all.azhSshExec('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + ' && exit', cb);
+    all.azhSshExec('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + ' && exit', config, true, cb);
   });
 
   gulp.task('default', 'Builds, deploys and runs sample on the board', function (callback) {
