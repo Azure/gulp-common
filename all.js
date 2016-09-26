@@ -211,8 +211,6 @@ function localClone(url, folder, verbose, cb) {
   }
 }
 
-// [REVIEW] Rename azhSshExec --> sshExecCmd
-
 /**
  * Execute command via SSH
  * @param {string}    cmd       - command to be execture
@@ -220,7 +218,7 @@ function localClone(url, folder, verbose, cb) {
  * @param {boolean}   verbose   - If true, command output will be printed to stdout
  * @param {callback}  cb        - Callback on completion
  */
-function azhSshExec(cmd, config, verbose, cb) {
+function sshExecCmd(cmd, config, verbose, cb) {
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name,
@@ -236,7 +234,7 @@ function azhSshExec(cmd, config, verbose, cb) {
 
   ssh.exec(cmd, {
     pty: true,
-    out: function (o) { if (verbose) console.log(o); },
+    out: function (o) { if (verbose) process.stdout.write(o); },
     exit: function() { cb(); }
   }).start();
 }
@@ -365,7 +363,7 @@ module.exports.uploadFilesViaScp = uploadFilesViaScp;
 module.exports.localExecCmd = localExecCmd;
 module.exports.localExecCmds = localExecCmds;
 module.exports.localClone = localClone;
-module.exports.azhSshExec = azhSshExec;
+module.exports.sshExecCmd = sshExecCmd;
 module.exports.deleteFolderRecursivelySync = deleteFolderRecursivelySync;
 module.exports.fileExistsSync = fileExistsSync;
 module.exports.folderExistsSync = folderExistsSync;
