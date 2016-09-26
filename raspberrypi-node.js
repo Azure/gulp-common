@@ -14,7 +14,7 @@ function initTasks(gulp, options) {
   var runSequence = require('run-sequence').use(gulp);
 
   if (typeof all.gulpTaskBI === 'function') {
-    all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', 'blink');
+    all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', (((typeof options != 'undefined') && (typeof options.appName != 'undefined')) ? options.appName : 'unknown'));
   }
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
