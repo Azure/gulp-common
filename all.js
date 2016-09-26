@@ -8,10 +8,6 @@ var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var biHelper = require('./biHelper.js');
 
-// [REVIEW] we should have only one uploadFiles, either uploadFiles, or uploadFilesViaScp
-// [REVIEW] sourceFileList + targetFileList doesn't seem to be elegant solution
-// [REVIEW] we should be able to sync entire directory
-
 /**
  * Uploads files to the device
  * @param {} config
@@ -283,8 +279,6 @@ function folderExistsSync(path) {
   }
 }
 
-// [REVIEW] successCB, failureCB are inconsistent with Gulp callback style
-
 /**
  * Downloads file.
  * @param {string}    srcZipUrl     - Source file URL
@@ -306,11 +300,6 @@ function download(srcZipUrl, targetZipPath, successCB, failureCB)
     if(successCB) successCB();
   });
 }
-
-// [REVIEW] successCB, failureCB are inconsistent with Gulp callback style
-// [REVIEW] downloadAndUnzip() should use download() internally
-// [REVIEW] intermediate zip file shall be deleted
-// [REVIEW] clean up if something goes wrong
 
 /**
  * Downloads file.
@@ -341,8 +330,6 @@ function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, successCB, fail
     });
   });
 }
-
-// [REVIEW] vsc-iot-tools shall be created if doesn't exist
 
 /**
  * Get tools folder for host operating system

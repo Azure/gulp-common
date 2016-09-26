@@ -1,7 +1,5 @@
 ﻿'use strict';
 
-// [REVIEW] wrong boardId supplied shall be handled gracefully
-
 /**
  * Main entry point for gulp-common.
  * @param {object} gulp     - external gulp instance
