@@ -234,7 +234,7 @@ function sshExecCmd(cmd, config, verbose, cb) {
 
   ssh.exec(cmd, {
     pty: true,
-    out: function (o) { if (verbose) console.log(o); },
+    out: function (o) { if (verbose) process.stdout.write(o); },
     exit: function() { cb(); }
   }).start();
 }
