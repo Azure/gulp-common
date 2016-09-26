@@ -26,7 +26,6 @@ function initTasks(gulp, options) {
     var files = fs.readdirSync('./app');
     var filesLocal = [];
     var filesRemote = [];
-    console.log(files);
 
     for (var i = 0; i < files.length; i++) {
       filesLocal.push('./app/' + files[i]);
