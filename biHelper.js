@@ -1,6 +1,6 @@
 'use strict';
 
-var bi = require('az-iot-bi-test');
+var bi = require('az-iot-bi');
 
 var biHelper = {};
 
