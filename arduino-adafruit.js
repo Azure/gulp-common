@@ -1,30 +1,25 @@
-﻿
-var arduino = require('./arduino.js');
+﻿'use strict';
 
+// [REVIEW] remove install-tools-board-specific - this should be done via options
+
+/**
+ * Main entry point for all Arduino Adafruit SAMD configurations.
+ * @param {object} gulp     - Gulp instance
+ * @param {object} options  - Arduino specific options
+ */
 function initTasks(gulp, options) {
-  var runSequence = require('run-sequence').use(gulp);
 
+  // set board options
   options.board.package = 'adafruit';
   options.board.arch = 'samd';
-  
-  arduino.initTasks(gulp, options);
+  options.board.packageUrl = 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json';
 
-  gulp.task('install-tools-adafruit-via-arduino', false, function(cb) {
-    arduino.installPackage('adafruit', 'samd', 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json', cb);
-  })
+  // add adafruit specific libraries
+  options.libraries.push('https://github.com/adafruit/Adafruit_WINC1500.git');
+  options.libraries.push('RTCZero');
 
-  gulp.task('install-tools-winc1500', false, function(cb) {
-    arduino.cloneLibrary('Adafruit_WINC1500', 'https://github.com/adafruit/Adafruit_WINC1500.git', cb);    
-  });
-
-  gulp.task('install-rtczero', false, function(cb) {
-    arduino.installLibrary('RTCZero', cb);
-  });
-
-  gulp.task('install-tools-board-specific', false, function (cb) {
-    runSequence('install-tools-adafruit-via-arduino', 'install-tools-winc1500', 'install-rtczero', cb);
-  });
+  // init base arduino tasks  
+  require('./arduino.js')(gulp, options);
 }
 
 module.exports = initTasks;
-module.exports.initTasks = initTasks;

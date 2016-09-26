@@ -1,3 +1,5 @@
+'use strict';
+
 var raspberrypi = require('./raspberrypi-node.js');
 
 var all = require('./all.js');

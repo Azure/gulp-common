@@ -8,6 +8,17 @@ var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var biHelper = require('./biHelper.js');
 
+// [REVIEW] we should have only one uploadFiles, either uploadFiles, or uploadFilesViaScp
+// [REVIEW] sourceFileList + targetFileList doesn't seem to be elegant solution
+// [REVIEW] we should be able to sync entire directory
+
+/**
+ * Uploads files to the device
+ * @param {} config
+ * @param {string[]} sourceFileList - List of local files
+ * @param {string[]} targetFileList - List of files at destination
+ * @param {callback} callback - Callback
+ */
 function uploadFiles(config, sourceFileList, targetFileList, callback) {
   var finishedFileNumber = 0;
   var totalFileNumber = sourceFileList.length;
@@ -87,6 +98,13 @@ function uploadFiles(config, sourceFileList, targetFileList, callback) {
   });
 }
 
+/**
+ * Uploads files to the device
+ * @param {} config
+ * @param {string[]} sourceFileList - List of local files
+ * @param {string[]} targetFileList - List of files at destination
+ * @param {callback} callback - Callback
+ */
 function uploadFilesViaScp(config, sourceFileList, targetFileList, callback)
 {
   if(sourceFileList.length == 0) return;
@@ -113,20 +131,13 @@ function uploadFilesViaScp(config, sourceFileList, targetFileList, callback)
   scp2.scp(sourceFileList[0], prefix + targetFileList[0], onClose);
 }
 
-function azhRunLocalCmd(cmd, verbose, cb) {
-  try {
-    var ret = require('child_process').execSync(cmd);
-    if (verbose) console.log(String(ret));
-    if (cb) cb();
-  } catch (e) {
-    e.stack = "ERROR: " + e;
-    if (cb) cb(e);
-  }
-}
-
-// this is a new version of azhRunLocalCmd
-// azhRunLocalCmd is now obsolete and will be removed when all references disappear
-function runLocalCmd(cmd, verbose, cb) {
+/**
+ * Executes command locally
+ * @param {string} cmd - Command to be executed
+ * @param {boolean} verbose - If true, command output will be printed to stdout
+ * @param {callback} cb - Callback on completion
+ */
+function localExecCmd(cmd, verbose, cb) {
   try {
     var args = cmd.split(' ');
     cmd = args.splice(0, 1);
@@ -158,7 +169,57 @@ function runLocalCmd(cmd, verbose, cb) {
   }
 }
 
+/**
+ * Executes sequence of commands locally
+ * @param {string[]} cmds - List of commands to be executed
+ * @param {boolean} verbose - If true, command output will be printed to stdout
+ * @param {callback} cb - Callback on completion
+ */
+function localExecCmds(cmds, verbose, cb) {
 
+  // check if there are any commands to execute
+  if (cmds.length == 0) {
+    cb();
+    return;
+  }
+
+  // execute first command
+  localExecCmd(cmds.splice(0, 1)[0], verbose, function (e) {
+    if (e) {
+      cb(e);
+      return;
+    }
+
+    // continue with remaining commands
+    localExecCmds(cmds, verbose, cb);
+  })
+}
+
+/**
+ * Clone repository locally
+ * @param {string}    url       - URL of git repository to clone
+ * @param {string}    folder    - Destination folder
+ * @param {boolean}   verbose   - If true, command output will be printed to stdout
+ * @param {callback}  cb        - Callback on completion
+ */
+function localClone(url, folder, verbose, cb) {
+  if (folderExistsSync(folder)) {
+    console.log('Repo ' + url + ' was already cloned...');
+    cb();
+  } else {
+    localExecCmd('git clone ' + url + ' ' + folder, verbose, cb);
+  }
+}
+
+// [REVIEW] Rename azhSshExec --> sshExecCmd
+
+/**
+ * Execute command via SSH
+ * @param {string}    cmd       - command to be execture
+ * @param {object}    config    - Config (content of config.json)
+ * @param {boolean}   verbose   - If true, command output will be printed to stdout
+ * @param {callback}  cb        - Callback on completion
+ */
 function azhSshExec(cmd, config, verbose, cb) {
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
@@ -180,6 +241,10 @@ function azhSshExec(cmd, config, verbose, cb) {
   }).start();
 }
 
+/**
+ * Delete folder recursively and synchronously.
+ * @param {string}    path      - folder to be deleted
+ */
 function deleteFolderRecursivelySync(path) {
   if( fs.existsSync(path) ) {
     fs.readdirSync(path).forEach(function(file,index){
@@ -194,6 +259,11 @@ function deleteFolderRecursivelySync(path) {
   }
 };
 
+/**
+ * Checks of file exists synchronously.
+ * @param {string}    path      - File to be checked
+ * @returns {boolean}
+ */
 function fileExistsSync(path) {
   try {
     return fs.statSync(path).isFile();
@@ -202,6 +272,11 @@ function fileExistsSync(path) {
   }
 }
 
+/**
+ * Checks if folder exists synchronously.
+ * @param {string}    path      - Folder to be checked
+ * @returns {boolean}
+ */
 function folderExistsSync(path) {
   try {
     return fs.statSync(path).isDirectory();
@@ -210,6 +285,15 @@ function folderExistsSync(path) {
   }
 }
 
+// [REVIEW] successCB, failureCB are inconsistent with Gulp callback style
+
+/**
+ * Downloads file.
+ * @param {string}    srcZipUrl     - Source file URL
+ * @param {string}    targetZipPath - Target file path
+ * @param {callback}  successCB
+ * @param {callback}  failureCB
+ */
 function download(srcZipUrl, targetZipPath, successCB, failureCB)
 {
   var zipStream = request(srcZipUrl)
@@ -225,6 +309,19 @@ function download(srcZipUrl, targetZipPath, successCB, failureCB)
   });
 }
 
+// [REVIEW] successCB, failureCB are inconsistent with Gulp callback style
+// [REVIEW] downloadAndUnzip() should use download() internally
+// [REVIEW] intermediate zip file shall be deleted
+// [REVIEW] clean up if something goes wrong
+
+/**
+ * Downloads file.
+ * @param {string}    srcZipUrl     - Source file URL
+ * @param {string}    targetZipPath - Target file path
+ * @param {string}    unzipFolder   - Target folder for unzipping
+ * @param {callback}  successCB
+ * @param {callback}  failureCB
+ */
 function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, successCB, failureCB)
 {
   var zipStream = request(srcZipUrl)
@@ -247,14 +344,27 @@ function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, successCB, fail
   });
 }
 
+// [REVIEW] vsc-iot-tools shall be created if doesn't exist
+
+/**
+ * Get tools folder for host operating system
+ * @returns {string}
+ */
 function getToolsFolder() {
-  return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/vsc-iot-tools';
+  var folder = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/vsc-iot-tools';
+
+  if (!folderExistsSync(folder)) {
+    fs.mkdirSync(folder);
+  }
+
+  return folder;
 }
 
 module.exports.uploadFiles = uploadFiles;
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
-module.exports.azhRunLocalCmd = azhRunLocalCmd;
-module.exports.runLocalCmd = runLocalCmd;
+module.exports.localExecCmd = localExecCmd;
+module.exports.localExecCmds = localExecCmds;
+module.exports.localClone = localClone;
 module.exports.azhSshExec = azhSshExec;
 module.exports.deleteFolderRecursivelySync = deleteFolderRecursivelySync;
 module.exports.fileExistsSync = fileExistsSync;
