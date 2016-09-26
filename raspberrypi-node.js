@@ -36,7 +36,6 @@ function initTasks(gulp, options) {
     filesRemote.push(targetFolder + '/config.json');
 
     all.uploadFilesViaScp(config, filesLocal, filesRemote, function () {
-      // [REVIEW] failure is not handled properly
       all.sshExecCmd('cd ' + targetFolder + ' && npm install', config, args.verbose, cb);
     });
   });

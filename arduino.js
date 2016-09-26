@@ -1,7 +1,6 @@
 ﻿'use strict';
 
 var all = require('./all.js');
-// [REVIEW] this can be simplified now
 var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 var fs = require('fs');
 var args = require('get-gulp-args')();

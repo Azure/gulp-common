@@ -17,13 +17,6 @@ var COMPILER_NAME = (process.platform == 'win32' ?
                                         'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux');
 var COMPILER_FOLDER = all.getToolsFolder() + '/' + COMPILER_NAME + '/bin';
 
-// XXX - move inside?
-// setup BI
-//if (typeof all.gulpTaskBI === 'function') {
-//  all.gulpTaskBI(gulp, 'c', 'RaspberryPi', 'az-blink');
-//}
-
-// XXX - this function shall be replaced
 function azhRunLocalCmd(cmd, verbose, cb) {
   try {
     var ret = require('child_process').execSync(cmd);
@@ -47,7 +40,6 @@ function initTasks(gulp) {
     // clone helper repository to tools folder -- if it doesn't exists
     if (!all.folderExistsSync(PREBUILT_FOLDER + '/.git')) {
       azhRunLocalCmd('git clone ' + PREBUILT_SDK_REPO + ' ' + PREBUILT_FOLDER, args.verbose, function(result) {
-        // XXX - handle result
       });
     }
 
@@ -96,8 +88,6 @@ function initTasks(gulp) {
         console.log('config file does not exist');
       }
     }
-
-    // XXX - check if toolchain is configured here
 
     // remove old out directory and create empty one
     all.deleteFolderRecursivelySync('out');

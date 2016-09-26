@@ -1,7 +1,5 @@
 ﻿'use strict';
 
-// [REVIEW] remove install-tools-board-specific - this should be done via options
-
 /**
  * Main entry point for all Arduino ESP8266 boards.
  * @param {object} gulp     - Gulp instance

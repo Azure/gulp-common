@@ -14,7 +14,6 @@ function initTasks(gulp, options) {
   options.board.board = 'huzzah';
   options.board.parameters = 'CpuFrequency=80,UploadSpeed=115200,FlashSize=4M3M';
 
-  // [REVIEW] verify and pass options
   require('./arduino-esp8266.js')(gulp, options);
 }
 
