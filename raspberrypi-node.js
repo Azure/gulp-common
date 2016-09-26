@@ -39,7 +39,7 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('run', 'Runs deployed sample on the board', function (cb) {
+  gulp.task('run-internal', false, function (cb) {
     var targetFolder = config.project_folder ? config.project_folder : '.';
     var startFile = config.start_file ? config.start_file : 'app.js';
     var nodeCommand = 'nodejs';
@@ -49,6 +49,8 @@ function initTasks(gulp, options) {
 
     all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + ' && exit', config, true, cb);
   });
+
+  gulp.task('run', 'Runs deployed sample on the board', [ 'run-internal' ]);
 
   gulp.task('default', 'Builds, deploys and runs sample on the board', function (callback) {
     runSequence('install-tools', 'deploy', 'run', callback);
