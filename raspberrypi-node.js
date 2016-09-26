@@ -5,7 +5,12 @@ var config = require('../../config.json');
 var args = require('get-gulp-args')();
 var fs = require('fs');
 
-function initTasks(gulp) {
+/**
+ * Main entry point for all Rapberry Pi Node configuration.
+ * @param {object} gulp     - Gulp instance
+ * @param {object} options  - Raspberry Pi Node Specific options
+ */
+function initTasks(gulp, options) {
   var runSequence = require('run-sequence').use(gulp);
 
   if (typeof all.gulpTaskBI === 'function') {
