@@ -262,7 +262,6 @@ function getToolsFolder() {
   return folder;
 }
 
-module.exports.uploadFiles = uploadFiles;
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
 module.exports.localExecCmd = localExecCmd;
 module.exports.localExecCmds = localExecCmds;
