@@ -164,29 +164,8 @@ function initTasks(gulp) {
     all.uploadFilesViaScp(config, ['out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME], cb);
   });
 
-  gulp.task('run', 'Runs deployed sample on the board', function () {
-    var deferred = Q.defer();
-
-    var ssh = new simssh({
-      host: config.device_host_name_or_ip_address,
-      user: config.device_user_name,
-      pass: config.device_password
-    });
-
-    ssh.on('error', function (e) {
-      // when we pass error via deferred.reject, stack will be displayed
-      // as it is just string, we can just replace it with message
-      e.stack = "ERROR: " + e.message;
-      deferred.reject(e);
-    });
-
-    ssh.exec('sudo chmod +x ./'+ SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME, {
-      pty: true,
-      out: console.log.bind(console),
-      exit: function() { deferred.resolve(); }
-    }).start();
-
-    return deferred.promise;
+  gulp.task('run', 'Runs deployed sample on the board', function (cb) {
+    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME, config, true, cb);
   });
 
   gulp.task('all', 'Builds, deploys and runs sample on the board', function(callback) {
