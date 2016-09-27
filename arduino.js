@@ -1,4 +1,7 @@
-﻿'use strict';
+﻿/*
+* Gulp Common - Microsoft Sample Code - Copyright (c) 2016 - Licensed MIT
+*/
+'use strict';
 
 var all = require('./all.js');
 var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');

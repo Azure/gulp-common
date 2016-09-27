@@ -1,4 +1,7 @@
-﻿'use strict';
+﻿/*
+* Gulp Common - Microsoft Sample Code - Copyright (c) 2016 - Licensed MIT
+*/
+'use strict';
 
 /**
  * Main entry point for gulp-common.
