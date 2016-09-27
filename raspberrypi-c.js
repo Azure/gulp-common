@@ -43,6 +43,10 @@ function initTasks(gulp) {
           all.getToolsFolder(), function() { cb();}, 
           function(err){cb(err);});
         }
+        else {
+          console.log("Linaro toolchain already installed");
+          cb();
+        }
       } else if (process.platform == 'linux') {
 
         // just use wget and tar commands sequentially
@@ -66,6 +70,7 @@ function initTasks(gulp) {
         all.localExecCmds(cmds, args.verbose, cb)
       } else {
         console.log('We dont have tools for your operating system at this time');
+        cb(new Error('We dont have tools for your operating system at this time'));
       }
     });
   });
@@ -173,4 +178,4 @@ function initTasks(gulp) {
   })
 }
 
-module.exports.initTasks = initTasks;
+module.exports = initTasks;
