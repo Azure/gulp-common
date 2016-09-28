@@ -16,32 +16,34 @@ var biHelper = require('./biHelper.js');
  * @param {} config
  * @param {string[]} sourceFileList - List of local files
  * @param {string[]} targetFileList - List of files at destination
- * @param {callback} callback - Callback
+ * @param {cb} callback - Callback
  */
-function uploadFilesViaScp(config, sourceFileList, targetFileList, callback)
+function uploadFilesViaScp(config, sourceFileList, targetFileList, cb)
 {
-  if(sourceFileList.length == 0) return;
-  
+  if(sourceFileList.length == 0) {
+    cb();
+    return;
+  }
+
   var prefix = config.device_user_name + ':' + config.device_password + '@' + config.device_host_name_or_ip_address + ':';
 
-  var onClose = function(){
-    console.log( "- file '" +  sourceFileList[0] + "' transferred" );
-    
-    if(sourceFileList.length == 1)
-    {
-      if (callback){
-        callback();
+  scp2.scp(sourceFileList[0], prefix + targetFileList[0], function(err) {
+    if (err) {
+      if (cb) {
+        err.stack = "SCP file transfer failed (" + err + ")";
+        cb(err);
+
+        // clear callback, SCP2 seems to be calling error callback twice, and that looks ugly
+        cb = null;
       }
-    }
-    else
-    {
+    } else {
+      console.log( "- file '" +  sourceFileList[0] + "' transferred" );
+      
       sourceFileList.splice(0, 1);
       targetFileList.splice(0, 1);
-      uploadFilesViaScp(config, sourceFileList, targetFileList, callback);
+      uploadFilesViaScp(config, sourceFileList, targetFileList, cb);
     }
-  };
-
-  scp2.scp(sourceFileList[0], prefix + targetFileList[0], onClose);
+  });
 }
 
 /**
