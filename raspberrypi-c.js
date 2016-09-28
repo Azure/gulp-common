@@ -24,10 +24,6 @@ function initTasks(gulp) {
 
   gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function (cb) {
 
-    // make sure tools folder exists
-    if (!all.folderExistsSync(all.getToolsFolder()))
-      fs.mkdirSync(all.getToolsFolder());
-
     // clone helper repository to tools folder -- if it doesn't exists
     all.localClone(PREBUILT_SDK_REPO, PREBUILT_FOLDER, args.verbose, function(error) {
 
@@ -75,7 +71,7 @@ function initTasks(gulp) {
     });
   });
 
-  gulp.task('build', 'Builds sample code', function() {
+  gulp.task('build', 'Builds sample code', function(cb) {
 
     // write config file only if data is available in config.json
     if (config.iot_hub_host_name) {
@@ -133,40 +129,42 @@ function initTasks(gulp) {
     all.localExecCmds([cmd_compile, cmd_link ], args.verbose, cb)
   });
 
-  gulp.task('check-raspbian', false, function() {
-    var deferred = Q.defer();
+  gulp.task('check-raspbian', false, function(cb) {
+    //var deferred = Q.defer();
 
-    var ssh = new simssh({
-      host: config.device_host_name_or_ip_address,
-      user: config.device_user_name,
-      pass: config.device_password
-    });
+    //var ssh = new simssh({
+    //  host: config.device_host_name_or_ip_address,
+    //  user: config.device_user_name,
+    //  pass: config.device_password
+    //});
 
-    ssh.on('error', function (e) {
-      // when we pass error via deferred.reject, stack will be displayed
-      // as it is just string, we can just replace it with message
-      e.stack = "ERROR: " + e.message;
-      deferred.reject(e);
-    });
+    //ssh.on('error', function (e) {
+    //  // when we pass error via deferred.reject, stack will be displayed
+    //  // as it is just string, we can just replace it with message
+    //  e.stack = "ERROR: " + e.message;
+    //  deferred.reject(e);
+    //});
 
-    ssh.exec('uname -a', {
-      pty: true,
-      out: function (out) {
-        if (!out.startsWith('Linux raspberrypi 4.4')) {
-          console.log('--------------------');
-          console.log('WARNING: Unsupported OS version - sample code may not work properly');
-          console.log(out);
-          console.log('--------------------');
-        }
-        deferred.resolve();
-      }
-    }).start();
+    //ssh.exec('uname -a', {
+    //  pty: true,
+    //  out: function (out) {
+    //    if (!out.startsWith('Linux raspberrypi 4.4')) {
+    //      console.log('--------------------');
+    //      console.log('WARNING: Unsupported OS version - sample code may not work properly');
+    //      console.log(out);
+    //      console.log('--------------------');
+    //    }
+    //    deferred.resolve();
+    //  }
+    //}).start();
 
-    return deferred.promise;
+    //return deferred.promise;
+
+    cb();
   })
 
   gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function(cb){
-    all.uploadFilesViaScp(config, ['out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME], cb);
+    all.uploadFilesViaScp(config, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME], cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', function (cb) {
