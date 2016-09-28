@@ -146,6 +146,7 @@ function sshExecCmd(cmd, config, options, cb) {
     // when we pass error via deferred.reject, stack will be displayed
     // as it is just string, we can just replace it with message
     e.stack = "ERROR: " + e.message;
+    console.log("ERROR OCCURED");
     cb(e);
   });
 
@@ -159,16 +160,22 @@ function sshExecCmd(cmd, config, options, cb) {
       output += String(o);
     },
     exit: function() {
-      if (options && options.marker) {
-        if (output.indexOf(options.marker) < 0) {
-          var err = new Error("SSH command hasn't completed successfully");
-          err.stack = err.message;
-          err.marker = true;
-          cb(err);
-          return;
+      // setting short timeout, as exit handler may be called before remaining data
+      // arrives via out
+        console.log("BEFORE TIMEOUT");
+      setTimeout(function() {
+        if (options && options.marker) {
+          if (output.indexOf(options.marker) < 0) {
+            var err = new Error("SSH command hasn't completed successfully");
+            err.stack = err.message;
+            err.marker = true;
+            cb(err);
+            return;
+          }
         }
-      }
-      cb();
+        console.log("AFTER TIMEOUT");
+        cb();
+      }, 1000);
     }
   }).start();
 }

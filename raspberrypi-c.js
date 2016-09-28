@@ -135,7 +135,6 @@ function initTasks(gulp) {
         if (err.marker) {
           console.log('--------------------');
           console.log('WARNING: Unsupported OS version - sample code may not work properly');
-          console.log(out);
           console.log('--------------------');
           cb();
         } else {
