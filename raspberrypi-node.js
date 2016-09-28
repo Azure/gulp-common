@@ -21,7 +21,7 @@ function initTasks(gulp, options) {
   }
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
-    all.sshExecCmd('(curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -) && sudo apt-get -y install nodejs', config, args.verbose, cb);
+    all.sshExecCmd('(curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -) && sudo apt-get -y install nodejs', config, { verbose: args.verbose }, cb);
   });
 
   gulp.task('deploy', 'Deploys sample code to the board', function (cb) {
@@ -39,7 +39,7 @@ function initTasks(gulp, options) {
     filesRemote.push(targetFolder + '/config.json');
 
     all.uploadFilesViaScp(config, filesLocal, filesRemote, function () {
-      all.sshExecCmd('cd ' + targetFolder + ' && npm install', config, args.verbose, cb);
+      all.sshExecCmd('cd ' + targetFolder + ' && npm install', config, { verbose: args.verbose }, cb);
     });
   });
 
@@ -51,7 +51,7 @@ function initTasks(gulp, options) {
       nodeCommand += ' --debug-brk=5858';
     }
 
-    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + ' && exit', config, true, cb);
+    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + ' && exit', config, { verbose: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', [ 'run-internal' ]);

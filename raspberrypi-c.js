@@ -130,37 +130,21 @@ function initTasks(gulp) {
   });
 
   gulp.task('check-raspbian', false, function(cb) {
-    //var deferred = Q.defer();
-
-    //var ssh = new simssh({
-    //  host: config.device_host_name_or_ip_address,
-    //  user: config.device_user_name,
-    //  pass: config.device_password
-    //});
-
-    //ssh.on('error', function (e) {
-    //  // when we pass error via deferred.reject, stack will be displayed
-    //  // as it is just string, we can just replace it with message
-    //  e.stack = "ERROR: " + e.message;
-    //  deferred.reject(e);
-    //});
-
-    //ssh.exec('uname -a', {
-    //  pty: true,
-    //  out: function (out) {
-    //    if (!out.startsWith('Linux raspberrypi 4.4')) {
-    //      console.log('--------------------');
-    //      console.log('WARNING: Unsupported OS version - sample code may not work properly');
-    //      console.log(out);
-    //      console.log('--------------------');
-    //    }
-    //    deferred.resolve();
-    //  }
-    //}).start();
-
-    //return deferred.promise;
-
-    cb();
+    all.sshExecCmd('uname -a', config, { verbose: args.verbose, marker: 'Linux raspberrypi 4.4' }, function(err) {
+      if (err) {
+        if (err.marker) {
+          console.log('--------------------');
+          console.log('WARNING: Unsupported OS version - sample code may not work properly');
+          console.log(out);
+          console.log('--------------------');
+          cb();
+        } else {
+          cb(err);
+        }
+      } else {
+        cb();
+      }
+    });
   })
 
   gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function(cb){

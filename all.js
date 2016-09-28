@@ -130,15 +130,17 @@ function localClone(url, folder, verbose, cb) {
  * Execute command via SSH
  * @param {string}    cmd       - command to be execture
  * @param {object}    config    - Config (content of config.json)
- * @param {boolean}   verbose   - If true, command output will be printed to stdout
+ * @param {object}    options   - If true, command output will be printed to stdout
  * @param {callback}  cb        - Callback on completion
  */
-function sshExecCmd(cmd, config, verbose, cb) {
+function sshExecCmd(cmd, config, options, cb) {
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name,
     pass: config.device_password
   });
+
+  var output = '';
 
   ssh.on('error', function (e) {
     // when we pass error via deferred.reject, stack will be displayed
@@ -149,8 +151,25 @@ function sshExecCmd(cmd, config, verbose, cb) {
 
   ssh.exec(cmd, {
     pty: true,
-    out: function (o) { if (verbose) process.stdout.write(o); },
-    exit: function() { cb(); }
+    out: function (o) {
+      if (options && options.verbose) {
+        process.stdout.write(o);
+      }
+
+      output += String(o);
+    },
+    exit: function() {
+      if (options && options.marker) {
+        if (output.indexOf(options.marker) < 0) {
+          var err = new Error("SSH command hasn't completed successfully");
+          err.stack = err.message;
+          err.marker = true;
+          cb(err);
+          return;
+        }
+      }
+      cb();
+    }
   }).start();
 }
 
