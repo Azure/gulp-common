@@ -47,12 +47,15 @@ function initTasks(gulp, options) {
         cb();
       } else {
         fs.mkdirSync(all.getToolsFolder());
-        all.downloadAndUnzip('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', all.getToolsFolder() + '/arduino.zip', all.getToolsFolder(), function() {
-          console.log("ARDUINO INSTALLATION SUCCESSFUL IN : " + all.getToolsFolder());
-          cb();
-        }, function(err) {
-          console.log("ARDUINO INSTALLATION FAILED" + err);
-          cb(err);
+        all.downloadAndUnzip('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', all.getToolsFolder() + '/arduino.zip', all.getToolsFolder(), function(err) {
+
+          if (err) {
+            console.log("ARDUINO INSTALLATION FAILED" + err);
+            cb(err);
+          } else {
+            console.log("ARDUINO INSTALLATION SUCCESSFUL IN : " + all.getToolsFolder());
+            cb();
+          }
         });
       }
     } else if (process.platform == 'linux') {
@@ -74,11 +77,13 @@ function initTasks(gulp, options) {
           fs.mkdirSync(all.getToolsFolder());
         }
 
-        all.download('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', all.getToolsFolder() + '/arduino.zip', function() {
-          all.localExecCmd('open --wait-apps ' + all.getToolsFolder() + '/arduino.zip', args.verbose, cb);
-        }, function(err) {
-          console.log("ARDUINO INSTALLATION FAILED" + err);
-          cb(err);
+        all.download('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', all.getToolsFolder() + '/arduino.zip', function(err) {
+          if (err) {
+            console.log("ARDUINO INSTALLATION FAILED" + err);
+            cb(err);
+          } else {
+            all.localExecCmd('open --wait-apps ' + all.getToolsFolder() + '/arduino.zip', args.verbose, cb);
+          }
         });
       }
     }

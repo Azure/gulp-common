@@ -231,18 +231,18 @@ function folderExistsSync(path) {
  * @param {callback}  successCB
  * @param {callback}  failureCB
  */
-function download(srcZipUrl, targetZipPath, successCB, failureCB)
+function download(srcZipUrl, targetZipPath, cb)
 {
   var zipStream = request(srcZipUrl)
   .pipe(fs.createWriteStream(targetZipPath));
   
   zipStream.on('error', function(err){
     err.stack = err.message;
-    if(failureCB) failureCB(err);
+    cb(err);
   });
   
   zipStream.on('close', function(){
-    if(successCB) successCB();
+    cb();
   });
 }
 
@@ -254,24 +254,24 @@ function download(srcZipUrl, targetZipPath, successCB, failureCB)
  * @param {callback}  successCB
  * @param {callback}  failureCB
  */
-function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, successCB, failureCB)
+function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
 {
   var zipStream = request(srcZipUrl)
   .pipe(fs.createWriteStream(targetZipPath));
   
   zipStream.on('error', function(err){
     err.stack = err.message;
-    if(failureCB) failureCB(err);
+    cb(err);
   });
   
   zipStream.on('close', function(){
     var extractStream = fs.createReadStream(targetZipPath).pipe(unzip.Extract({path:unzipFolder}));
     extractStream.on('error', function(err){
       err.stack = err.message;
-      if(failureCB) failureCB(err);
+      cb(err);
     });
     extractStream.on('close', function(){
-      if(successCB) successCB();
+      cb();
     });
   });
 }
