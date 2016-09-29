@@ -1,10 +1,17 @@
-﻿'use strict';
+﻿/*
+* Gulp Common - Microsoft Sample Code - Copyright (c) 2016 - Licensed MIT
+*/
+'use strict';
 
 /**
  * Main entry point for all Arduino ESP8266 Feather Huzzah configuration.
  * @param {object} gulp     - Gulp instance
  */
 function initTasks(gulp, options) {
+
+  if (typeof all.gulpTaskBI === 'function') {
+    all.gulpTaskBI(gulp, 'c', 'huzzah', ((options && options.appName) ? options.appName : 'unknown'));
+  }
 
   // initialize options if undefined
   if (typeof options != 'object') options = {};

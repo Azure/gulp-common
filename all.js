@@ -1,7 +1,9 @@
-﻿'use strict';
+﻿/*
+* Gulp Common - Microsoft Sample Code - Copyright (c) 2016 - Licensed MIT
+*/
+'use strict';
 
 var fs = require('fs');
-var ssh2 = require('ssh2');
 var request = require('request');
 var unzip = require('unzip');
 var simssh = require('simple-ssh');
@@ -13,118 +15,34 @@ var biHelper = require('./biHelper.js');
  * @param {} config
  * @param {string[]} sourceFileList - List of local files
  * @param {string[]} targetFileList - List of files at destination
- * @param {callback} callback - Callback
+ * @param {callback} cb - Callback
  */
-function uploadFiles(config, sourceFileList, targetFileList, callback) {
-  var finishedFileNumber = 0;
-  var totalFileNumber = sourceFileList.length;
-
-  var conn = new ssh2();
-  conn.on(
-    'connect',
-     function(){}
-  );
-
-  conn.on(
-    'ready',
-    function () {
-      conn.sftp(
-        function (err, sftp) {
-          if ( err ) {
-            console.log( "--- SFTP error: %s", err );
-            
-            callback(err);
-            return;
-          }
-
-          for(let i = 0; i < sourceFileList.length; i++)
-          {
-            // TODO:
-            // If the target file list contain folder that doesn't exist in device, the upload will fail.
-            // Will create the folder if it doesn't exist.
-            
-            // upload file
-            var readStream = fs.createReadStream( sourceFileList[i] );
-            var writeStream = sftp.createWriteStream( targetFileList[i] );
-
-            var onClose = function(){
-              console.log( "- file '" +  sourceFileList[i] + "' transferred" );
-              if(++finishedFileNumber == totalFileNumber)
-              {
-                sftp.end();
-                conn.end();
-                
-                if (callback){
-                  callback();
-                }
-              }
-            };
-            
-            // what to do when transfer finishes
-            writeStream.on(
-              'close',
-              onClose
-            );
-
-            // initiate transfer of file
-            readStream.pipe( writeStream );
-          } 
-        }
-      );
-    }
-  );
-
-  conn.on(
-    'error',
-    function (err) {
-      console.log( "- connection error: %s", err );
-    }
-  );
-
-  conn.on(
-    'end',
-    function(){}
-  );
-
-  conn.connect({
-    "host": config.device_host_name_or_ip_address,
-    "port": config.ssh_port ? config.ssh_port : 22,
-    "username": config.device_user_name,
-    "password": config.device_password
-  });
-}
-
-/**
- * Uploads files to the device
- * @param {} config
- * @param {string[]} sourceFileList - List of local files
- * @param {string[]} targetFileList - List of files at destination
- * @param {callback} callback - Callback
- */
-function uploadFilesViaScp(config, sourceFileList, targetFileList, callback)
+function uploadFilesViaScp(config, sourceFileList, targetFileList, cb)
 {
-  if(sourceFileList.length == 0) return;
-  
+  if(sourceFileList.length == 0) {
+    if (cb) cb();
+    return;
+  }
+
   var prefix = config.device_user_name + ':' + config.device_password + '@' + config.device_host_name_or_ip_address + ':';
 
-  var onClose = function(){
-    console.log( "- file '" +  sourceFileList[0] + "' transferred" );
-    
-    if(sourceFileList.length == 1)
-    {
-      if (callback){
-        callback();
+  scp2.scp(sourceFileList[0], prefix + targetFileList[0], function(err) {
+    if (err) {
+      if (cb) {
+        err.stack = "SCP file transfer failed (" + err + ")";
+        cb(err);
+
+        // clear callback, SCP2 seems to be calling error callback twice, and that looks ugly
+        cb = null;
       }
-    }
-    else
-    {
+    } else {
+      console.log( "- file '" +  sourceFileList[0] + "' transferred" );
+      
       sourceFileList.splice(0, 1);
       targetFileList.splice(0, 1);
-      uploadFilesViaScp(config, sourceFileList, targetFileList, callback);
+      uploadFilesViaScp(config, sourceFileList, targetFileList, cb);
     }
-  };
-
-  scp2.scp(sourceFileList[0], prefix + targetFileList[0], onClose);
+  });
 }
 
 /**
@@ -175,14 +93,14 @@ function localExecCmds(cmds, verbose, cb) {
 
   // check if there are any commands to execute
   if (cmds.length == 0) {
-    cb();
+    if (cb) cb();
     return;
   }
 
   // execute first command
   localExecCmd(cmds.splice(0, 1)[0], verbose, function (e) {
     if (e) {
-      cb(e);
+      if (cb) cb(e);
       return;
     }
 
@@ -201,7 +119,7 @@ function localExecCmds(cmds, verbose, cb) {
 function localClone(url, folder, verbose, cb) {
   if (folderExistsSync(folder)) {
     console.log('Repo ' + url + ' was already cloned...');
-    cb();
+    if(cb) cb();
   } else {
     localExecCmd('git clone ' + url + ' ' + folder, verbose, cb);
   }
@@ -211,27 +129,51 @@ function localClone(url, folder, verbose, cb) {
  * Execute command via SSH
  * @param {string}    cmd       - command to be execture
  * @param {object}    config    - Config (content of config.json)
- * @param {boolean}   verbose   - If true, command output will be printed to stdout
+ * @param {object}    options   - If true, command output will be printed to stdout
  * @param {callback}  cb        - Callback on completion
  */
-function sshExecCmd(cmd, config, verbose, cb) {
+function sshExecCmd(cmd, config, options, cb) {
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name,
     pass: config.device_password
   });
 
+  var output = '';
+
   ssh.on('error', function (e) {
     // when we pass error via deferred.reject, stack will be displayed
     // as it is just string, we can just replace it with message
     e.stack = "ERROR: " + e.message;
+    console.log("ERROR OCCURED");
     cb(e);
   });
 
   ssh.exec(cmd, {
     pty: true,
-    out: function (o) { if (verbose) process.stdout.write(o); },
-    exit: function() { cb(); }
+    out: function (o) {
+      if (options && options.verbose) {
+        process.stdout.write(o);
+      }
+
+      output += String(o);
+    },
+    exit: function() {
+      // setting short timeout, as exit handler may be called before remaining data
+      // arrives via out
+      setTimeout(function() {
+        if (options && options.marker) {
+          if (output.indexOf(options.marker) < 0) {
+            var err = new Error("SSH command hasn't completed successfully");
+            err.stack = err.message;
+            err.marker = true;
+            cb(err);
+            return;
+          }
+        }
+        if (cb) cb();
+      }, 1000);
+    }
   }).start();
 }
 
@@ -283,21 +225,20 @@ function folderExistsSync(path) {
  * Downloads file.
  * @param {string}    srcZipUrl     - Source file URL
  * @param {string}    targetZipPath - Target file path
- * @param {callback}  successCB
- * @param {callback}  failureCB
+ * @param {callback}  cb
  */
-function download(srcZipUrl, targetZipPath, successCB, failureCB)
+function download(srcZipUrl, targetZipPath, cb)
 {
   var zipStream = request(srcZipUrl)
   .pipe(fs.createWriteStream(targetZipPath));
   
   zipStream.on('error', function(err){
     err.stack = err.message;
-    if(failureCB) failureCB(err);
+    cb(err);
   });
   
   zipStream.on('close', function(){
-    if(successCB) successCB();
+    if (cb) cb();
   });
 }
 
@@ -306,27 +247,26 @@ function download(srcZipUrl, targetZipPath, successCB, failureCB)
  * @param {string}    srcZipUrl     - Source file URL
  * @param {string}    targetZipPath - Target file path
  * @param {string}    unzipFolder   - Target folder for unzipping
- * @param {callback}  successCB
- * @param {callback}  failureCB
+ * @param {callback}  cb
  */
-function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, successCB, failureCB)
+function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
 {
   var zipStream = request(srcZipUrl)
   .pipe(fs.createWriteStream(targetZipPath));
   
   zipStream.on('error', function(err){
     err.stack = err.message;
-    if(failureCB) failureCB(err);
+    cb(err);
   });
   
   zipStream.on('close', function(){
     var extractStream = fs.createReadStream(targetZipPath).pipe(unzip.Extract({path:unzipFolder}));
     extractStream.on('error', function(err){
       err.stack = err.message;
-      if(failureCB) failureCB(err);
+      cb(err);
     });
     extractStream.on('close', function(){
-      if(successCB) successCB();
+      if (cb) cb();
     });
   });
 }
@@ -345,7 +285,6 @@ function getToolsFolder() {
   return folder;
 }
 
-module.exports.uploadFiles = uploadFiles;
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
 module.exports.localExecCmd = localExecCmd;
 module.exports.localExecCmds = localExecCmds;

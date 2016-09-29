@@ -1,11 +1,12 @@
-﻿'use strict';
+﻿/*
+* Gulp Common - Microsoft Sample Code - Copyright (c) 2016 - Licensed MIT
+*/
+'use strict';
 
 var all = require('./all.js');
-var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
+var config = require('../../config.json');
 
-var simssh = require('simple-ssh');
 var fs = require('fs');
-var Q = require('q');
 var args = require('get-gulp-args')();
 var SAMPLE_NAME = 'main';
 var PREBUILT_FOLDER = all.getToolsFolder() + '/prebuilt-libs';
@@ -17,62 +18,62 @@ var COMPILER_NAME = (process.platform == 'win32' ?
                                         'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux');
 var COMPILER_FOLDER = all.getToolsFolder() + '/' + COMPILER_NAME + '/bin';
 
-function azhRunLocalCmd(cmd, verbose, cb) {
-  try {
-    var ret = require('child_process').execSync(cmd);
-    if (verbose) console.log(String(ret));
-    if (cb) cb();
-  } catch (e) {
-    e.stack = "ERROR: " + e;
-    if (cb) cb(e);
-  }
-}
-
 function initTasks(gulp) {
+
+  if (typeof all.gulpTaskBI === 'function') {
+    all.gulpTaskBI(gulp, 'c', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
+  }
+
   var runSequence = require('run-sequence').use(gulp);
 
-  gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function () {
-
-    // make sure tools folder exists
-    if (!all.folderExistsSync(all.getToolsFolder()))
-      fs.mkdirSync(all.getToolsFolder());
+  gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function (cb) {
 
     // clone helper repository to tools folder -- if it doesn't exists
-    if (!all.folderExistsSync(PREBUILT_FOLDER + '/.git')) {
-      azhRunLocalCmd('git clone ' + PREBUILT_SDK_REPO + ' ' + PREBUILT_FOLDER, args.verbose, function(result) {
-      });
-    }
+    all.localClone(PREBUILT_SDK_REPO, PREBUILT_FOLDER, args.verbose, function(error) {
 
-    if (process.platform == 'win32') {
-      if(!all.fileExistsSync(TOOLCHAIN_ZIP_FILE) || !all.folderExistsSync(TOOLCHAIN_UNZIP_FOLDER))
-      {
-        var deferred = Q.defer();
-
-        all.downloadAndUnzip('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', TOOLCHAIN_ZIP_FILE,
-        all.getToolsFolder(), function() { deferred.resolve();}, 
-        function(err){deferred.reject(err);});
-        
-        return deferred.promise; 
+      if (error) {
+        cb(error);
+        return;
       }
-    } else if (process.platform == 'linux') {
 
-      // just use wget and tar commands sequentially
-      // trying to find reliable gulp tools may be very time consuming
-      azhRunLocalCmd('cd ' + all.getToolsFolder() + '; wget https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz; tar xf gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz; rm gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz', args.verbose, function (result) {});
+      if (process.platform == 'win32') {
+        if(!all.fileExistsSync(TOOLCHAIN_ZIP_FILE) || !all.folderExistsSync(TOOLCHAIN_UNZIP_FOLDER))
+        {
+          all.downloadAndUnzip('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', TOOLCHAIN_ZIP_FILE, all.getToolsFolder(), cb);
+        }
+        else {
+          console.log("Linaro toolchain already installed");
+          cb();
+        }
+      } else if (process.platform == 'linux') {
 
-      // below are compiler's dependencies on 64-bit platform
-      if (process.arch == 'x64') {
-        azhRunLocalCmd('sudo dpkg --add-architecture i386', args.verbose, function (result) {});
-        azhRunLocalCmd('sudo apt-get -y update', args.verbose, function (result) {});
-        azhRunLocalCmd('sudo apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386', args.verbose, function (result) {});
-        azhRunLocalCmd('sudo apt-get -y install lib32z1', args.verbose, function (result) {});
+        // just use wget and tar commands sequentially
+        // trying to find reliable gulp tools may be very time consuming
+
+        var cmds = [
+          'sudo wget --output-document='  + all.getToolsFolder() + '/linaro.tar.xz' + ' https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz',
+          'sudo tar xJ --file=' + all.getToolsFolder() + '/linaro.tar.xz -C ' + all.getToolsFolder(),
+          'sudo rm ' + all.getToolsFolder() + '/linaro.tar.xz'
+        ];
+
+
+        // below are compiler's dependencies on 64-bit platform
+        if (process.arch == 'x64') {
+          cmds.push('sudo dpkg --add-architecture i386');
+          cmds.push('sudo apt-get -y update');
+          cmds.push('sudo apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386');
+          cmds.push('sudo apt-get -y install lib32z1');
+        }
+
+        all.localExecCmds(cmds, args.verbose, cb)
+      } else {
+        console.log('We dont have tools for your operating system at this time');
+        cb(new Error('We dont have tools for your operating system at this time'));
       }
-    } else {
-      console.log('We dont have tools for your operating system at this time');
-    }
+    });
   });
 
-  gulp.task('build', 'Builds sample code', function() {
+  gulp.task('build', 'Builds sample code', function(cb) {
 
     // write config file only if data is available in config.json
     if (config.iot_hub_host_name) {
@@ -94,7 +95,7 @@ function initTasks(gulp) {
     fs.mkdirSync('out');
 
     // in first step just compile sample file
-    var cmd = COMPILER_FOLDER + '/arm-linux-gnueabihf-gcc ' + 
+    var cmd_compile = COMPILER_FOLDER + '/arm-linux-gnueabihf-gcc ' + 
               '-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
               '-I' + PREBUILT_FOLDER + '/inc/serializer ' +
               '-I' + PREBUILT_FOLDER + '/inc/azure-c-shared-utility ' +
@@ -105,10 +106,8 @@ function initTasks(gulp) {
               '-o out/' + SAMPLE_NAME + '.o ' +
               '-c ' + SAMPLE_NAME + '.c';
 
-    azhRunLocalCmd(cmd, args.verbose, function (result) {});
-
     // second step -- link with prebuild libraries
-    cmd = COMPILER_FOLDER + '/arm-linux-gnueabihf-gcc ' +
+    var cmd_link = COMPILER_FOLDER + '/arm-linux-gnueabihf-gcc ' +
               'out/' + SAMPLE_NAME + '.o ' + 
               '-o out/' + SAMPLE_NAME +
               ' -rdynamic ' + 
@@ -129,72 +128,32 @@ function initTasks(gulp) {
               '-lcrypto ' +
               '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot';
 
-    azhRunLocalCmd(cmd, args.verbose, function (result) {});
+    all.localExecCmds([cmd_compile, cmd_link ], args.verbose, cb)
   });
 
-  gulp.task('check-raspbian', false, function() {
-    var deferred = Q.defer();
-
-    var ssh = new simssh({
-      host: config.device_host_name_or_ip_address,
-      user: config.device_user_name,
-      pass: config.device_password
-    });
-
-    ssh.on('error', function (e) {
-      // when we pass error via deferred.reject, stack will be displayed
-      // as it is just string, we can just replace it with message
-      e.stack = "ERROR: " + e.message;
-      deferred.reject(e);
-    });
-
-    ssh.exec('uname -a', {
-      pty: true,
-      out: function (out) {
-        if (!out.startsWith('Linux raspberrypi 4.4')) {
+  gulp.task('check-raspbian', false, function(cb) {
+    all.sshExecCmd('uname -a', config, { verbose: args.verbose, marker: 'Linux raspberrypi 4.4' }, function(err) {
+      if (err) {
+        if (err.marker) {
           console.log('--------------------');
           console.log('WARNING: Unsupported OS version - sample code may not work properly');
-          console.log(out);
           console.log('--------------------');
+          cb();
+        } else {
+          cb(err);
         }
-        deferred.resolve();
+      } else {
+        cb();
       }
-    }).start();
-
-    return deferred.promise;
+    });
   })
 
-  gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function(){
-    var deferred = Q.defer();
-    
-    all.uploadFiles(config, ['out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME], function(){deferred.resolve();});
-    
-    return deferred.promise;
+  gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function(cb){
+    all.uploadFilesViaScp(config, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME], cb);
   });
 
-  gulp.task('run', 'Runs deployed sample on the board', function () {
-    var deferred = Q.defer();
-
-    var ssh = new simssh({
-      host: config.device_host_name_or_ip_address,
-      user: config.device_user_name,
-      pass: config.device_password
-    });
-
-    ssh.on('error', function (e) {
-      // when we pass error via deferred.reject, stack will be displayed
-      // as it is just string, we can just replace it with message
-      e.stack = "ERROR: " + e.message;
-      deferred.reject(e);
-    });
-
-    ssh.exec('sudo chmod +x ./'+ SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME, {
-      pty: true,
-      out: console.log.bind(console),
-      exit: function() { deferred.resolve(); }
-    }).start();
-
-    return deferred.promise;
+  gulp.task('run', 'Runs deployed sample on the board', function (cb) {
+    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME, config, true, cb);
   });
 
   gulp.task('all', 'Builds, deploys and runs sample on the board', function(callback) {
@@ -202,4 +161,4 @@ function initTasks(gulp) {
   })
 }
 
-module.exports.initTasks = initTasks;
+module.exports = initTasks;
