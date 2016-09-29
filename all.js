@@ -4,7 +4,6 @@
 'use strict';
 
 var fs = require('fs');
-var ssh2 = require('ssh2');
 var request = require('request');
 var unzip = require('unzip');
 var simssh = require('simple-ssh');
