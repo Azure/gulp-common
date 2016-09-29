@@ -6,7 +6,6 @@
 var all = require('./all.js');
 var config = (all.fileExistsSync('../config.json')) ? require('../config.json') : require('../../config.json');
 
-var simssh = require('simple-ssh');
 var fs = require('fs');
 var args = require('get-gulp-args')();
 var SAMPLE_NAME = 'main';
