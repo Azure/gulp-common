@@ -3,9 +3,8 @@
 */
 'use strict';
 
-var path = requite('path');
 var all = require('./all.js');
-var config = require(path.join(path.dirname(require.main.filename), 'config.json'));
+var config = require(process.cwd() + '/config.json');
 console.log(path.join(path.dirname(require.main.filename), 'config.json'));
 var fs = require('fs');
 var args = require('get-gulp-args')();

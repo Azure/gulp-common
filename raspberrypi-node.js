@@ -4,7 +4,7 @@
 'use strict';
 
 var all = require('./all.js');
-var config = require('../../config.json');
+var config = require(process.cwd() + '/config.json');
 var args = require('get-gulp-args')();
 var fs = require('fs');
 
