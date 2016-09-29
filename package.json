@@ -16,8 +16,7 @@
     "request": "^2.74.0",
     "run-sequence": "^1.2.2",
     "simple-ssh": "^0.9.0",
-    "scp2": "^0.5.0",
-    "ssh2": "^0.5.1"
+    "scp2": "^0.5.0"
   },
   "devDependencies": {
     "babel-eslint": "^6.1.2",
