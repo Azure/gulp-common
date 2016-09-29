@@ -15,12 +15,12 @@ var biHelper = require('./biHelper.js');
  * @param {} config
  * @param {string[]} sourceFileList - List of local files
  * @param {string[]} targetFileList - List of files at destination
- * @param {cb} callback - Callback
+ * @param {callback} cb - Callback
  */
 function uploadFilesViaScp(config, sourceFileList, targetFileList, cb)
 {
   if(sourceFileList.length == 0) {
-    cb();
+    if (cb) cb();
     return;
   }
 
@@ -93,14 +93,14 @@ function localExecCmds(cmds, verbose, cb) {
 
   // check if there are any commands to execute
   if (cmds.length == 0) {
-    cb();
+    if (cb) cb();
     return;
   }
 
   // execute first command
   localExecCmd(cmds.splice(0, 1)[0], verbose, function (e) {
     if (e) {
-      cb(e);
+      if (cb) cb(e);
       return;
     }
 
@@ -119,7 +119,7 @@ function localExecCmds(cmds, verbose, cb) {
 function localClone(url, folder, verbose, cb) {
   if (folderExistsSync(folder)) {
     console.log('Repo ' + url + ' was already cloned...');
-    cb();
+    if(cb) cb();
   } else {
     localExecCmd('git clone ' + url + ' ' + folder, verbose, cb);
   }
@@ -161,7 +161,6 @@ function sshExecCmd(cmd, config, options, cb) {
     exit: function() {
       // setting short timeout, as exit handler may be called before remaining data
       // arrives via out
-        console.log("BEFORE TIMEOUT");
       setTimeout(function() {
         if (options && options.marker) {
           if (output.indexOf(options.marker) < 0) {
@@ -172,8 +171,7 @@ function sshExecCmd(cmd, config, options, cb) {
             return;
           }
         }
-        console.log("AFTER TIMEOUT");
-        cb();
+        if (cb) cb();
       }, 1000);
     }
   }).start();
@@ -227,8 +225,7 @@ function folderExistsSync(path) {
  * Downloads file.
  * @param {string}    srcZipUrl     - Source file URL
  * @param {string}    targetZipPath - Target file path
- * @param {callback}  successCB
- * @param {callback}  failureCB
+ * @param {callback}  cb
  */
 function download(srcZipUrl, targetZipPath, cb)
 {
@@ -241,7 +238,7 @@ function download(srcZipUrl, targetZipPath, cb)
   });
   
   zipStream.on('close', function(){
-    cb();
+    if (cb) cb();
   });
 }
 
@@ -250,8 +247,7 @@ function download(srcZipUrl, targetZipPath, cb)
  * @param {string}    srcZipUrl     - Source file URL
  * @param {string}    targetZipPath - Target file path
  * @param {string}    unzipFolder   - Target folder for unzipping
- * @param {callback}  successCB
- * @param {callback}  failureCB
+ * @param {callback}  cb
  */
 function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
 {
@@ -270,7 +266,7 @@ function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
       cb(err);
     });
     extractStream.on('close', function(){
-      cb();
+      if (cb) cb();
     });
   });
 }
