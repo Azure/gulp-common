@@ -4,7 +4,7 @@
 'use strict';
 
 var all = require('./all.js');
-var config = require('../../config.json');
+var config = require(process.cwd() + '/config.json');
 
 var fs = require('fs');
 var args = require('get-gulp-args')();
@@ -18,7 +18,7 @@ var COMPILER_NAME = (process.platform == 'win32' ?
                                         'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux');
 var COMPILER_FOLDER = all.getToolsFolder() + '/' + COMPILER_NAME + '/bin';
 
-function initTasks(gulp) {
+function initTasks(gulp, options) {
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
