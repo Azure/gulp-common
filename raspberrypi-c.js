@@ -19,6 +19,11 @@ var COMPILER_NAME = (process.platform == 'win32' ?
 var COMPILER_FOLDER = all.getToolsFolder() + '/' + COMPILER_NAME + '/bin';
 
 function initTasks(gulp) {
+
+  if (typeof all.gulpTaskBI === 'function') {
+    all.gulpTaskBI(gulp, 'c', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
+  }
+
   var runSequence = require('run-sequence').use(gulp);
 
   gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function (cb) {

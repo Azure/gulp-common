@@ -9,6 +9,10 @@
  */
 function initTasks(gulp, options) {
 
+  if (typeof all.gulpTaskBI === 'function') {
+    all.gulpTaskBI(gulp, 'c', 'feather_m0', ((options && options.appName) ? options.appName : 'unknown'));
+  }
+
   // initialize options if undefined
   if (typeof options != 'object') options = {};
   if (typeof options.libraries == 'undefined') options.libraries = [];
