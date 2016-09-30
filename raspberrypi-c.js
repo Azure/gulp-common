@@ -8,6 +8,7 @@ var config = require(process.cwd() + '/config.json');
 
 var fs = require('fs');
 var args = require('get-gulp-args')();
+
 var SAMPLE_NAME = 'main';
 var PREBUILT_FOLDER = all.getToolsFolder() + '/prebuilt-libs';
 var TOOLCHAIN_ZIP_FILE = all.getToolsFolder() + '/toolchain.zip';
@@ -66,6 +67,17 @@ function initTasks(gulp, options) {
         }
 
         all.localExecCmds(cmds, args.verbose, cb)
+      } else if (process.platform == 'darwin') {
+        // https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz
+
+        all.download('https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz', all.getToolsFolder() + '/arm-linux-gnueabihf.tar.gz', function(err) {
+          if (err) {
+            console.log("ARDUINO INSTALLATION FAILED" + err);
+            cb(err);
+          } else {
+            all.localExecCmd('open --wait-apps ' + all.getToolsFolder() + '/arm-linux-gnueabihf.tar.gz', args.verbose, cb);
+          }
+        });
       } else {
         console.log('We dont have tools for your operating system at this time');
         cb(new Error('We dont have tools for your operating system at this time'));
