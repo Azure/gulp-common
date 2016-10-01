@@ -110,6 +110,7 @@ function initTasks(gulp, options) {
     var cmd_compile = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
               // XXX - don't include this 
               //'-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
+              '-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
               '-I' + PREBUILT_FOLDER + '/inc/serializer ' +
               '-I' + PREBUILT_FOLDER + '/inc/azure-c-shared-utility ' +
               '-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
