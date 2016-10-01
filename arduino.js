@@ -73,10 +73,6 @@ function initTasks(gulp, options) {
         console.log('ARDUINO TOOLS ALREADY INSTALLED');
         cb();
       } else {
-        if (!all.folderExistsSync(all.getToolsFolder())) {
-          fs.mkdirSync(all.getToolsFolder());
-        }
-
         all.download('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', all.getToolsFolder() + '/arduino.zip', function(err) {
           if (err) {
             console.log("ARDUINO INSTALLATION FAILED" + err);

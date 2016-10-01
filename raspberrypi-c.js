@@ -14,10 +14,6 @@ var PREBUILT_FOLDER = all.getToolsFolder() + '/prebuilt-libs';
 var TOOLCHAIN_ZIP_FILE = all.getToolsFolder() + '/toolchain.zip';
 var TOOLCHAIN_UNZIP_FOLDER = all.getToolsFolder() + '/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
 var PREBUILT_SDK_REPO = 'https://github.com/zikalino/az-iot-sdk-prebuilt.git';
-var COMPILER_NAME = (process.platform == 'win32' ?
-                                        'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32' :
-                                        'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux');
-var COMPILER_FOLDER = all.getToolsFolder() + '/' + COMPILER_NAME + '/bin';
 
 function initTasks(gulp, options) {
 
@@ -107,7 +103,7 @@ function initTasks(gulp, options) {
     fs.mkdirSync('out');
 
     // in first step just compile sample file
-    var cmd_compile = COMPILER_FOLDER + '/arm-linux-gnueabihf-gcc ' + 
+    var cmd_compile = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' + 
               '-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
               '-I' + PREBUILT_FOLDER + '/inc/serializer ' +
               '-I' + PREBUILT_FOLDER + '/inc/azure-c-shared-utility ' +
@@ -119,7 +115,7 @@ function initTasks(gulp, options) {
               '-c ' + SAMPLE_NAME + '.c';
 
     // second step -- link with prebuild libraries
-    var cmd_link = COMPILER_FOLDER + '/arm-linux-gnueabihf-gcc ' +
+    var cmd_link = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
               'out/' + SAMPLE_NAME + '.o ' + 
               '-o out/' + SAMPLE_NAME +
               ' -rdynamic ' + 
@@ -171,6 +167,23 @@ function initTasks(gulp, options) {
   gulp.task('all', 'Builds, deploys and runs sample on the board', function(callback) {
     runSequence('install-tools', 'build', 'deploy', 'run', callback);
   })
+}
+
+function getCompilerName() {
+
+  if (process.platform == 'win32') {
+    return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
+  } else if (process.platform == 'linux') {
+    return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux';
+  } else if (process.platform == 'darwin') {
+    return 'arm-linux-gnueabifh';
+  }
+
+  return '';                                         :
+}
+
+function getCompilerFolder() {
+  return all.getToolsFolder() + '/' + getCompilerName() + '/bin';
 }
 
 module.exports = initTasks;
