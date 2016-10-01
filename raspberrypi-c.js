@@ -179,7 +179,7 @@ function getCompilerName() {
     return 'arm-linux-gnueabifh';
   }
 
-  return '';                                         :
+  return '';
 }
 
 function getCompilerFolder() {
