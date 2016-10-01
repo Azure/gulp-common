@@ -176,7 +176,7 @@ function getCompilerName() {
   } else if (process.platform == 'linux') {
     return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux';
   } else if (process.platform == 'darwin') {
-    return 'arm-linux-gnueabifh';
+    return 'arm-linux-gnueabihf';
   }
 
   return '';
