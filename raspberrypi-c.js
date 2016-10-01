@@ -47,25 +47,29 @@ function initTasks(gulp, options) {
         // just use wget and tar commands sequentially
         // trying to find reliable gulp tools may be very time consuming
 
+        //var cmds = [
+        //  'sudo wget --output-document='  + all.getToolsFolder() + '/linaro.tar.xz' + ' https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz',
+        //  'sudo tar xJ --file=' + all.getToolsFolder() + '/linaro.tar.xz -C ' + all.getToolsFolder(),
+        //  'sudo rm ' + all.getToolsFolder() + '/linaro.tar.xz'
+        //];
+
+        // XXX - try different compiler
         var cmds = [
-          'sudo wget --output-document='  + all.getToolsFolder() + '/linaro.tar.xz' + ' https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz',
+          'sudo wget --output-document='  + all.getToolsFolder() + '/linaro.tar.xz' + ' https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz',
           'sudo tar xJ --file=' + all.getToolsFolder() + '/linaro.tar.xz -C ' + all.getToolsFolder(),
           'sudo rm ' + all.getToolsFolder() + '/linaro.tar.xz'
         ];
 
-
         // below are compiler's dependencies on 64-bit platform
-        if (process.arch == 'x64') {
-          cmds.push('sudo dpkg --add-architecture i386');
-          cmds.push('sudo apt-get -y update');
-          cmds.push('sudo apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386');
-          cmds.push('sudo apt-get -y install lib32z1');
-        }
+        //if (process.arch == 'x64') {
+        //  cmds.push('sudo dpkg --add-architecture i386');
+        //  cmds.push('sudo apt-get -y update');
+        //  cmds.push('sudo apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386');
+        //  cmds.push('sudo apt-get -y install lib32z1');
+        //}
 
         all.localExecCmds(cmds, args.verbose, cb)
       } else if (process.platform == 'darwin') {
-        // https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz
-
         all.download('https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz', all.getToolsFolder() + '/arm-linux-gnueabihf.tar.gz', function(err) {
           if (err) {
             console.log("ARDUINO INSTALLATION FAILED" + err);
@@ -174,7 +178,8 @@ function getCompilerName() {
   if (process.platform == 'win32') {
     return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
   } else if (process.platform == 'linux') {
-    return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux';
+    return 'arm-linux-gnueabihf';
+    //return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux';
   } else if (process.platform == 'darwin') {
     return 'arm-linux-gnueabihf';
   }
