@@ -107,8 +107,9 @@ function initTasks(gulp, options) {
     fs.mkdirSync('out');
 
     // in first step just compile sample file
-    var cmd_compile = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' + 
-              '-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
+    var cmd_compile = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
+              // XXX - don't include this 
+              //'-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
               '-I' + PREBUILT_FOLDER + '/inc/serializer ' +
               '-I' + PREBUILT_FOLDER + '/inc/azure-c-shared-utility ' +
               '-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
