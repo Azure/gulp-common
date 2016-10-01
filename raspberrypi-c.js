@@ -55,9 +55,9 @@ function initTasks(gulp, options) {
 
         // XXX - try different compiler
         var cmds = [
-          'sudo wget --output-document='  + all.getToolsFolder() + '/linaro.tar.xz' + ' https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz',
-          'sudo tar xJ --file=' + all.getToolsFolder() + '/linaro.tar.xz -C ' + all.getToolsFolder(),
-          'sudo rm ' + all.getToolsFolder() + '/linaro.tar.xz'
+          'sudo wget --output-document='  + all.getToolsFolder() + '/linaro.tar.gz' + ' https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz',
+          'sudo tar xJ --file=' + all.getToolsFolder() + '/linaro.tar.gz -C ' + all.getToolsFolder(),
+          'sudo rm ' + all.getToolsFolder() + '/linaro.tar.gz'
         ];
 
         // below are compiler's dependencies on 64-bit platform
