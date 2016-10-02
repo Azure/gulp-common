@@ -278,10 +278,17 @@ function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
  */
 function localRetrieve(url, options, cb) {
   var filename = url.split('/').slice(-1)[0];
+  var folder = filename.split('.')[0];
   var path = getToolsFolder() + '/' + filename;
 
+  if (folderExistsSync(path + '/' + folder)) {
+    console.log("Package '" + url + "' already installed...");
+    cb();
+    return;
+  }
+
   if (filename.endsWith('.git')) {
-    localClone(url, getToolsFolder() + '/' + filename.split('.')[0], false, cb);
+    localClone(url, getToolsFolder() + '/' + folder, false, cb);
   } else {
     download(url, path, function (err) {
       if (err) {
