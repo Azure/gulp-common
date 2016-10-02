@@ -9,7 +9,6 @@ var unzip = require('unzip');
 var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var biHelper = require('./biHelper.js');
-var ua = require('unpack-all');
 
 /**
  * Uploads files to the device
@@ -288,17 +287,50 @@ function localRetrieve(url, options, cb) {
       if (err) {
         if (cb) cb(err);
       } else {
-        ua.unpack(path, {
-            targetDir: getToolsFolder()
-        }, function(err, files, text) {
-          if (err) {
-           cb(err);
-          } else {
-            // XXX - check verbose
-            if (files) console.log('files', files);
-            if (text) console.log('text', text);
+        if (process.platform == 'darwin') {
+
+          // for OS X use open command to uncompress all the archives
+          all.localExecCmd('open --wait-apps ' + path, args.verbose, cb);
+          return;
+
+        } else if (filename.endsWith('.zip')) {
+
+          // for all zip archives on Windows and Ubuntu we will use node module 
+          var extractStream = fs.createReadStream(path).pipe(unzip.Extract({ path: getToolsFolder() }));
+          extractStream.on('error', function(err) {
+            err.stack = err.message;
+            if (cb) cb(err);
+          });
+          extractStream.on('close', function() {
+            if (cb) cb();
+          });
+          return;
+
+        } else if (process.platform == 'linux') {
+          // Ubuntu specific stuff, just use tar to uncompress all the other archives
+          if (filename.endsWith('.tar.gz')) {
+
+            var cmds = [
+              'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
+              'sudo rm ' + path ];
+            // XXX - handle verbosity
+            all.localExecCmds(cmds, true, cb)
+            return;
+
+          } else if (filename.endsWith('.tar.xz')) {
+
+            var cmds = [
+              'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
+              'sudo rm ' + path ];
+            // XXX - handle verbosity
+            all.localExecCmds(cmds, true, cb)
+            return;
           }
-        });
+        }
+
+        // format is not supported yet on current platform
+        var err = new Error('Archive format not supported');
+        cb(err);
       } 
     });
   }
