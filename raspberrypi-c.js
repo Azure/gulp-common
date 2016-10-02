@@ -13,7 +13,6 @@ var SAMPLE_NAME = 'main';
 var PREBUILT_FOLDER = all.getToolsFolder() + '/prebuilt-libs';
 var TOOLCHAIN_ZIP_FILE = all.getToolsFolder() + '/toolchain.zip';
 var TOOLCHAIN_UNZIP_FOLDER = all.getToolsFolder() + '/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
-var PREBUILT_SDK_REPO = 'https://github.com/zikalino/az-iot-sdk-prebuilt.git';
 
 function initTasks(gulp, options) {
 
@@ -26,7 +25,7 @@ function initTasks(gulp, options) {
   gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function (cb) {
 
     // clone helper repository to tools folder -- if it doesn't exists
-    all.localClone(PREBUILT_SDK_REPO, PREBUILT_FOLDER, args.verbose, function(error) {
+    all.localRetrieve('https://github.com/zikalino/az-iot-sdk-prebuilt.git', null, function(error) {
 
       if (error) {
         cb(error);
@@ -36,7 +35,6 @@ function initTasks(gulp, options) {
       if (process.platform == 'win32') {
         if(!all.folderExistsSync(TOOLCHAIN_UNZIP_FOLDER))
         {
-          //all.downloadAndUnzip('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', TOOLCHAIN_ZIP_FILE, all.getToolsFolder(), cb);
           all.localRetrieve('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', null, cb);
         }
         else {
