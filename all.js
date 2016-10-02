@@ -308,7 +308,7 @@ function localRetrieve(url, options, cb) {
         if (process.platform == 'darwin') {
 
           // for OS X use open command to uncompress all the archives
-          all.localExecCmd('open --wait-apps ' + path, args.verbose, cb);
+          localExecCmd('open --wait-apps ' + path, args.verbose, cb);
           return;
 
         } else if (filename.endsWith('.zip')) {
@@ -332,7 +332,7 @@ function localRetrieve(url, options, cb) {
               'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
               'sudo rm ' + path ];
             // XXX - handle verbosity
-            all.localExecCmds(cmds, true, cb)
+            localExecCmds(cmds, true, cb)
             return;
 
           } else if (filename.endsWith('.tar.xz')) {
@@ -343,7 +343,7 @@ function localRetrieve(url, options, cb) {
               'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
               'sudo rm ' + path ];
             // XXX - handle verbosity
-            all.localExecCmds(cmds, true, cb)
+            localExecCmds(cmds, true, cb)
             return;
           }
         }
