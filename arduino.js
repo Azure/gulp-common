@@ -49,9 +49,9 @@ function initTasks(gulp, options) {
           cb(err);
         } else {
           // install arduino
-          all.localExecCmds([ 'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
-                              'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
-                              'chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
+          all.localExecCmds([ 'sudo ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
+                              'sudo ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
+                              'sudo chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
         }
       });
     } else if (process.platform == 'darwin') {
