@@ -290,12 +290,10 @@ function localRetrieve(url, options, cb) {
     }
   }
 
-  console.log("FOLDER: " + folder);
-
   var path = getToolsFolder() + '/' + filename;
 
   if (folderExistsSync(getToolsFolder() + '/' + folder)) {
-    console.log("Package '" + url + "' already installed...");
+    console.log(" ... package '" + filename + "' already installed...");
     cb();
     return;
   }
