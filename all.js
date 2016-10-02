@@ -281,7 +281,7 @@ function localRetrieve(url, options, cb) {
   var folder = filename.split('.')[0];
   var path = getToolsFolder() + '/' + filename;
 
-  if (folderExistsSync(path + '/' + folder)) {
+  if (folderExistsSync(getToolsFolder() + '/' + folder)) {
     console.log("Package '" + url + "' already installed...");
     cb();
     return;
