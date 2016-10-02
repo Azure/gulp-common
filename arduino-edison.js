@@ -3,6 +3,7 @@
 */
 'use strict';
 
+var all = require('./all.js');
 var arduino = require('./arduino.js');
 
 function initTasks(gulp, options) {
