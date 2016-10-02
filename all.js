@@ -278,10 +278,16 @@ function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
  */
 function localRetrieve(url, options, cb) {
   var filename = url.split('/').slice(-1)[0];
-  var folder = filename.slice(0, filename.lastIndexOf('.'));
 
-  if (folder.endsWith('.tar')) {
-    folder = folder.slice(0, folder.indexOf('.tar'));
+  var folder = (options && options.folder) ? options.folder : '';
+
+  // extract expected folder name from filename if not given in options
+  if (folder == '') {
+    folder = filename.slice(0, filename.lastIndexOf('.'));
+
+    if (folder.endsWith('.tar')) {
+      folder = folder.slice(0, folder.indexOf('.tar'));
+    }
   }
 
   console.log("FOLDER: " + folder);

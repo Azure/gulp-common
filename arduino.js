@@ -42,9 +42,9 @@ function initTasks(gulp, options) {
 
   gulp.task('install-tools-arduino', false, function(cb) {
     if (process.platform == 'win32') {
-      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', null, cb);
+      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', { folder: 'arduino-1.6.11' } , cb);
     } else if (process.platform == 'linux') {
-      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz', null, function (err) {
+      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz', { folder: 'arduino-1.6.11' }, function (err) {
         if (err) {
           cb(err);
         } else {
@@ -60,7 +60,7 @@ function initTasks(gulp, options) {
         console.log('ARDUINO TOOLS ALREADY INSTALLED');
         cb();
       } else {
-        all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', null, cb);
+        all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', { folder: 'arduino-1.6.11' }, cb);
       }
     }
   })
