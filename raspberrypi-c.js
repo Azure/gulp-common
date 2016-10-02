@@ -34,9 +34,10 @@ function initTasks(gulp, options) {
       }
 
       if (process.platform == 'win32') {
-        if(!all.fileExistsSync(TOOLCHAIN_ZIP_FILE) || !all.folderExistsSync(TOOLCHAIN_UNZIP_FOLDER))
+        if(!all.folderExistsSync(TOOLCHAIN_UNZIP_FOLDER))
         {
-          all.downloadAndUnzip('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', TOOLCHAIN_ZIP_FILE, all.getToolsFolder(), cb);
+          //all.downloadAndUnzip('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', TOOLCHAIN_ZIP_FILE, all.getToolsFolder(), cb);
+          all.localRetrieve('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', null, cb);
         }
         else {
           console.log("Linaro toolchain already installed");
