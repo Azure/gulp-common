@@ -320,6 +320,8 @@ function localRetrieve(url, options, cb) {
           } else if (filename.endsWith('.tar.xz')) {
 
             var cmds = [
+              'sudo apt-get update',
+              'sudo apt-get install -y wget xz-utils',
               'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
               'sudo rm ' + path ];
             // XXX - handle verbosity

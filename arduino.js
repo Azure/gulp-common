@@ -42,45 +42,25 @@ function initTasks(gulp, options) {
 
   gulp.task('install-tools-arduino', false, function(cb) {
     if (process.platform == 'win32') {
-      if (all.folderExistsSync(all.getToolsFolder() + '/arduino-1.6.11')) {
-        console.log('ARDUINO TOOLS ALREADY INSTALLED');
-        cb();
-      } else {
-        fs.mkdirSync(all.getToolsFolder());
-        all.downloadAndUnzip('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', all.getToolsFolder() + '/arduino.zip', all.getToolsFolder(), function(err) {
-
-          if (err) {
-            console.log("ARDUINO INSTALLATION FAILED" + err);
-            cb(err);
-          } else {
-            console.log("ARDUINO INSTALLATION SUCCESSFUL IN : " + all.getToolsFolder());
-            cb();
-          }
-        });
-      }
+      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', null, cb);
     } else if (process.platform == 'linux') {
-      // install arduino
-      all.localExecCmds([ 'sudo apt-get update',
-                          'sudo apt-get install -y wget xz-utils',
-                          'sudo wget --output-document='  + all.getToolsFolder() + '/arduino.tar.xz' + ' https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz',
-                          'sudo tar xJ --file=' + all.getToolsFolder() + '/arduino.tar.xz -C ' + all.getToolsFolder() ,
-                          'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
-                          'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
-                          'chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
+      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz', null, function (err) {
+        if (err) {
+          cb(err);
+        } else {
+          // install arduino
+          all.localExecCmds([ 'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
+                              'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
+                              'chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
+        }
+      });
     } else if (process.platform == 'darwin') {
       // at the moment we will attempt the same approach as for windows
       if (all.folderExistsSync(all.getToolsFolder() + '/Arduino.app')) {
         console.log('ARDUINO TOOLS ALREADY INSTALLED');
         cb();
       } else {
-        all.download('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', all.getToolsFolder() + '/arduino.zip', function(err) {
-          if (err) {
-            console.log("ARDUINO INSTALLATION FAILED" + err);
-            cb(err);
-          } else {
-            all.localExecCmd('open --wait-apps ' + all.getToolsFolder() + '/arduino.zip', args.verbose, cb);
-          }
-        });
+        all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', null, cb);
       }
     }
   })
