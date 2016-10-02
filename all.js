@@ -9,6 +9,7 @@ var unzip = require('unzip');
 var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var biHelper = require('./biHelper.js');
+var ua = require('unpack-all');
 
 /**
  * Uploads files to the device
@@ -223,21 +224,20 @@ function folderExistsSync(path) {
 
 /**
  * Downloads file.
- * @param {string}    srcZipUrl     - Source file URL
- * @param {string}    targetZipPath - Target file path
+ * @param {string}    url     - Source file URL
+ * @param {string}    target  - Target file path
  * @param {callback}  cb
  */
-function download(srcZipUrl, targetZipPath, cb)
+function download(url, target, cb)
 {
-  var zipStream = request(srcZipUrl)
-  .pipe(fs.createWriteStream(targetZipPath));
+  var stream = request(url).pipe(fs.createWriteStream(target));
   
-  zipStream.on('error', function(err){
+  stream.on('error', function(err){
     err.stack = err.message;
     cb(err);
   });
   
-  zipStream.on('close', function(){
+  stream.on('close', function(){
     if (cb) cb();
   });
 }
@@ -251,24 +251,57 @@ function download(srcZipUrl, targetZipPath, cb)
  */
 function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
 {
-  var zipStream = request(srcZipUrl)
-  .pipe(fs.createWriteStream(targetZipPath));
-  
-  zipStream.on('error', function(err){
-    err.stack = err.message;
-    cb(err);
-  });
-  
-  zipStream.on('close', function(){
-    var extractStream = fs.createReadStream(targetZipPath).pipe(unzip.Extract({path:unzipFolder}));
-    extractStream.on('error', function(err){
-      err.stack = err.message;
-      cb(err);
+  download(srcZipUrl, targetZipPath, function (err) {
+    if (err) {
+      if (cb) cb(err);
+    } else {
+      var extractStream = fs.createReadStream(targetZipPath).pipe(unzip.Extract({path:unzipFolder}));
+      extractStream.on('error', function(err) {
+        err.stack = err.message;
+        if (cb) cb(err);
+      });
+      extractStream.on('close', function() {
+        if (cb) cb();
+      });       
+    }
+  })
+
+}
+
+/**
+ * Downloads and installs archive or git repository, depending on URL type.
+ * Archive/repository will be by default unpacked/cloned into default tools
+ * directory with deafult name.
+ * 
+ * @param {string} url      - archive / respository URL
+ * @param {object} options  - options
+ * @param {callback}  cb    - callback
+ */
+function localRetrieve(url, options, cb) {
+  var filename = url.split('/').slice(-1)[0];
+  var path = getToolsFolder() + '/' + filename;
+
+  if (filename.endsWith('.git')) {
+    localClone(url, getToolsFolder(), false, cb);
+  } else {
+    download(url, path, function (err) {
+      if (err) {
+        if (cb) cb(err);
+      } else {
+        ua.unpack(path, {
+            targetDir: getToolsFolder()
+        }, function(err, files, text) {
+          if (err) {
+           cb(err);
+          } else {
+            // XXX - check verbose
+            if (files) console.log('files', files);
+            if (text) console.log('text', text);
+          }
+        });
+      } 
     });
-    extractStream.on('close', function(){
-      if (cb) cb();
-    });
-  });
+  }
 }
 
 /**
@@ -289,6 +322,7 @@ module.exports.uploadFilesViaScp = uploadFilesViaScp;
 module.exports.localExecCmd = localExecCmd;
 module.exports.localExecCmds = localExecCmds;
 module.exports.localClone = localClone;
+module.exports.localRetrieve = localRetrieve;
 module.exports.sshExecCmd = sshExecCmd;
 module.exports.deleteFolderRecursivelySync = deleteFolderRecursivelySync;
 module.exports.fileExistsSync = fileExistsSync;
