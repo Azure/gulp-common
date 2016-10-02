@@ -278,8 +278,9 @@ function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
  */
 function localRetrieve(url, options, cb) {
   var filename = url.split('/').slice(-1)[0];
-  var folder = filename.slice(0, filename.indexOf('.'));
-  console.log("FOLDER: " + folder);
+  var folder = (filename.endsWith('.zip')) ? filename.slice(0, filename.lenght - 4) :
+               ((filename.endsWith('.tar.gz') || filename.endsWith('.tar.xz')) ? filename.slice(0, filename.lenght - 7) : filename); 
+console.log("FOLDER: " + folder);
   var path = getToolsFolder() + '/' + filename;
 
   if (folderExistsSync(getToolsFolder() + '/' + folder)) {
