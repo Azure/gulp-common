@@ -281,7 +281,7 @@ function localRetrieve(url, options, cb) {
   var path = getToolsFolder() + '/' + filename;
 
   if (filename.endsWith('.git')) {
-    localClone(url, getToolsFolder(), false, cb);
+    localClone(url, getToolsFolder() + '/' + filename.split('.')[0], false, cb);
   } else {
     download(url, path, function (err) {
       if (err) {
