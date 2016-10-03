@@ -308,7 +308,8 @@ function localRetrieve(url, options, cb) {
         if (process.platform == 'darwin') {
 
           // for OS X use open command to uncompress all the archives
-          localExecCmd('open --wait-apps ' + path, args.verbose, cb);
+          // XXX - handle verbose properly
+          localExecCmd('open --wait-apps ' + path, false, cb);
           return;
 
         } else if (filename.endsWith('.zip')) {
