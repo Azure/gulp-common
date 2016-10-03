@@ -122,7 +122,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('run', 'Runs deployed sample on the board', function (cb) {
-    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, config, true, cb);
+    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, config, { verbose: true }, cb);
   });
 
   gulp.task('all', 'Builds, deploys and runs sample on the board', function(callback) {
