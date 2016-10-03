@@ -95,7 +95,7 @@ function initTasks(gulp, options) {
               '-lm ' +
               '-lssl ' +
               '-lcrypto ' +
-              //'--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
+              '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
               // for some reason --sysroot option doesn't work very well on OS X, so i had to add following:
               '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
 
