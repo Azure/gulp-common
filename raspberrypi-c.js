@@ -96,7 +96,7 @@ function initTasks(gulp, options) {
               '-lssl ' +
               '-lcrypto ' +
               '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
-              '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf';
+              '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
 
     all.localExecCmds([cmd_compile, cmd_link ], args.verbose, cb)
   });
