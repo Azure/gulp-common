@@ -54,12 +54,7 @@ function initTasks(gulp, options) {
       /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessSignature=<device_sas_token>"    */
       var connectionString = 'HostName=' + config.iot_hub_host_name + ';DeviceId=' + config.iot_hub_device_id + ';SharedAccessKey=' + config.iot_hub_device_key;
       var headerContent = 'static const char* connectionString = ' + '"' + connectionString + '"' + ';';
-      if (fs.existsSync( './app/config.h' )){
-        // the content of config.h is generated from config.json
-        fs.writeFileSync('./app/config.h', headerContent);
-      }else {
-        console.log('config file does not exist');
-      }
+      fs.writeFileSync('./app/config.h', headerContent);
     }
 
     // remove old out directory and create empty one
