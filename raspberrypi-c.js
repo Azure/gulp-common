@@ -78,7 +78,7 @@ function initTasks(gulp, options) {
               '-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
               '-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
               '-o out/' + SAMPLE_NAME + '.o ' +
-              '-c ' + SAMPLE_NAME + '.c';
+              '-c app/' + SAMPLE_NAME + '.c';
 
     // second step -- link with prebuild libraries
     var cmd_link = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
@@ -123,11 +123,11 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function(cb){
-    all.uploadFilesViaScp(config, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME], cb);
+    all.uploadFilesViaScp(config, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME + '/' + SAMPLE_NAME ], cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', function (cb) {
-    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME, config, true, cb);
+    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, config, true, cb);
   });
 
   gulp.task('all', 'Builds, deploys and runs sample on the board', function(callback) {
@@ -141,7 +141,6 @@ function getCompilerName() {
     return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
   } else if (process.platform == 'linux') {
     return 'arm-linux-gnueabihf';
-    //return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux';
   } else if (process.platform == 'darwin') {
     return 'arm-linux-gnueabihf';
   }
