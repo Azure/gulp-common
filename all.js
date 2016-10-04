@@ -9,6 +9,8 @@ var unzip = require('unzip');
 var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var biHelper = require('./biHelper.js');
+var args = require('get-gulp-args')();
+
 
 var config_x = require(process.cwd() + '/config.json');
 
@@ -304,7 +306,7 @@ function localRetrieve(url, options, cb) {
   }
 
   if (filename.endsWith('.git')) {
-    localClone(url, getToolsFolder() + '/' + folder, false, cb);
+    localClone(url, getToolsFolder() + '/' + folder, args.verbose, cb);
   } else {
     download(url, path, function (err) {
       if (err) {
@@ -313,8 +315,7 @@ function localRetrieve(url, options, cb) {
         if (process.platform == 'darwin') {
 
           // for OS X use open command to uncompress all the archives
-          // XXX - handle verbose properly
-          localExecCmd('open --wait-apps ' + path, false, cb);
+          localExecCmd('open --wait-apps ' + path, args.verbose, cb);
           return;
 
         } else if (filename.endsWith('.zip')) {
@@ -337,8 +338,8 @@ function localRetrieve(url, options, cb) {
             var cmds = [
               'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
               'sudo rm ' + path ];
-            // XXX - handle verbosity
-            localExecCmds(cmds, true, cb)
+
+            localExecCmds(cmds, args.verbose, cb)
             return;
 
           } else if (filename.endsWith('.tar.xz')) {
@@ -348,8 +349,8 @@ function localRetrieve(url, options, cb) {
               'sudo apt-get install -y wget xz-utils',
               'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
               'sudo rm ' + path ];
-            // XXX - handle verbosity
-            localExecCmds(cmds, true, cb)
+
+            localExecCmds(cmds, args.verbose, cb)
             return;
           }
         }
