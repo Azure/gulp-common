@@ -10,6 +10,8 @@ var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var biHelper = require('./biHelper.js');
 
+var config_x = require(process.cwd() + '/config.json');
+
 /**
  * Uploads files to the device
  * @param {} config
@@ -19,6 +21,8 @@ var biHelper = require('./biHelper.js');
  */
 function uploadFilesViaScp(config, sourceFileList, targetFileList, cb)
 {
+  if (!config) config = config_x;
+
   if(sourceFileList.length == 0) {
     if (cb) cb();
     return;
@@ -133,6 +137,7 @@ function localClone(url, folder, verbose, cb) {
  * @param {callback}  cb        - Callback on completion
  */
 function sshExecCmd(cmd, config, options, cb) {
+  if (!config) config = config_x;
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name,
@@ -371,6 +376,20 @@ function getToolsFolder() {
   return folder;
 }
 
+/**
+ * Writes app/config.h file (for C and Arduino)
+ */
+function writeConfigH() {
+  if (config_x.iot_hub_host_name) {
+    /*  String containing Hostname, Device Id & Device Key in the format:                       */
+    /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"                */
+    /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessSignature=<device_sas_token>"    */
+    var connectionString = 'HostName=' + config_x.iot_hub_host_name + ';DeviceId=' + config_x.iot_hub_device_id + ';SharedAccessKey=' + config_x.iot_hub_device_key;
+    var headerContent = 'static const char* connectionString = ' + '"' + connectionString + '"' + ';';
+    fs.writeFileSync('./app/config.h', headerContent);
+  }  
+}
+
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
 module.exports.localExecCmd = localExecCmd;
 module.exports.localExecCmds = localExecCmds;
@@ -384,3 +403,4 @@ module.exports.downloadAndUnzip = downloadAndUnzip;
 module.exports.download = download;
 module.exports.gulpTaskBI = biHelper.gulpTaskBI;
 module.exports.getToolsFolder = getToolsFolder;
+module.exports.writeConfigH = writeConfigH;

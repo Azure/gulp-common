@@ -4,8 +4,6 @@
 'use strict';
 
 var all = require('./all.js');
-var config = require(process.cwd() + '/config.json');
-
 var fs = require('fs');
 var args = require('get-gulp-args')();
 
@@ -46,14 +44,7 @@ function initTasks(gulp, options) {
   gulp.task('build', 'Builds sample code', function(cb) {
 
     // write config file only if data is available in config.json
-    if (config.iot_hub_host_name) {
-      /*  String containing Hostname, Device Id & Device Key in the format:                       */
-      /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"                */
-      /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessSignature=<device_sas_token>"    */
-      var connectionString = 'HostName=' + config.iot_hub_host_name + ';DeviceId=' + config.iot_hub_device_id + ';SharedAccessKey=' + config.iot_hub_device_key;
-      var headerContent = 'static const char* connectionString = ' + '"' + connectionString + '"' + ';';
-      fs.writeFileSync('./app/config.h', headerContent);
-    }
+    all.writeConfigH();
 
     // remove old out directory and create empty one
     all.deleteFolderRecursivelySync('out');
@@ -101,7 +92,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('check-raspbian', false, function(cb) {
-    all.sshExecCmd('uname -a', config, { verbose: args.verbose, marker: 'Linux raspberrypi 4.4' }, function(err) {
+    all.sshExecCmd('uname -a', false, { verbose: args.verbose, marker: 'Linux raspberrypi 4.4' }, function(err) {
       if (err) {
         if (err.marker) {
           console.log('--------------------');
@@ -118,11 +109,11 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function(cb){
-    all.uploadFilesViaScp(config, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME + '/' + SAMPLE_NAME ], cb);
+    all.uploadFilesViaScp(false, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME + '/' + SAMPLE_NAME ], cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', function (cb) {
-    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, config, { verbose: true }, cb);
+    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, false, { verbose: true }, cb);
   });
 
   gulp.task('all', 'Builds, deploys and runs sample on the board', function(callback) {
