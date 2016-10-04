@@ -11,8 +11,6 @@ var args = require('get-gulp-args')();
 
 var SAMPLE_NAME = 'main';
 var PREBUILT_FOLDER = all.getToolsFolder() + '/az-iot-sdk-prebuilt';
-var TOOLCHAIN_ZIP_FILE = all.getToolsFolder() + '/toolchain.zip';
-var TOOLCHAIN_UNZIP_FOLDER = all.getToolsFolder() + '/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
 
 function initTasks(gulp, options) {
 
