@@ -3,6 +3,8 @@
 */
 'use strict';
 
+var all = require('./all.js');
+
 /**
  * Main entry point for all Arduino ESP8266 ThingDev configuration.
  * @param {object} gulp     - Gulp instance

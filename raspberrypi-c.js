@@ -4,19 +4,11 @@
 'use strict';
 
 var all = require('./all.js');
-var config = require(process.cwd() + '/config.json');
-
 var fs = require('fs');
 var args = require('get-gulp-args')();
+
 var SAMPLE_NAME = 'main';
-var PREBUILT_FOLDER = all.getToolsFolder() + '/prebuilt-libs';
-var TOOLCHAIN_ZIP_FILE = all.getToolsFolder() + '/toolchain.zip';
-var TOOLCHAIN_UNZIP_FOLDER = all.getToolsFolder() + '/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
-var PREBUILT_SDK_REPO = 'https://github.com/zikalino/az-iot-sdk-prebuilt.git';
-var COMPILER_NAME = (process.platform == 'win32' ?
-                                        'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32' :
-                                        'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux');
-var COMPILER_FOLDER = all.getToolsFolder() + '/' + COMPILER_NAME + '/bin';
+var PREBUILT_FOLDER = all.getToolsFolder() + '/az-iot-sdk-prebuilt';
 
 function initTasks(gulp, options) {
 
@@ -29,7 +21,7 @@ function initTasks(gulp, options) {
   gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function (cb) {
 
     // clone helper repository to tools folder -- if it doesn't exists
-    all.localClone(PREBUILT_SDK_REPO, PREBUILT_FOLDER, args.verbose, function(error) {
+    all.localRetrieve('https://github.com/zikalino/az-iot-sdk-prebuilt.git', null, function(error) {
 
       if (error) {
         cb(error);
@@ -37,35 +29,11 @@ function initTasks(gulp, options) {
       }
 
       if (process.platform == 'win32') {
-        if(!all.fileExistsSync(TOOLCHAIN_ZIP_FILE) || !all.folderExistsSync(TOOLCHAIN_UNZIP_FOLDER))
-        {
-          all.downloadAndUnzip('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', TOOLCHAIN_ZIP_FILE, all.getToolsFolder(), cb);
-        }
-        else {
-          console.log("Linaro toolchain already installed");
-          cb();
-        }
+        all.localRetrieve('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', null, cb);
       } else if (process.platform == 'linux') {
-
-        // just use wget and tar commands sequentially
-        // trying to find reliable gulp tools may be very time consuming
-
-        var cmds = [
-          'sudo wget --output-document='  + all.getToolsFolder() + '/linaro.tar.xz' + ' https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz',
-          'sudo tar xJ --file=' + all.getToolsFolder() + '/linaro.tar.xz -C ' + all.getToolsFolder(),
-          'sudo rm ' + all.getToolsFolder() + '/linaro.tar.xz'
-        ];
-
-
-        // below are compiler's dependencies on 64-bit platform
-        if (process.arch == 'x64') {
-          cmds.push('sudo dpkg --add-architecture i386');
-          cmds.push('sudo apt-get -y update');
-          cmds.push('sudo apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386');
-          cmds.push('sudo apt-get -y install lib32z1');
-        }
-
-        all.localExecCmds(cmds, args.verbose, cb)
+        all.localRetrieve('https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-linux64.tar.gz', null, cb);
+      } else if (process.platform == 'darwin') {
+        all.localRetrieve('https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz', null, cb);
       } else {
         console.log('We dont have tools for your operating system at this time');
         cb(new Error('We dont have tools for your operating system at this time'));
@@ -76,27 +44,17 @@ function initTasks(gulp, options) {
   gulp.task('build', 'Builds sample code', function(cb) {
 
     // write config file only if data is available in config.json
-    if (config.iot_hub_host_name) {
-      /*  String containing Hostname, Device Id & Device Key in the format:                       */
-      /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"                */
-      /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessSignature=<device_sas_token>"    */
-      var connectionString = 'HostName=' + config.iot_hub_host_name + ';DeviceId=' + config.iot_hub_device_id + ';SharedAccessKey=' + config.iot_hub_device_key;
-      var headerContent = 'static const char* connectionString = ' + '"' + connectionString + '"' + ';';
-      if (fs.existsSync( './config.h' )){
-        // the content of config.h is generated from config.json
-        fs.writeFileSync('./config.h', headerContent);
-      }else {
-        console.log('config file does not exist');
-      }
-    }
+    all.writeConfigH();
 
     // remove old out directory and create empty one
     all.deleteFolderRecursivelySync('out');
     fs.mkdirSync('out');
 
     // in first step just compile sample file
-    var cmd_compile = COMPILER_FOLDER + '/arm-linux-gnueabihf-gcc ' + 
-              '-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
+    var cmd_compile = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
+              // XXX - don't include this 
+              //'-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
+              '-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
               '-I' + PREBUILT_FOLDER + '/inc/serializer ' +
               '-I' + PREBUILT_FOLDER + '/inc/azure-c-shared-utility ' +
               '-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
@@ -104,10 +62,10 @@ function initTasks(gulp, options) {
               '-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
               '-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
               '-o out/' + SAMPLE_NAME + '.o ' +
-              '-c ' + SAMPLE_NAME + '.c';
+              '-c app/' + SAMPLE_NAME + '.c';
 
     // second step -- link with prebuild libraries
-    var cmd_link = COMPILER_FOLDER + '/arm-linux-gnueabihf-gcc ' +
+    var cmd_link = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
               'out/' + SAMPLE_NAME + '.o ' + 
               '-o out/' + SAMPLE_NAME +
               ' -rdynamic ' + 
@@ -126,13 +84,15 @@ function initTasks(gulp, options) {
               '-lm ' +
               '-lssl ' +
               '-lcrypto ' +
-              '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot';
+              '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
+              // for some reason --sysroot option doesn't work very well on OS X, so i had to add following:
+              '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
 
     all.localExecCmds([cmd_compile, cmd_link ], args.verbose, cb)
   });
 
   gulp.task('check-raspbian', false, function(cb) {
-    all.sshExecCmd('uname -a', config, { verbose: args.verbose, marker: 'Linux raspberrypi 4.4' }, function(err) {
+    all.sshExecCmd('uname -a', false, { verbose: args.verbose, marker: 'Linux raspberrypi 4.4' }, function(err) {
       if (err) {
         if (err.marker) {
           console.log('--------------------');
@@ -149,16 +109,33 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function(cb){
-    all.uploadFilesViaScp(config, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME], cb);
+    all.uploadFilesViaScp(false, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME + '/' + SAMPLE_NAME ], cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', function (cb) {
-    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME, config, true, cb);
+    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, false, { verbose: true }, cb);
   });
 
   gulp.task('all', 'Builds, deploys and runs sample on the board', function(callback) {
     runSequence('install-tools', 'build', 'deploy', 'run', callback);
   })
+}
+
+function getCompilerName() {
+
+  if (process.platform == 'win32') {
+    return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
+  } else if (process.platform == 'linux') {
+    return 'arm-linux-gnueabihf';
+  } else if (process.platform == 'darwin') {
+    return 'arm-linux-gnueabihf';
+  }
+
+  return '';
+}
+
+function getCompilerFolder() {
+  return all.getToolsFolder() + '/' + getCompilerName() + '/bin';
 }
 
 module.exports = initTasks;
