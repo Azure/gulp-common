@@ -183,7 +183,7 @@ function sshExecCmd(cmd, config, options, cb) {
  */
 function deleteFolderRecursivelySync(path) {
   if( fs.existsSync(path) ) {
-    fs.readdirSync(path).forEach(function(file,index){
+    fs.readdirSync(path).forEach(function(file){
       var curPath = path + "/" + file;
       if(fs.lstatSync(curPath).isDirectory()) { // recurse
         deleteFolderRecursivelySync(curPath);
@@ -193,7 +193,7 @@ function deleteFolderRecursivelySync(path) {
     });
     fs.rmdirSync(path);
   }
-};
+}
 
 /**
  * Checks of file exists synchronously.

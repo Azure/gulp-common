@@ -16,6 +16,6 @@ function initTasks(gulp, options) {
   gulp.task('install-tools-board-specific', false, function(cb) {
     arduino.installPackage('Intel', 'i686', '', cb);
   });
-};
+}
 
 module.exports.initTasks = initTasks;
