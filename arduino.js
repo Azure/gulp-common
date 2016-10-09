@@ -23,9 +23,6 @@ function initTasks(gulp, options) {
                          options.board.board + 
                          ((options.board.parameters.length > 0) ? (':' + options.board.parameters) : '');
 
-  // add Azure IoT Hub Library by default
-  options.libraries.push('AzureIoTHub');
-
   gulp.task('install-tools-java', false, function (cb) {
     if (process.platform == 'win32') {
       cb();
