@@ -112,9 +112,11 @@ function initTasks(gulp, options) {
     all.uploadFilesViaScp(false, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME + '/' + SAMPLE_NAME ], cb);
   });
 
-  gulp.task('run', 'Runs deployed sample on the board', function (cb) {
+  gulp.task('run-internal', false, function (cb) {
     all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, false, { verbose: true }, cb);
   });
+
+  gulp.task('run', 'Runs deployed sample on the board', [ 'run-internal' ]);
 
   gulp.task('all', 'Builds, deploys and runs sample on the board', function(callback) {
     runSequence('install-tools', 'build', 'deploy', 'run', callback);
