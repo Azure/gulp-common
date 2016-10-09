@@ -381,12 +381,8 @@ function getToolsFolder() {
  * Writes app/config.h file (for C and Arduino)
  */
 function writeConfigH() {
-  if (config_x.iot_hub_host_name) {
-    /*  String containing Hostname, Device Id & Device Key in the format:                       */
-    /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"                */
-    /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessSignature=<device_sas_token>"    */
-    var connectionString = 'HostName=' + config_x.iot_hub_host_name + ';DeviceId=' + config_x.iot_hub_device_id + ';SharedAccessKey=' + config_x.iot_hub_device_key;
-    var headerContent = 'static const char* connectionString = ' + '"' + connectionString + '"' + ';';
+  if (config_x.iot_device_connection_string) {
+    var headerContent = 'static const char* connectionString = ' + '"' + config_x.iot_device_connection_string + '"' + ';';
     fs.writeFileSync('./app/config.h', headerContent);
   }  
 }
