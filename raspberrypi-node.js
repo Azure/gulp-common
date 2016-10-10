@@ -21,7 +21,7 @@ function initTasks(gulp, options) {
   }
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
-    all.sshExecCmd('(curl -sL http://deb.nodesource.com/setup_4.x --output ~/setup_4.x --write-out %{http_code} | grep 200) && sudo -E bash ~/setup_4.x && sudo apt-get -y install nodejs', config, { verbose: args.verbose }, cb);
+    all.sshExecCmd("(node -v | grep -v 'v4.') && (curl -sL http://deb.nodesource.com/setup_4.x --output ~/setup_4.x --write-out %{http_code} | grep 200) && sudo -E bash ~/setup_4.x && sudo apt-get -y install nodejs", config, { verbose: args.verbose }, cb);
   });
 
   gulp.task('deploy', 'Deploys sample code to the board', function (cb) {
