@@ -6,7 +6,7 @@
 var all = require('./all.js');
 var config = require(process.cwd() + '/config.json');
 var fs = require('fs');
-var args = require('get-gulp-args')();
+var args = require('get-gulp-args')();
 
 /**
  * Main entry point for all Arduino configurations.
@@ -15,16 +15,13 @@ var args = require('get-gulp-args')();
  */
 function initTasks(gulp, options) {
 
-  var runSequence = require('run-sequence').use(gulp);
+  var runSequence = require('run-sequence').use(gulp);
 
   // package:arch:board[:parameters]
   var board_descriptor = options.board.package + ':' + 
                          options.board.arch + ":" + 
                          options.board.board + 
                          ((options.board.parameters.length > 0) ? (':' + options.board.parameters) : '');
-
-  // add Azure IoT Hub Library by default
-  options.libraries.push('AzureIoTHub');
 
   gulp.task('install-tools-java', false, function (cb) {
     if (process.platform == 'win32') {
@@ -42,51 +39,25 @@ function initTasks(gulp, options) {
 
   gulp.task('install-tools-arduino', false, function(cb) {
     if (process.platform == 'win32') {
-      if (all.folderExistsSync(all.getToolsFolder() + '/arduino-1.6.11')) {
-        console.log('ARDUINO TOOLS ALREADY INSTALLED');
-        cb();
-      } else {
-        fs.mkdirSync(all.getToolsFolder());
-        all.downloadAndUnzip('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', 
-          all.getToolsFolder() + '/arduino.zip', all.getToolsFolder(), function(err) {
-
-            if (err) {
-              console.log("ARDUINO INSTALLATION FAILED" + err);
-              cb(err);
-            } else {
-              console.log("ARDUINO INSTALLATION SUCCESSFUL IN : " + all.getToolsFolder());
-              cb();
-            }
-          });
-      }
+      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', { folder: 'arduino-1.6.11' } , cb);
     } else if (process.platform == 'linux') {
-      // install arduino
-      all.localExecCmds([ 'sudo apt-get update',
-                          'sudo apt-get install -y wget xz-utils',
-                          'sudo wget --output-document='  + all.getToolsFolder() 
-                            + '/arduino.tar.xz' + ' https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz',
-                          'sudo tar xJ --file=' + all.getToolsFolder() + '/arduino.tar.xz -C ' + all.getToolsFolder() ,
-                          'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
-                          'ln -s ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
-                          'chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
+      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz', { folder: 'arduino-1.6.11' }, function (err) {
+        if (err) {
+          cb(err);
+        } else {
+          // install arduino
+          all.localExecCmds([ 'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
+                              'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
+                              'sudo chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
+        }
+      });
     } else if (process.platform == 'darwin') {
       // at the moment we will attempt the same approach as for windows
       if (all.folderExistsSync(all.getToolsFolder() + '/Arduino.app')) {
         console.log('ARDUINO TOOLS ALREADY INSTALLED');
         cb();
       } else {
-        if (!all.folderExistsSync(all.getToolsFolder())) {
-          fs.mkdirSync(all.getToolsFolder());
-        }
-
-        all.download('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', all.getToolsFolder() + '/arduino.zip', function(err) {
-          if (err) {
-            console.log("ARDUINO INSTALLATION FAILED" + err);
-            cb(err);
-          } else {
-            all.localExecCmd('open --wait-apps ' + all.getToolsFolder() + '/arduino.zip', args.verbose, cb);
-          }
-        });
+        all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', { folder: 'arduino-1.6.11' }, cb);
       }
     }
   })
@@ -109,21 +80,21 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('install-tools', 'Installs Arduino, boards specific and Azure tools', function (callback) {
-    runSequence('install-tools-java', 'install-tools-arduino', 'install-tools-arduino-init-libraries',
-      'install-tools-package', 'install-tools-libraries', callback);
+    runSequence('install-tools-java', 'install-tools-arduino', 
+      'install-tools-arduino-init-libraries',  'install-tools-package', 'install-tools-libraries', callback);
   });
 
   gulp.task('build', 'Builds sample code', function (cb) {
-    updateConfigHeaderFileSync();
-    all.localExecCmd(getArduinoCommand() + ' --verify --board ' + board_descriptor + ' ' + process.cwd() 
-      + '/app/app.ino --verbose-build', args.verbose, cb);
+    all.writeConfigH();    
+    all.localExecCmd(getArduinoCommand() + ' --verify --board ' + 
+      board_descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
     updateConfigHeaderFileSync();
     if (!config.device_port.trim()) {
-      all.localExecCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor + ' --port ' 
-        + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
+      all.localExecCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor +
+        ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
       cb(new Error('Port is not defined in config.json file'));
     }
@@ -132,19 +103,19 @@ function initTasks(gulp, options) {
   gulp.task('default', 'Installs tools, builds and deploys sample to the board', function(callback) {
     runSequence('install-tools', 'deploy', callback);
   })
+}
 
-  function updateConfigHeaderFileSync() {
-    /*  String containing Hostname, Device Id & Device Key in the format:                       */
-    /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"                */
-    /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessSignature=<device_sas_token>"    */
-    var connectionString = 'HostName=' + config.iot_hub_host_name + ';DeviceId=' + config.iot_hub_device_id 
-      + ';SharedAccessKey=' + config.iot_hub_device_key;
-    var headerContent = 'static const char* connectionString = "' + connectionString + '";\r\n' +
-                        'static const char* ssid = "' + config.wifi_ssid + '";\r\n' +
-                        'static const char* pass = "' + config.wifi_password + '";\r\n';
+function updateConfigHeaderFileSync() {
+  /*  String containing Hostname, Device Id & Device Key in the format:                       */
+  /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"                */
+  /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessSignature=<device_sas_token>"    */
+  var connectionString = 'HostName=' + config.iot_hub_host_name + ';DeviceId=' + config.iot_hub_device_id 
+                          + ';SharedAccessKey=' + config.iot_hub_device_key;
+  var headerContent = 'static const char* connectionString = "' + connectionString + '";\r\n' +
+                      'static const char* ssid = "' + config.wifi_ssid + '";\r\n' +
+                      'static const char* pass = "' + config.wifi_password + '";\r\n';
 
-    fs.writeFileSync('./app/config.h', headerContent);
-  }
+  fs.writeFileSync('./app/config.h', headerContent);
 }
 
 /**
@@ -292,8 +263,8 @@ function installPackage(name, arch, addUrl, cb) {
   } else {
     // add all known urls, if we remove any, packages will become invisible by arduino
     all.localExecCmds( [ getArduinoCommand() + ' --pref boardsmanager.additional.urls=' 
-      + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' + ',' 
-      + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json',
+                          + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' 
+                          + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json',
                          getArduinoCommand() + ' --install-boards ' + name + ':' + arch ],
                       args.verbose, cb);
   }

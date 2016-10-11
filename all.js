@@ -9,6 +9,10 @@ var unzip = require('unzip');
 var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var biHelper = require('./biHelper.js');
+var args = require('get-gulp-args')();
+
+
+var config_x = require(process.cwd() + '/config.json');
 
 /**
  * Uploads files to the device
@@ -19,6 +23,8 @@ var biHelper = require('./biHelper.js');
  */
 function uploadFilesViaScp(config, sourceFileList, targetFileList, cb)
 {
+  if (!config) config = config_x;
+
   if(sourceFileList.length == 0) {
     if (cb) cb();
     return;
@@ -133,6 +139,7 @@ function localClone(url, folder, verbose, cb) {
  * @param {callback}  cb        - Callback on completion
  */
 function sshExecCmd(cmd, config, options, cb) {
+  if (!config) config = config_x;
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name,
@@ -223,21 +230,20 @@ function folderExistsSync(path) {
 
 /**
  * Downloads file.
- * @param {string}    srcZipUrl     - Source file URL
- * @param {string}    targetZipPath - Target file path
+ * @param {string}    url     - Source file URL
+ * @param {string}    target  - Target file path
  * @param {callback}  cb
  */
-function download(srcZipUrl, targetZipPath, cb)
+function download(url, target, cb)
 {
-  var zipStream = request(srcZipUrl)
-  .pipe(fs.createWriteStream(targetZipPath));
+  var stream = request(url).pipe(fs.createWriteStream(target));
   
-  zipStream.on('error', function(err){
+  stream.on('error', function(err){
     err.stack = err.message;
     cb(err);
   });
   
-  zipStream.on('close', function(){
+  stream.on('close', function(){
     if (cb) cb();
   });
 }
@@ -251,24 +257,110 @@ function download(srcZipUrl, targetZipPath, cb)
  */
 function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
 {
-  var zipStream = request(srcZipUrl)
-  .pipe(fs.createWriteStream(targetZipPath));
-  
-  zipStream.on('error', function(err){
-    err.stack = err.message;
-    cb(err);
-  });
-  
-  zipStream.on('close', function(){
-    var extractStream = fs.createReadStream(targetZipPath).pipe(unzip.Extract({path:unzipFolder}));
-    extractStream.on('error', function(err){
-      err.stack = err.message;
-      cb(err);
+  download(srcZipUrl, targetZipPath, function (err) {
+    if (err) {
+      if (cb) cb(err);
+    } else {
+      var extractStream = fs.createReadStream(targetZipPath).pipe(unzip.Extract({path:unzipFolder}));
+      extractStream.on('error', function(err) {
+        err.stack = err.message;
+        if (cb) cb(err);
+      });
+      extractStream.on('close', function() {
+        if (cb) cb();
+      });       
+    }
+  })
+
+}
+
+/**
+ * Downloads and installs archive or git repository, depending on URL type.
+ * Archive/repository will be by default unpacked/cloned into default tools
+ * directory with deafult name.
+ * 
+ * @param {string} url      - archive / respository URL
+ * @param {object} options  - options
+ * @param {callback}  cb    - callback
+ */
+function localRetrieve(url, options, cb) {
+  var filename = url.split('/').slice(-1)[0];
+
+  var folder = (options && options.folder) ? options.folder : '';
+
+  // extract expected folder name from filename if not given in options
+  if (folder == '') {
+    folder = filename.slice(0, filename.lastIndexOf('.'));
+
+    if (folder.endsWith('.tar')) {
+      folder = folder.slice(0, folder.indexOf('.tar'));
+    }
+  }
+
+  var path = getToolsFolder() + '/' + filename;
+
+  if (folderExistsSync(getToolsFolder() + '/' + folder)) {
+    console.log(" ... package '" + filename + "' already installed...");
+    cb();
+    return;
+  }
+
+  if (filename.endsWith('.git')) {
+    localClone(url, getToolsFolder() + '/' + folder, args.verbose, cb);
+  } else {
+    download(url, path, function (err) {
+      if (err) {
+        if (cb) cb(err);
+      } else {
+        if (process.platform == 'darwin') {
+
+          // for OS X use open command to uncompress all the archives
+          localExecCmd('open --wait-apps ' + path, args.verbose, cb);
+          return;
+
+        } else if (filename.endsWith('.zip')) {
+
+          // for all zip archives on Windows and Ubuntu we will use node module 
+          var extractStream = fs.createReadStream(path).pipe(unzip.Extract({ path: getToolsFolder() }));
+          extractStream.on('error', function(err) {
+            err.stack = err.message;
+            if (cb) cb(err);
+          });
+          extractStream.on('close', function() {
+            if (cb) cb();
+          });
+          return;
+
+        } else if (process.platform == 'linux') {
+          // Ubuntu specific stuff, just use tar to uncompress all the other archives
+          if (filename.endsWith('.tar.gz')) {
+
+            let cmds = [
+              'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
+              'sudo rm ' + path ];
+
+            localExecCmds(cmds, args.verbose, cb)
+            return;
+
+          } else if (filename.endsWith('.tar.xz')) {
+
+            let cmds = [
+              'sudo apt-get update',
+              'sudo apt-get install -y wget xz-utils',
+              'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
+              'sudo rm ' + path ];
+
+            localExecCmds(cmds, args.verbose, cb)
+            return;
+          }
+        }
+
+        // format is not supported yet on current platform
+        let err = new Error('Archive format not supported');
+        cb(err);
+      } 
     });
-    extractStream.on('close', function(){
-      if (cb) cb();
-    });
-  });
+  }
 }
 
 /**
@@ -285,10 +377,21 @@ function getToolsFolder() {
   return folder;
 }
 
+/**
+ * Writes app/config.h file (for C and Arduino)
+ */
+function writeConfigH() {
+  if (config_x.iot_device_connection_string) {
+    var headerContent = 'static const char* connectionString = ' + '"' + config_x.iot_device_connection_string + '"' + ';';
+    fs.writeFileSync('./app/config.h', headerContent);
+  }  
+}
+
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
 module.exports.localExecCmd = localExecCmd;
 module.exports.localExecCmds = localExecCmds;
 module.exports.localClone = localClone;
+module.exports.localRetrieve = localRetrieve;
 module.exports.sshExecCmd = sshExecCmd;
 module.exports.deleteFolderRecursivelySync = deleteFolderRecursivelySync;
 module.exports.fileExistsSync = fileExistsSync;
@@ -297,3 +400,4 @@ module.exports.downloadAndUnzip = downloadAndUnzip;
 module.exports.download = download;
 module.exports.gulpTaskBI = biHelper.gulpTaskBI;
 module.exports.getToolsFolder = getToolsFolder;
+module.exports.writeConfigH = writeConfigH;
