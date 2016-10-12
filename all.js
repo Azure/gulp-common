@@ -8,8 +8,8 @@ var request = require('request');
 var unzip = require('unzip');
 var simssh = require('simple-ssh');
 var scp2 = require('scp2')
-var biHelper = require('./biHelper.js');
-var  args  =  require('get-gulp-args')();
+var gulpTaskBI = require('./biHelper.js').gulpTaskBI;
+var args = require('get-gulp-args')();
 
 var config;
 
@@ -393,7 +393,7 @@ module.exports = function (config_x) {
     folderExistsSync,
     downloadAndUnzip,
     download,
-    biHelper.gulpTaskBI,
+    gulpTaskBI,
     getToolsFolder,
     writeConfigH
   }
