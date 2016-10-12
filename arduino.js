@@ -97,6 +97,9 @@ function initTasks(gulp, options) {
     }
   });
 
+  // Arduino doesn't really have 'run' as 'deploy' resets the board and runs the sample
+  gulp.task('run', 'Runs deployed sample on the board', [ 'deploy' ]);
+
   gulp.task('default', 'Installs tools, builds and deploys sample to the board', function(callback) {
     runSequence('install-tools', 'deploy', callback);
   })
