@@ -13,7 +13,7 @@ var fs = require('fs');
  */
 function initTasks(gulp, options) {
   var runSequence = require('run-sequence').use(gulp);
-  var config = options.confg;
+  var config = options.config;
   var all = require('./all.js')(config);
 
   if (typeof all.gulpTaskBI === 'function') {
