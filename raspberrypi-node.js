@@ -47,11 +47,17 @@ function initTasks(gulp, options) {
     var targetFolder = config.project_folder ? config.project_folder : '.';
     var startFile = config.start_file ? config.start_file : 'app.js';
     var nodeCommand = 'nodejs';
+
     if (args.debug) {
       nodeCommand += ' --debug-brk=5858';
     }
 
-    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + ' && exit', { verbose: true }, cb);
+    var nodejsParam = '';
+    if (config.iot_device_connection_string) {
+      nodejsParam = ' ' + config.iot_device_connection_string;
+    }
+
+    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit', { verbose: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
