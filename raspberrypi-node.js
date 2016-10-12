@@ -3,8 +3,6 @@
 */
 'use strict';
 
-var all = require('./all.js');
-var config = require(process.cwd() + '/config.json');
 var args = require('get-gulp-args')();
 var fs = require('fs');
 
@@ -15,6 +13,8 @@ var fs = require('fs');
  */
 function initTasks(gulp, options) {
   var runSequence = require('run-sequence').use(gulp);
+  var config = options.confg;
+  var all = require('./all.js')(config);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
@@ -24,7 +24,7 @@ function initTasks(gulp, options) {
     var ifNodeExist = "hash node 2>/dev/null";
     var ifNode4xOr6xExists = "(node -v | grep -q 'v[4|6]\.')";
     var installNode4x = "((curl -sL http://deb.nodesource.com/setup_4.x --output ~/setup_4.x --write-out %{http_code} | grep 200) && sudo -E bash ~/setup_4.x && sudo apt-get -y install nodejs)";
-    all.sshExecCmd("(" + ifNodeExist + "&&" + ifNode4xOr6xExists + ") || " + installNode4x, config, { verbose: args.verbose }, cb);
+    all.sshExecCmd("(" + ifNodeExist + "&&" + ifNode4xOr6xExists + ") || " + installNode4x, { verbose: args.verbose }, cb);
   });
 
   gulp.task('deploy', 'Deploys sample code to the board', function (cb) {
@@ -38,11 +38,8 @@ function initTasks(gulp, options) {
       filesRemote.push(targetFolder + '/' + files[i]);
     }
 
-    filesLocal.push('./config.json');
-    filesRemote.push(targetFolder + '/config.json');
-
-    all.uploadFilesViaScp(config, filesLocal, filesRemote, function () {
-      all.sshExecCmd('cd ' + targetFolder + ' && npm install', config, { verbose: args.verbose }, cb);
+    all.uploadFilesViaScp(filesLocal, filesRemote, function () {
+      all.sshExecCmd('cd ' + targetFolder + ' && npm install', { verbose: args.verbose }, cb);
     });
   });
 
@@ -54,7 +51,7 @@ function initTasks(gulp, options) {
       nodeCommand += ' --debug-brk=5858';
     }
 
-    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + ' && exit', config, { verbose: true }, cb);
+    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + ' && exit', { verbose: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);

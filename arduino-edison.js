@@ -3,10 +3,10 @@
 */
 'use strict';
 
-var all = require('./all.js');
 var arduino = require('./arduino.js');
 
 function initTasks(gulp, options) {
+  var all = require('./all.js')(options.confg);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'edison', ((options && options.appName) ? options.appName : 'unknown'));

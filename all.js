@@ -11,20 +11,25 @@ var scp2 = require('scp2')
 var biHelper = require('./biHelper.js');
 var args = require('get-gulp-args')();
 
+var config;
 
-var config_x = require(process.cwd() + '/config.json');
+/**
+ * Pass external config
+ * @param {} config_x
+ */
+function init(config_x)
+{
+  config = config_x;
+}
 
 /**
  * Uploads files to the device
- * @param {} config
  * @param {string[]} sourceFileList - List of local files
  * @param {string[]} targetFileList - List of files at destination
  * @param {callback} cb - Callback
  */
-function uploadFilesViaScp(config, sourceFileList, targetFileList, cb)
+function uploadFilesViaScp(sourceFileList, targetFileList, cb)
 {
-  if (!config) config = config_x;
-
   if(sourceFileList.length == 0) {
     if (cb) cb();
     return;
@@ -46,7 +51,7 @@ function uploadFilesViaScp(config, sourceFileList, targetFileList, cb)
       
       sourceFileList.splice(0, 1);
       targetFileList.splice(0, 1);
-      uploadFilesViaScp(config, sourceFileList, targetFileList, cb);
+      uploadFilesViaScp(sourceFileList, targetFileList, cb);
     }
   });
 }
@@ -134,12 +139,10 @@ function localClone(url, folder, verbose, cb) {
 /**
  * Execute command via SSH
  * @param {string}    cmd       - command to be execture
- * @param {object}    config    - Config (content of config.json)
  * @param {object}    options   - If true, command output will be printed to stdout
  * @param {callback}  cb        - Callback on completion
  */
-function sshExecCmd(cmd, config, options, cb) {
-  if (!config) config = config_x;
+function sshExecCmd(cmd, options, cb) {
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name,
@@ -381,12 +384,13 @@ function getToolsFolder() {
  * Writes app/config.h file (for C and Arduino)
  */
 function writeConfigH() {
-  if (config_x.iot_device_connection_string) {
-    var headerContent = 'static const char* connectionString = ' + '"' + config_x.iot_device_connection_string + '"' + ';';
+  if (config.iot_device_connection_string) {
+    var headerContent = 'static const char* connectionString = ' + '"' + config.iot_device_connection_string + '"' + ';';
     fs.writeFileSync('./app/config.h', headerContent);
   }  
 }
 
+module.exports = init;
 module.exports.uploadFilesViaScp = uploadFilesViaScp;
 module.exports.localExecCmd = localExecCmd;
 module.exports.localExecCmds = localExecCmds;

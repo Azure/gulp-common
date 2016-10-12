@@ -3,25 +3,27 @@
 */
 'use strict';
 
-var all = require('./all.js');
 var fs = require('fs');
-var args = require('get-gulp-args')();
+var args = require('get-gulp-args')();
 
 var SAMPLE_NAME = 'main';
 var PREBUILT_FOLDER = all.getToolsFolder() + '/az-iot-sdk-prebuilt';
 
+var all;
+
 function initTasks(gulp, options) {
+  all = require('./all.js')(options.confg);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
   }
 
-  var runSequence = require('run-sequence').use(gulp);
+  var runSequence = require('run-sequence').use(gulp);
 
   gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function (cb) {
 
     // clone helper repository to tools folder -- if it doesn't exists
-    all.localRetrieve('https://github.com/zikalino/az-iot-sdk-prebuilt.git', null, function(error) {
+    all.localRetrieve('https://github.com/zikalino/az-iot-sdk-prebuilt.git', null, function (error) {
 
       if (error) {
         cb(error);
@@ -41,9 +43,9 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('build', 'Builds sample code', function(cb) {
+  gulp.task('build', 'Builds sample code', function (cb) {
 
-    // write config file only if data is available in config.json
+    // write config file only if any
     all.writeConfigH();
 
     // remove old out directory and create empty one
@@ -52,47 +54,47 @@ function initTasks(gulp, options) {
 
     // in first step just compile sample file
     var cmd_compile = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
-              // XXX - don't include this 
-              //'-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
-              '-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
-              '-I' + PREBUILT_FOLDER + '/inc/serializer ' +
-              '-I' + PREBUILT_FOLDER + '/inc/azure-c-shared-utility ' +
-              '-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
-              '-I' + PREBUILT_FOLDER + '/inc ' +
-              '-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
-              '-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
-              '-o out/' + SAMPLE_NAME + '.o ' +
-              '-c app/' + SAMPLE_NAME + '.c';
+      // XXX - don't include this 
+      //'-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
+      '-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
+      '-I' + PREBUILT_FOLDER + '/inc/serializer ' +
+      '-I' + PREBUILT_FOLDER + '/inc/azure-c-shared-utility ' +
+      '-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
+      '-I' + PREBUILT_FOLDER + '/inc ' +
+      '-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
+      '-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
+      '-o out/' + SAMPLE_NAME + '.o ' +
+      '-c app/' + SAMPLE_NAME + '.c';
 
     // second step -- link with prebuild libraries
     var cmd_link = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
-              'out/' + SAMPLE_NAME + '.o ' + 
-              '-o out/' + SAMPLE_NAME +
-              ' -rdynamic ' + 
-              PREBUILT_FOLDER + '/raspbian-jessie/libserializer.a ' +
-              PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client.a ' +
-              PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client_amqp_transport.a ' +
-              PREBUILT_FOLDER + '/raspbian-jessie/libaziotplatform.a ' +
-              '-lwiringPi ' + 
-              PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
-              PREBUILT_FOLDER + '/raspbian-jessie/libuamqp.a ' +
-              PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
-              '-lssl ' +
-              '-lcrypto ' +
-              '-lcurl ' +
-              '-lpthread ' +
-              '-lm ' +
-              '-lssl ' +
-              '-lcrypto ' +
-              '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
-              // for some reason --sysroot option doesn't work very well on OS X, so i had to add following:
-              '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
+      'out/' + SAMPLE_NAME + '.o ' +
+      '-o out/' + SAMPLE_NAME +
+      ' -rdynamic ' +
+      PREBUILT_FOLDER + '/raspbian-jessie/libserializer.a ' +
+      PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client.a ' +
+      PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client_amqp_transport.a ' +
+      PREBUILT_FOLDER + '/raspbian-jessie/libaziotplatform.a ' +
+      '-lwiringPi ' +
+      PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
+      PREBUILT_FOLDER + '/raspbian-jessie/libuamqp.a ' +
+      PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
+      '-lssl ' +
+      '-lcrypto ' +
+      '-lcurl ' +
+      '-lpthread ' +
+      '-lm ' +
+      '-lssl ' +
+      '-lcrypto ' +
+      '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
+      // for some reason --sysroot option doesn't work very well on OS X, so i had to add following:
+      '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
 
-    all.localExecCmds([cmd_compile, cmd_link ], args.verbose, cb)
+    all.localExecCmds([cmd_compile, cmd_link], args.verbose, cb)
   });
 
-  gulp.task('check-raspbian', false, function(cb) {
-    all.sshExecCmd('uname -a', false, { verbose: args.verbose, marker: 'Linux raspberrypi 4.4' }, function(err) {
+  gulp.task('check-raspbian', false, function (cb) {
+    all.sshExecCmd('uname -a', { verbose: args.verbose, marker: 'Linux raspberrypi 4.4' }, function (err) {
       if (err) {
         if (err.marker) {
           console.log('--------------------');
@@ -108,17 +110,17 @@ function initTasks(gulp, options) {
     });
   })
 
-  gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function(cb){
-    all.uploadFilesViaScp(false, ['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME + '/' + SAMPLE_NAME ], cb);
+  gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function (cb) {
+    all.uploadFilesViaScp(['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME + '/' + SAMPLE_NAME], cb);
   });
 
   gulp.task('run-internal', false, function (cb) {
-    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, false, { verbose: true }, cb);
+    all.sshExecCmd('sudo chmod +x ./' + SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, { verbose: true }, cb);
   });
 
-  gulp.task('run', 'Runs deployed sample on the board', [ 'run-internal' ]);
+  gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
 
-  gulp.task('all', 'Builds, deploys and runs sample on the board', function(callback) {
+  gulp.task('all', 'Builds, deploys and runs sample on the board', function (callback) {
     runSequence('install-tools', 'build', 'deploy', 'run', callback);
   })
 }

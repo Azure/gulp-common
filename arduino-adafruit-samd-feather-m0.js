@@ -3,13 +3,12 @@
 */
 'use strict';
 
-var all = require('./all.js');
-
 /**
  * Main entry point for all Arduino Adafruit Feather M0 configuration.
  * @param {object} gulp     - Gulp instance
  */
 function initTasks(gulp, options) {
+  var all = require('./all.js')(options.confg);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'feather_m0', ((options && options.appName) ? options.appName : 'unknown'));
