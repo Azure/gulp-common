@@ -8,31 +8,26 @@ var request = require('request');
 var unzip = require('unzip');
 var simssh = require('simple-ssh');
 var scp2 = require('scp2')
-var biHelper = require('./biHelper.js');
-var args = require('get-gulp-args')();
+var gulpTaskBI = require('./biHelper.js').gulpTaskBI;
+var args = require('get-gulp-args')();
 
-
-var config_x = require(process.cwd() + '/config.json');
+var config;
 
 /**
  * Uploads files to the device
- * @param {} config
  * @param {string[]} sourceFileList - List of local files
  * @param {string[]} targetFileList - List of files at destination
  * @param {callback} cb - Callback
  */
-function uploadFilesViaScp(config, sourceFileList, targetFileList, cb)
-{
-  if (!config) config = config_x;
-
-  if(sourceFileList.length == 0) {
+function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
+  if (sourceFileList.length == 0) {
     if (cb) cb();
     return;
   }
 
   var prefix = config.device_user_name + ':' + config.device_password + '@' + config.device_host_name_or_ip_address + ':';
 
-  scp2.scp(sourceFileList[0], prefix + targetFileList[0], function(err) {
+  scp2.scp(sourceFileList[0], prefix + targetFileList[0], function (err) {
     if (err) {
       if (cb) {
         err.stack = "SCP file transfer failed (" + err + ")";
@@ -42,11 +37,11 @@ function uploadFilesViaScp(config, sourceFileList, targetFileList, cb)
         cb = null;
       }
     } else {
-      console.log( "- file '" +  sourceFileList[0] + "' transferred" );
-      
+      console.log("- file '" + sourceFileList[0] + "' transferred");
+
       sourceFileList.splice(0, 1);
       targetFileList.splice(0, 1);
-      uploadFilesViaScp(config, sourceFileList, targetFileList, cb);
+      uploadFilesViaScp(sourceFileList, targetFileList, cb);
     }
   });
 }
@@ -63,16 +58,16 @@ function localExecCmd(cmd, verbose, cb) {
     cmd = args.splice(0, 1);
     var cp = require('child_process').spawn(cmd[0], args);
 
-    cp.stdout.on('data', function(data) {
+    cp.stdout.on('data', function (data) {
       if (verbose) process.stdout.write(String(data));
     });
 
-    cp.stderr.on('data', function(data) {
+    cp.stderr.on('data', function (data) {
       if (verbose) process.stdout.write(String(data));
     });
 
-    cp.on('close', function(code) {
-      
+    cp.on('close', function (code) {
+
       if (cb) {
         if (0 == code) {
           cb();
@@ -125,7 +120,7 @@ function localExecCmds(cmds, verbose, cb) {
 function localClone(url, folder, verbose, cb) {
   if (folderExistsSync(folder)) {
     console.log('Repo ' + url + ' was already cloned...');
-    if(cb) cb();
+    if (cb) cb();
   } else {
     localExecCmd('git clone ' + url + ' ' + folder, verbose, cb);
   }
@@ -134,12 +129,10 @@ function localClone(url, folder, verbose, cb) {
 /**
  * Execute command via SSH
  * @param {string}    cmd       - command to be execture
- * @param {object}    config    - Config (content of config.json)
  * @param {object}    options   - If true, command output will be printed to stdout
  * @param {callback}  cb        - Callback on completion
  */
-function sshExecCmd(cmd, config, options, cb) {
-  if (!config) config = config_x;
+function sshExecCmd(cmd, options, cb) {
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name,
@@ -165,10 +158,10 @@ function sshExecCmd(cmd, config, options, cb) {
 
       output += String(o);
     },
-    exit: function() {
+    exit: function () {
       // setting short timeout, as exit handler may be called before remaining data
       // arrives via out
-      setTimeout(function() {
+      setTimeout(function () {
         if (options && options.marker) {
           if (output.indexOf(options.marker) < 0) {
             var err = new Error("SSH command hasn't completed successfully");
@@ -189,10 +182,10 @@ function sshExecCmd(cmd, config, options, cb) {
  * @param {string}    path      - folder to be deleted
  */
 function deleteFolderRecursivelySync(path) {
-  if( fs.existsSync(path) ) {
-    fs.readdirSync(path).forEach(function(file,index){
+  if (fs.existsSync(path)) {
+    fs.readdirSync(path).forEach(function (file, index) {
       var curPath = path + "/" + file;
-      if(fs.lstatSync(curPath).isDirectory()) { // recurse
+      if (fs.lstatSync(curPath).isDirectory()) { // recurse
         deleteFolderRecursivelySync(curPath);
       } else { // delete file
         fs.unlinkSync(curPath);
@@ -234,16 +227,15 @@ function folderExistsSync(path) {
  * @param {string}    target  - Target file path
  * @param {callback}  cb
  */
-function download(url, target, cb)
-{
+function download(url, target, cb) {
   var stream = request(url).pipe(fs.createWriteStream(target));
-  
-  stream.on('error', function(err){
+
+  stream.on('error', function (err) {
     err.stack = err.message;
     cb(err);
   });
-  
-  stream.on('close', function(){
+
+  stream.on('close', function () {
     if (cb) cb();
   });
 }
@@ -255,20 +247,19 @@ function download(url, target, cb)
  * @param {string}    unzipFolder   - Target folder for unzipping
  * @param {callback}  cb
  */
-function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb)
-{
+function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb) {
   download(srcZipUrl, targetZipPath, function (err) {
     if (err) {
       if (cb) cb(err);
     } else {
-      var extractStream = fs.createReadStream(targetZipPath).pipe(unzip.Extract({path:unzipFolder}));
-      extractStream.on('error', function(err) {
+      var extractStream = fs.createReadStream(targetZipPath).pipe(unzip.Extract({ path: unzipFolder }));
+      extractStream.on('error', function (err) {
         err.stack = err.message;
         if (cb) cb(err);
       });
-      extractStream.on('close', function() {
+      extractStream.on('close', function () {
         if (cb) cb();
-      });       
+      });
     }
   })
 
@@ -322,11 +313,11 @@ function localRetrieve(url, options, cb) {
 
           // for all zip archives on Windows and Ubuntu we will use node module 
           var extractStream = fs.createReadStream(path).pipe(unzip.Extract({ path: getToolsFolder() }));
-          extractStream.on('error', function(err) {
+          extractStream.on('error', function (err) {
             err.stack = err.message;
             if (cb) cb(err);
           });
-          extractStream.on('close', function() {
+          extractStream.on('close', function () {
             if (cb) cb();
           });
           return;
@@ -337,7 +328,7 @@ function localRetrieve(url, options, cb) {
 
             var cmds = [
               'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
-              'sudo rm ' + path ];
+              'sudo rm ' + path];
 
             localExecCmds(cmds, args.verbose, cb)
             return;
@@ -348,7 +339,7 @@ function localRetrieve(url, options, cb) {
               'sudo apt-get update',
               'sudo apt-get install -y wget xz-utils',
               'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
-              'sudo rm ' + path ];
+              'sudo rm ' + path];
 
             localExecCmds(cmds, args.verbose, cb)
             return;
@@ -358,7 +349,7 @@ function localRetrieve(url, options, cb) {
         // format is not supported yet on current platform
         var err = new Error('Archive format not supported');
         cb(err);
-      } 
+      }
     });
   }
 }
@@ -381,23 +372,30 @@ function getToolsFolder() {
  * Writes app/config.h file (for C and Arduino)
  */
 function writeConfigH() {
-  if (config_x.iot_device_connection_string) {
-    var headerContent = 'static const char* connectionString = ' + '"' + config_x.iot_device_connection_string + '"' + ';';
+  if (config.iot_device_connection_string) {
+    var headerContent = 'static const char* connectionString = ' + '"' + config.iot_device_connection_string + '"' + ';';
     fs.writeFileSync('./app/config.h', headerContent);
-  }  
+  }
 }
 
-module.exports.uploadFilesViaScp = uploadFilesViaScp;
-module.exports.localExecCmd = localExecCmd;
-module.exports.localExecCmds = localExecCmds;
-module.exports.localClone = localClone;
-module.exports.localRetrieve = localRetrieve;
-module.exports.sshExecCmd = sshExecCmd;
-module.exports.deleteFolderRecursivelySync = deleteFolderRecursivelySync;
-module.exports.fileExistsSync = fileExistsSync;
-module.exports.folderExistsSync = folderExistsSync;
-module.exports.downloadAndUnzip = downloadAndUnzip;
-module.exports.download = download;
-module.exports.gulpTaskBI = biHelper.gulpTaskBI;
-module.exports.getToolsFolder = getToolsFolder;
-module.exports.writeConfigH = writeConfigH;
+module.exports = function (srcConfig) {
+  config = srcConfig;
+
+  return {
+    uploadFilesViaScp,
+    localExecCmd,
+    localExecCmds,
+    localClone,
+    localRetrieve,
+    sshExecCmd,
+    deleteFolderRecursivelySync,
+    fileExistsSync,
+    folderExistsSync,
+    downloadAndUnzip,
+    download,
+    gulpTaskBI,
+    getToolsFolder,
+    writeConfigH
+  }
+}
+

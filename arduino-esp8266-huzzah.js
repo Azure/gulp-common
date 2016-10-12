@@ -3,13 +3,12 @@
 */
 'use strict';
 
-var all = require('./all.js');
-
 /**
  * Main entry point for all Arduino ESP8266 Feather Huzzah configuration.
  * @param {object} gulp     - Gulp instance
  */
 function initTasks(gulp, options) {
+  var all = require('./all.js')(options.confg);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'huzzah', ((options && options.appName) ? options.appName : 'unknown'));

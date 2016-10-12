@@ -3,10 +3,10 @@
 */
 'use strict';
 
-var all = require('./all.js');
-var config = require(process.cwd() + '/config.json');
 var fs = require('fs');
 var args = require('get-gulp-args')();
+
+var all;
 
 /**
  * Main entry point for all Arduino configurations.
@@ -14,9 +14,10 @@ var args = require('get-gulp-args')();
  * @param {object} options  - Arduino specific options
  */
 function initTasks(gulp, options) {
-
   var runSequence = require('run-sequence').use(gulp);
-
+  var config = options.config;
+  all = require('./all.js')(confg);
+  
   // package:arch:board[:parameters]
   var board_descriptor = options.board.package + ':' + 
                          options.board.arch + ":" + 
@@ -93,7 +94,7 @@ function initTasks(gulp, options) {
     if (!!config.device_port.trim()) {
       all.localExecCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
-      cb(new Error('Port is not defined in config.json file'));
+      cb(new Error('Port is not defined in config'));
     }
   });
 
