@@ -378,8 +378,8 @@ function writeConfigH() {
   }
 }
 
-module.exports = function (config_x) {
-  config = config_x;
+module.exports = function (srcConfig) {
+  config = srcConfig;
 
   return {
     uploadFilesViaScp,
