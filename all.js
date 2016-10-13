@@ -465,10 +465,10 @@ function writeGlobalConfig(postfix, config) {
  * @returns {object}
  */
 function updateGlobalConfig(postfix, template) {
-  var config = readGlobalConfig(postfix);
-  var new_config = Object.assign(template, config);
+  var old_config = readGlobalConfig(postfix);
+  var new_config = Object.assign(template, old_config);
 
-  var old_config_string = JSON.stringify(config);
+  var old_config_string = JSON.stringify(old_config);
   var new_config_string = JSON.stringify(new_config);
 
   if (new_config_string != old_config_string) {
