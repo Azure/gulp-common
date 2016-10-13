@@ -420,7 +420,7 @@ function findSshKey() {
  * @returns {object}
  */
 function readGlobalConfig(postfix) {
-  var filename = getToolsFolder() + '/config-' + prefix + '.json';
+  var filename = getToolsFolder() + '/config-' + postfix + '.json';
 
   if (fileExistsSync()) {
     return require(filename);
@@ -435,7 +435,7 @@ function readGlobalConfig(postfix) {
  * @param {object} config   - config object
  */
 function writeGlobalConfig(postfix, config) {
-  fs.writeFileSync(getToolsFolder() + '/config-' + prefix + '.json', JSON.stringify(config));
+  fs.writeFileSync(getToolsFolder() + '/config-' + postfix + '.json', JSON.stringify(config, null, 2));
 }
 
 /**
@@ -445,14 +445,14 @@ function writeGlobalConfig(postfix, config) {
  * @returns {object}
  */
 function updateGlobalConfig(postfix, template) {
-  var config = loadGlobalConfig(postfix);
+  var config = readGlobalConfig(postfix);
   var new_config = Object.assign(template, config);
 
   var old_config_string = JSON.stringify(config);
   var new_config_string = JSON.stringify(new_config);
 
   if (new_config_string != old_config_string) {
-    writeGlobalConfig(prefix, new_config);
+    writeGlobalConfig(postfix, new_config);
   }
 
   return new_config;
