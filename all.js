@@ -41,7 +41,7 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
     let err = new Error("No password or SSH key defined");
     err.stack = err.message;
     cb(err);
-    return;    
+    return;
   }
 
   scp2.scp(sourceFileList[0], scpOptions, function(err) {
@@ -166,9 +166,9 @@ function sshExecCmd(cmd, options, cb) {
     let err = new Error("No password or SSH key defined");
     err.stack = err.message;
     cb(err);
-    return;    
+    return;
   }
-  
+
   var ssh = new simssh(sshOptions);
 
   var output = '';
@@ -422,7 +422,7 @@ function findSshKey() {
 function readCombinedConfig(postfix) {
   var globalConfig = readGlobalConfig(postfix);
   var localConfig = require(process.cwd() + '/config.json'); 
-  var combinedConfig = Object.assign(global_config, local_config);
+  var combinedConfig = Object.assign(globalConfig, localConfig);
   return combinedConfig;
 }
 
