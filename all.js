@@ -415,6 +415,50 @@ function findSshKey() {
 }
 
 /**
+ * Loads selected config from user folder
+ * @param {string} postfix  - postfix appended to config filename
+ * @returns {object}
+ */
+function readGlobalConfig(postfix) {
+  var filename = getToolsFolder() + '/config-' + prefix + '.json';
+
+  if (fileExistsSync()) {
+    return require(filename);
+  }
+
+  return {};
+}
+
+/**
+ * Writes selected config to user folder
+ * @param {string} postfix  - postfix appended to config filename
+ * @param {object} config   - config object
+ */
+function writeGlobalConfig(postfix, config) {
+  fs.writeFileSync(getToolsFolder() + '/config-' + prefix + '.json', JSON.stringify(config));
+}
+
+/**
+ * Updates or creates global config file
+ * @param {string} postfix    - postfix appended to config filename
+ * @param {object} template   - config template
+ * @returns {object}
+ */
+function updateGlobalConfig(postfix, template) {
+  var config = loadGlobalConfig(postfix);
+  var new_config = Object.assign(template, config);
+
+  var old_config_string = JSON.stringify(config);
+  var new_config_string = JSON.stringify(new_config);
+
+  if (new_config_string != old_config_string) {
+    writeGlobalConfig(prefix, new_config);
+  }
+
+  return new_config;
+}
+
+/**
  * Writes app/config.h file (for C and Arduino)
  */
 function writeConfigH() {

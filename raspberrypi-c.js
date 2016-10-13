@@ -20,6 +20,15 @@ function initTasks(gulp, options) {
 
   var runSequence = require('run-sequence').use(gulp);
 
+  gulp.task('init', 'Initializes sample', function (cb) {
+    
+    if (options.config_prefix && options.config_template) {
+      all.updateGlobalConfig(options.config_prefix, options.config_template);
+    }
+
+    cb();
+  })
+  
   gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function (cb) {
 
     // clone helper repository to tools folder -- if it doesn't exists
