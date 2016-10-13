@@ -420,9 +420,10 @@ function findSshKey() {
  * @returns {object}
  */
 function readCombinedConfig(postfix) {
+  var config = {};
   var globalConfig = readGlobalConfig(postfix);
   var localConfig = require(process.cwd() + '/config.json');
-  var combinedConfig = Object.assign(globalConfig, localConfig);
+  var combinedConfig = Object.assign(config, globalConfig, localConfig);
   return combinedConfig;
 }
 
