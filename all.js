@@ -422,7 +422,7 @@ function findSshKey() {
 function readCombinedConfig(postfix) {
   var globalConfig = readGlobalConfig(postfix);
   var localConfig = require(process.cwd() + '/config.json'); 
-  var combinedConfig = Object.assign(global_config, local_config);
+  var combinedConfig = Object.assign(globalConfig, localConfig);
   return combinedConfig;
 }
 
