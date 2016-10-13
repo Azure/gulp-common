@@ -16,6 +16,9 @@ function initTasks(gulp, options) {
   var all = require('./all.js')(options);
   var config = all.getConfig();
 
+  // stick config into gulp object
+  gulp.config = config;
+
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
   }
