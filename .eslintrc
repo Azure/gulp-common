@@ -9,6 +9,10 @@
     "sourceType": "module"
   },
   "rules": {
+    "eol-last": [
+      "error",
+      "always"
+    ],
     "max-len": [
       "error",
       150
@@ -17,7 +21,10 @@
     "no-console": 0,
     "indent": [
       "error",
-      2
+      2,
+      {
+        "SwitchCase": 1
+      }
     ],
     "no-unused-vars": "warn",
     "no-irregular-whitespace": "warn"
