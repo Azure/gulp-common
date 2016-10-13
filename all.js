@@ -422,7 +422,7 @@ function findSshKey() {
 function readGlobalConfig(postfix) {
   var filename = getToolsFolder() + '/config-' + postfix + '.json';
 
-  if (fileExistsSync()) {
+  if (fileExistsSync(filename)) {
     return require(filename);
   }
 
