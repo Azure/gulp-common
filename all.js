@@ -25,9 +25,26 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
     return;
   }
 
-  var prefix = config.device_user_name + ':' + config.device_password + '@' + config.device_host_name_or_ip_address + ':';
+  let scpOptions = {
+    host: config.device_host_name_or_ip_address,
+    username: config.device_user_name,
+    path: targetFileList[0]
+  };
 
-  scp2.scp(sourceFileList[0], prefix + targetFileList[0], function (err) {
+  let sshKey = findSshKey();
+
+  if (sshKey) {
+    scpOptions.privateKey = sshKey;
+  } else if (config.device_password) {
+    scpOptions.password = config.device_password;
+  } else {
+    let err = new Error("No password or SSH key defined");
+    err.stack = err.message;
+    cb(err);
+    return;    
+  }
+
+  scp2.scp(sourceFileList[0], scpOptions, function(err) {
     if (err) {
       if (cb) {
         err.stack = "SCP file transfer failed (" + err + ")";
@@ -133,11 +150,26 @@ function localClone(url, folder, verbose, cb) {
  * @param {callback}  cb        - Callback on completion
  */
 function sshExecCmd(cmd, options, cb) {
-  var ssh = new simssh({
+
+  let sshOptions = {
     host: config.device_host_name_or_ip_address,
-    user: config.device_user_name,
-    pass: config.device_password
-  });
+    user: config.device_user_name
+  };
+
+  let sshKey = findSshKey();
+
+  if (sshKey) {
+    sshOptions.key = sshKey;
+  } else if (config.device_password) {
+    sshOptions.pass = config.device_password;
+  } else {
+      let err = new Error("No password or SSH key defined");
+      err.stack = err.message;
+      cb(err);
+      return;    
+  }
+  
+  var ssh = new simssh(sshOptions);
 
   var output = '';
 
@@ -366,6 +398,20 @@ function getToolsFolder() {
   }
 
   return folder;
+}
+
+/**
+ * Finds SSH key
+ * @returns {string}
+ */
+function findSshKey() {
+  if (config.device_key_path) {
+    if (fileExistsSync(config.device_key_path)) {
+      return fs.readFileSync(config.device_key_path, { encoding: 'ascii'});
+    }
+  }
+
+  return false;
 }
 
 /**
