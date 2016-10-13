@@ -20,6 +20,15 @@ function initTasks(gulp, options) {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
   }
 
+  gulp.task('init', 'Initializes sample', function (cb) {
+    
+    if (options.config_postfix && options.config_template) {
+      all.updateGlobalConfig(options.config_postfix, options.config_template);
+    }
+
+    cb();
+  })
+
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
     var ifNodeExist = "hash node 2>/dev/null";
     var ifNode4xOr6xExists = "(node -v | grep -q 'v[4|6]\.')";
