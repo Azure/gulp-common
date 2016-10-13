@@ -13,43 +13,42 @@ var all;
  * @param {object} options  - Arduino specific options
  */
 function initTasks(gulp, options) {
-
   var runSequence = require('run-sequence').use(gulp);
   var config = options.config;
   all = require('./all.js')(config);
-  
+
   // package:arch:board[:parameters]
-  var board_descriptor = options.board.package + ':' + 
-                         options.board.arch + ":" + 
-                         options.board.board + 
-                         ((options.board.parameters.length > 0) ? (':' + options.board.parameters) : '');
+  var board_descriptor = options.board.package + ':' +
+    options.board.arch + ":" +
+    options.board.board +
+    ((options.board.parameters.length > 0) ? (':' + options.board.parameters) : '');
 
   gulp.task('install-tools-java', false, function (cb) {
     if (process.platform == 'win32') {
       cb();
     } else if (process.platform == 'linux') {
       // install java and a few other things
-      all.localExecCmds([ 'sudo apt-get update',
-                          'sudo apt-get install -y default-jre xvfb libxtst6'],
-                        args.verbose, cb);
+      all.localExecCmds(['sudo apt-get update',
+        'sudo apt-get install -y default-jre xvfb libxtst6'],
+        args.verbose, cb);
     } else if (process.platform == 'darwin') {
       // at the moment don't install java for OS X, it's probably there anyway
       cb();
     }
   })
 
-  gulp.task('install-tools-arduino', false, function(cb) {
+  gulp.task('install-tools-arduino', false, function (cb) {
     if (process.platform == 'win32') {
-      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', { folder: 'arduino-1.6.11' } , cb);
+      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', { folder: 'arduino-1.6.11' }, cb);
     } else if (process.platform == 'linux') {
       all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz', { folder: 'arduino-1.6.11' }, function (err) {
         if (err) {
           cb(err);
         } else {
           // install arduino
-          all.localExecCmds([ 'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
-                              'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
-                              'sudo chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
+          all.localExecCmds(['sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
+            'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
+            'sudo chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
         }
       });
     } else if (process.platform == 'darwin') {
@@ -63,7 +62,7 @@ function initTasks(gulp, options) {
     }
   })
 
-  gulp.task('install-tools-arduino-init-libraries', false, function(cb) {
+  gulp.task('install-tools-arduino-init-libraries', false, function (cb) {
     // When installing libraries via arduino for the first time, library_index.json doesn't exist
     // apparently this causes operation to fail. So this is a workaround, we will attemp to install
     // nonexisting 'dummy' library to prevent subsequent failure
@@ -72,22 +71,22 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('install-tools-package', false, function(cb) {    
+  gulp.task('install-tools-package', false, function (cb) {
     installPackage(options.board.package, options.board.arch, options.board.packageUrl, cb);
   })
 
-  gulp.task('install-tools-libraries', false, function(cb) {    
+  gulp.task('install-tools-libraries', false, function (cb) {
     installLibraries(options.libraries, cb);
   })
 
   gulp.task('install-tools', 'Installs Arduino, boards specific and Azure tools', function (callback) {
-    runSequence('install-tools-java', 'install-tools-arduino', 
-      'install-tools-arduino-init-libraries',  'install-tools-package', 'install-tools-libraries', callback);
+    runSequence('install-tools-java', 'install-tools-arduino',
+      'install-tools-arduino-init-libraries', 'install-tools-package', 'install-tools-libraries', callback);
   });
 
   gulp.task('build', 'Builds sample code', function (cb) {
-    all.writeConfigH();    
-    all.localExecCmd(getArduinoCommand() + ' --verify --board ' + 
+    all.writeConfigH();
+    all.localExecCmd(getArduinoCommand() + ' --verify --board ' +
       board_descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
   });
 
@@ -102,9 +101,9 @@ function initTasks(gulp, options) {
   });
 
   // Arduino doesn't really have 'run' as 'deploy' resets the board and runs the sample
-  gulp.task('run', 'Runs deployed sample on the board', [ 'deploy' ]);
+  gulp.task('run', 'Runs deployed sample on the board', ['deploy']);
 
-  gulp.task('default', 'Installs tools, builds and deploys sample to the board', function(callback) {
+  gulp.task('default', 'Installs tools, builds and deploys sample to the board', function (callback) {
     runSequence('install-tools', 'deploy', callback);
   })
 }
@@ -219,7 +218,7 @@ function installLibraries(libs, cb) {
 
   // install first library from the list
   var lib = libs.splice(0, 1)[0];
-  
+
   installOrCloneLibrary(lib, function (e) {
 
     // stop installing libraries if error occured
@@ -248,16 +247,16 @@ function installPackage(name, arch, addUrl, cb) {
   }
 
   // now check if appropriate package folder exists
-  if (all.folderExistsSync(getPackageFolder() + '/' + name + '/hardware/' + arch )) {
+  if (all.folderExistsSync(getPackageFolder() + '/' + name + '/hardware/' + arch)) {
     console.log('Package ' + name + ':' + arch + ' was already installed...');
     cb();
   } else {
     // add all known urls, if we remove any, packages will become invisible by arduino
-    all.localExecCmds( [ getArduinoCommand() + ' --pref boardsmanager.additional.urls=' 
-                          + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' 
-                          + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json',
-                         getArduinoCommand() + ' --install-boards ' + name + ':' + arch ],
-                      args.verbose, cb);
+    all.localExecCmds([getArduinoCommand() + ' --pref boardsmanager.additional.urls='
+      + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json'
+      + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json',
+      getArduinoCommand() + ' --install-boards ' + name + ':' + arch],
+      args.verbose, cb);
   }
 }
 

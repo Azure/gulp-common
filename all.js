@@ -269,7 +269,7 @@ function downloadAndUnzip(srcZipUrl, targetZipPath, unzipFolder, cb) {
  * Downloads and installs archive or git repository, depending on URL type.
  * Archive/repository will be by default unpacked/cloned into default tools
  * directory with deafult name.
- * 
+ *
  * @param {string} url      - archive / respository URL
  * @param {object} options  - options
  * @param {callback}  cb    - callback
@@ -311,7 +311,7 @@ function localRetrieve(url, options, cb) {
 
         } else if (filename.endsWith('.zip')) {
 
-          // for all zip archives on Windows and Ubuntu we will use node module 
+          // for all zip archives on Windows and Ubuntu we will use node module
           var extractStream = fs.createReadStream(path).pipe(unzip.Extract({ path: getToolsFolder() }));
           extractStream.on('error', function (err) {
             err.stack = err.message;

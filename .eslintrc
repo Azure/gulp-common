@@ -25,6 +25,7 @@
       {
         "SwitchCase": 1
       }
-    ]
+    ],
+    "no-trailing-spaces" : "error"
   }
 }
