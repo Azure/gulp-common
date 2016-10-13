@@ -110,19 +110,6 @@ function initTasks(gulp, options) {
   })
 }
 
-function updateConfigHeaderFileSync() {
-  /*  String containing Hostname, Device Id & Device Key in the format:                       */
-  /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"                */
-  /*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessSignature=<device_sas_token>"    */
-  var connectionString = 'HostName=' + config.iot_hub_host_name + ';DeviceId=' + config.iot_hub_device_id 
-                          + ';SharedAccessKey=' + config.iot_hub_device_key;
-  var headerContent = 'static const char* connectionString = "' + connectionString + '";\r\n' +
-                      'static const char* ssid = "' + config.wifi_ssid + '";\r\n' +
-                      'static const char* pass = "' + config.wifi_password + '";\r\n';
-
-  fs.writeFileSync('./app/config.h', headerContent);
-}
-
 /**
  * Get Arduino command prefix for underlying operating system.
  * @returns {string}

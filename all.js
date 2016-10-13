@@ -201,7 +201,7 @@ function sshExecCmd(cmd, options, cb) {
  * @param {string}    path      - folder to be deleted
  */
 function deleteFolderRecursivelySync(path) {
-  if( fs.existsSync(path) ) {
+  if(fs.existsSync(path)) {
     fs.readdirSync(path).forEach(function(file){
       var curPath = path + "/" + file;
       if (fs.lstatSync(curPath).isDirectory()) { // recurse
