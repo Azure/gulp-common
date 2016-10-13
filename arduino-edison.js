@@ -6,7 +6,7 @@
 var arduino = require('./arduino.js');
 
 function initTasks(gulp, options) {
-  var all = require('./all.js')(options.config);
+  var all = require('./all.js')(options);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'edison', ((options && options.appName) ? options.appName : 'unknown'));

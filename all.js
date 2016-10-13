@@ -415,6 +415,26 @@ function findSshKey() {
 }
 
 /**
+ * Loads combined config
+ * @param {string} postfix  - postfix appended to global config filename
+ * @returns {object}
+ */
+function readCombinedConfig(postfix) {
+  var globalConfig = readGlobalConfig(postfix);
+  var localConfig = require(process.cwd() + '/config.json'); 
+  var combinedConfig = Object.assign(global_config, local_config);
+  return combinedConfig;
+}
+
+/**
+ * Get loaded config
+ * @returns {object}
+ */
+function getConfig() {
+  return config;
+}
+
+/**
  * Loads selected config from user folder
  * @param {string} postfix  - postfix appended to config filename
  * @returns {object}
@@ -468,8 +488,8 @@ function writeConfigH() {
   }
 }
 
-module.exports = function (srcConfig) {
-  config = srcConfig;
+module.exports = function (options) {
+  config = readCombinedConfig(options.config_postfix);
 
   return {
     uploadFilesViaScp,
@@ -486,7 +506,7 @@ module.exports = function (srcConfig) {
     gulpTaskBI,
     getToolsFolder,
     writeConfigH,
-    updateGlobalConfig
+    updateGlobalConfig,
+    getConfig
   }
 }
-
