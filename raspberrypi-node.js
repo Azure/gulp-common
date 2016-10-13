@@ -79,8 +79,6 @@ function initTasks(gulp, options) {
   gulp.task('default', 'Builds, deploys and runs sample on the board', function (callback) {
     runSequence('install-tools', 'deploy', 'run', callback);
   })
-
-  return gulp;
 }
 
 module.exports = initTasks;
