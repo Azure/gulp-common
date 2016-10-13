@@ -25,9 +25,16 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
     return;
   }
 
-  var prefix = config.device_user_name + ':' + config.device_password + '@' + config.device_host_name_or_ip_address + ':';
+  var sshKey = findSshKey();
 
-  scp2.scp(sourceFileList[0], prefix + targetFileList[0], function (err) {
+  if (!sshKey) {
+    var err = new Error("Couldn't find SSH KEY!");
+    err.stack = err.message;
+    cb(err);
+    return;
+  }
+
+  scp2.scp(sourceFileList[0], { host: config.device_host_name_or_ip_address, username: config.device_user_name, privateKey: sshKey, path: targetFileList[0] }, function(err) {
     if (err) {
       if (cb) {
         err.stack = "SCP file transfer failed (" + err + ")";
@@ -133,10 +140,20 @@ function localClone(url, folder, verbose, cb) {
  * @param {callback}  cb        - Callback on completion
  */
 function sshExecCmd(cmd, options, cb) {
+
+  var sshKey = findSshKey();
+
+  if (!sshKey) {
+    var err = new Error("Couldn't find SSH KEY!");
+    err.stack = err.message;
+    cb(err);
+    return;
+  }
+  
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name,
-    pass: config.device_password
+    key: sshKey
   });
 
   var output = '';
@@ -366,6 +383,20 @@ function getToolsFolder() {
   }
 
   return folder;
+}
+
+/**
+ * Finds SSH key
+ * @returns {string}
+ */
+function findSshKey() {
+  var path = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/.ssh/id_rsa';
+
+  if (!fileExistsSync(path)) {
+    return false;
+  }
+
+  return fs.readFileSync(path, { encoding: 'ascii'});
 }
 
 /**
