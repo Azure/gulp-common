@@ -14,6 +14,7 @@ var fs = require('fs');
 function initTasks(gulp, options) {
   var runSequence = require('run-sequence').use(gulp);
   var all = require('./all.js')(options);
+  var config = all.getConfig();
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
