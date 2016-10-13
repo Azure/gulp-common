@@ -28,14 +28,15 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
   let scpOptions = {
     host: config.device_host_name_or_ip_address,
     username: config.device_user_name,
-    privateKey: sshKey,
     path: targetFileList[0]
   };
 
+  let sshKey = findSshKey();
+
   if (sshKey) {
-    sshOptions.privateKey = sshKey;
+    scpOptions.privateKey = sshKey;
   } else if (config.device_password) {
-    sshOptions.password = config.device_password;
+    scpOptions.password = config.device_password;
   } else {
       let err = new Error("No password or SSH key defined");
       err.stack = err.message;
@@ -158,9 +159,9 @@ function sshExecCmd(cmd, options, cb) {
   let sshKey = findSshKey();
 
   if (sshKey) {
-    scpOptions.key = sshKey;
+    sshOptions.key = sshKey;
   } else if (config.device_password) {
-    scpOptions.pass = config.device_password;
+    sshOptions.pass = config.device_password;
   } else {
       let err = new Error("No password or SSH key defined");
       err.stack = err.message;
