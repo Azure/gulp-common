@@ -8,7 +8,7 @@
  * @param {object} gulp     - Gulp instance
  */
 function initTasks(gulp, options) {
-  var all = require('./all.js')(options.confg);
+  var all = require('./all.js')(options.config);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'thingdev', ((options && options.appName) ? options.appName : 'unknown'));
