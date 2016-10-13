@@ -163,10 +163,10 @@ function sshExecCmd(cmd, options, cb) {
   } else if (config.device_password) {
     sshOptions.pass = config.device_password;
   } else {
-      let err = new Error("No password or SSH key defined");
-      err.stack = err.message;
-      cb(err);
-      return;    
+    let err = new Error("No password or SSH key defined");
+    err.stack = err.message;
+    cb(err);
+    return;    
   }
   
   var ssh = new simssh(sshOptions);
