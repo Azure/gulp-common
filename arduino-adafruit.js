@@ -19,7 +19,7 @@ function initTasks(gulp, options) {
   options.libraries.push('https://github.com/adafruit/Adafruit_WINC1500.git');
   options.libraries.push('RTCZero');
 
-  // init base arduino tasks  
+  // init base arduino tasks
   require('./arduino.js')(gulp, options);
 }
 
