@@ -26,8 +26,6 @@
         "SwitchCase": 1
       }
     ],
-    "no-unused-vars": "warn",
-    "no-irregular-whitespace": "warn",
-    "no-trailing-spaces" : "error"
+    "no-trailing-spaces": "error"
   }
 }

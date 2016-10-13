@@ -3,7 +3,6 @@
 */
 'use strict';
 
-var fs = require('fs');
 var args = require('get-gulp-args')();
 
 var all;
@@ -14,8 +13,7 @@ var all;
  * @param {object} options  - Arduino specific options
  */
 function initTasks(gulp, options) {
-
-  var  runSequence  =  require('run-sequence').use(gulp);
+  var runSequence = require('run-sequence').use(gulp);
   var config = options.config;
   all = require('./all.js')(config);
 
@@ -49,7 +47,7 @@ function initTasks(gulp, options) {
         } else {
           // install arduino
           all.localExecCmds(['sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
-          'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
+            'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
             'sudo chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
         }
       });
@@ -68,7 +66,7 @@ function initTasks(gulp, options) {
     // When installing libraries via arduino for the first time, library_index.json doesn't exist
     // apparently this causes operation to fail. So this is a workaround, we will attemp to install
     // nonexisting 'dummy' library to prevent subsequent failure
-    all.localExecCmd(getArduinoCommand() + ' --install-library dummy', args.verbose, function (result) {
+    all.localExecCmd(getArduinoCommand() + ' --install-library dummy', args.verbose, function () {
       cb();
     });
   });
@@ -257,7 +255,7 @@ function installPackage(name, arch, addUrl, cb) {
     all.localExecCmds([getArduinoCommand() + ' --pref boardsmanager.additional.urls='
       + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json'
       + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json',
-    getArduinoCommand() + ' --install-boards ' + name + ':' + arch],
+      getArduinoCommand() + ' --install-boards ' + name + ':' + arch],
       args.verbose, cb);
   }
 }
