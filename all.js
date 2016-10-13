@@ -25,34 +25,25 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
     return;
   }
 
-  var sshKey = findSshKey();
+  var prefix = config.device_user_name + ':' + config.device_password + '@' + config.device_host_name_or_ip_address + ':';
 
-  if (!sshKey) {
-    var err = new Error("Couldn't find SSH KEY!");
-    err.stack = err.message;
-    cb(err);
-    return;
-  }
+  scp2.scp(sourceFileList[0], prefix + targetFileList[0], function (err) {
+    if (err) {
+      if (cb) {
+        err.stack = "SCP file transfer failed (" + err + ")";
+        cb(err);
 
-  scp2.scp(sourceFileList[0], 
-    { host: config.device_host_name_or_ip_address, username: config.device_user_name, privateKey: sshKey, path: targetFileList[0] }, 
-    function(err) {
-      if (err) {
-        if (cb) {
-          err.stack = "SCP file transfer failed (" + err + ")";
-          cb(err);
-
-          // clear callback, SCP2 seems to be calling error callback twice, and that looks ugly
-          cb = null;
-        }
-      } else {
-        console.log("- file '" + sourceFileList[0] + "' transferred");
-
-        sourceFileList.splice(0, 1);
-        targetFileList.splice(0, 1);
-        uploadFilesViaScp(sourceFileList, targetFileList, cb);
+        // clear callback, SCP2 seems to be calling error callback twice, and that looks ugly
+        cb = null;
       }
-    });
+    } else {
+      console.log("- file '" + sourceFileList[0] + "' transferred");
+
+      sourceFileList.splice(0, 1);
+      targetFileList.splice(0, 1);
+      uploadFilesViaScp(sourceFileList, targetFileList, cb);
+    }
+  });
 }
 
 /**
@@ -142,20 +133,10 @@ function localClone(url, folder, verbose, cb) {
  * @param {callback}  cb        - Callback on completion
  */
 function sshExecCmd(cmd, options, cb) {
-
-  var sshKey = findSshKey();
-
-  if (!sshKey) {
-    var err = new Error("Couldn't find SSH KEY!");
-    err.stack = err.message;
-    cb(err);
-    return;
-  }
-  
   var ssh = new simssh({
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name,
-    key: sshKey
+    pass: config.device_password
   });
 
   var output = '';
@@ -385,20 +366,6 @@ function getToolsFolder() {
   }
 
   return folder;
-}
-
-/**
- * Finds SSH key
- * @returns {string}
- */
-function findSshKey() {
-  var path = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/.ssh/id_rsa';
-
-  if (!fileExistsSync(path)) {
-    return false;
-  }
-
-  return fs.readFileSync(path, { encoding: 'ascii'});
 }
 
 /**

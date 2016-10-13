@@ -19,7 +19,6 @@
     "scp2": "^0.5.0"
   },
   "devDependencies": {
-    "babel-eslint": "^6.1.2",
     "eslint": "^3.6.1"
   }
 }
