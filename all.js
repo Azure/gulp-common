@@ -485,7 +485,8 @@ module.exports = function (srcConfig) {
     download,
     gulpTaskBI,
     getToolsFolder,
-    writeConfigH
+    writeConfigH,
+    updateGlobalConfig
   }
 }
 
