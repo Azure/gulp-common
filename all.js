@@ -182,8 +182,8 @@ function sshExecCmd(cmd, options, cb) {
  * @param {string}    path      - folder to be deleted
  */
 function deleteFolderRecursivelySync(path) {
-  if (fs.existsSync(path)) {
-    fs.readdirSync(path).forEach(function (file, index) {
+  if(fs.existsSync(path)) {
+    fs.readdirSync(path).forEach(function(file){
       var curPath = path + "/" + file;
       if (fs.lstatSync(curPath).isDirectory()) { // recurse
         deleteFolderRecursivelySync(curPath);
@@ -193,7 +193,7 @@ function deleteFolderRecursivelySync(path) {
     });
     fs.rmdirSync(path);
   }
-};
+}
 
 /**
  * Checks of file exists synchronously.
@@ -326,7 +326,7 @@ function localRetrieve(url, options, cb) {
           // Ubuntu specific stuff, just use tar to uncompress all the other archives
           if (filename.endsWith('.tar.gz')) {
 
-            var cmds = [
+            let cmds = [
               'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
               'sudo rm ' + path];
 
@@ -335,7 +335,7 @@ function localRetrieve(url, options, cb) {
 
           } else if (filename.endsWith('.tar.xz')) {
 
-            var cmds = [
+            let cmds = [
               'sudo apt-get update',
               'sudo apt-get install -y wget xz-utils',
               'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
@@ -347,7 +347,7 @@ function localRetrieve(url, options, cb) {
         }
 
         // format is not supported yet on current platform
-        var err = new Error('Archive format not supported');
+        let err = new Error('Archive format not supported');
         cb(err);
       }
     });

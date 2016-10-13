@@ -31,11 +31,14 @@ function initTasks(gulp, options) {
       }
 
       if (process.platform == 'win32') {
-        all.localRetrieve('https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', null, cb);
+        all.localRetrieve(
+          'https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', null, cb);
       } else if (process.platform == 'linux') {
-        all.localRetrieve('https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-linux64.tar.gz', null, cb);
+        all.localRetrieve(
+          'https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-linux64.tar.gz', null, cb);
       } else if (process.platform == 'darwin') {
-        all.localRetrieve('https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz', null, cb);
+        all.localRetrieve(
+          'https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz', null, cb);
       } else {
         console.log('We dont have tools for your operating system at this time');
         cb(new Error('We dont have tools for your operating system at this time'));
@@ -68,29 +71,30 @@ function initTasks(gulp, options) {
 
     // second step -- link with prebuild libraries
     var cmd_link = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
-      'out/' + SAMPLE_NAME + '.o ' +
-      '-o out/' + SAMPLE_NAME +
-      ' -rdynamic ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libserializer.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client_amqp_transport.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libaziotplatform.a ' +
-      '-lwiringPi ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libuamqp.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
-      '-lssl ' +
-      '-lcrypto ' +
-      '-lcurl ' +
-      '-lpthread ' +
-      '-lm ' +
-      '-lssl ' +
-      '-lcrypto ' +
-      '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
-      // for some reason --sysroot option doesn't work very well on OS X, so i had to add following:
-      '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
+              'out/' + SAMPLE_NAME + '.o ' + 
+              '-o out/' + SAMPLE_NAME +
+              ' -rdynamic ' + 
+              PREBUILT_FOLDER + '/raspbian-jessie/libserializer.a ' +
+              PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client.a ' +
+              PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client_amqp_transport.a ' +
+              PREBUILT_FOLDER + '/raspbian-jessie/libaziotplatform.a ' +
+              '-lwiringPi ' + 
+              PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
+              PREBUILT_FOLDER + '/raspbian-jessie/libuamqp.a ' +
+              PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
+              '-lssl ' +
+              '-lcrypto ' +
+              '-lcurl ' +
+              '-lpthread ' +
+              '-lm ' +
+              '-lssl ' +
+              '-lcrypto ' +
+              '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
+              // for some reason --sysroot option doesn't work very well on OS X, so i had to add following:
+              '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,' 
+                + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
 
-    all.localExecCmds([cmd_compile, cmd_link], args.verbose, cb)
+    all.localExecCmds([cmd_compile, cmd_link ], args.verbose, cb)
   });
 
   gulp.task('check-raspbian', false, function (cb) {
@@ -115,7 +119,8 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('run-internal', false, function (cb) {
-    all.sshExecCmd('sudo chmod +x ./' + SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' + SAMPLE_NAME + '/' + SAMPLE_NAME, { verbose: true }, cb);
+    all.sshExecCmd('sudo chmod +x ./'+ SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./' 
+      + SAMPLE_NAME + '/' + SAMPLE_NAME, false, { verbose: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);

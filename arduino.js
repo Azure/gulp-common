@@ -4,7 +4,7 @@
 'use strict';
 
 var fs = require('fs');
-var args = require('get-gulp-args')();
+var args = require('get-gulp-args')();
 
 var all;
 
@@ -14,9 +14,10 @@ var all;
  * @param {object} options  - Arduino specific options
  */
 function initTasks(gulp, options) {
+
   var runSequence = require('run-sequence').use(gulp);
   var config = options.config;
-  all = require('./all.js')(confg);
+  all = require('./all.js')(config);
   
   // package:arch:board[:parameters]
   var board_descriptor = options.board.package + ':' + 
@@ -81,18 +82,21 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('install-tools', 'Installs Arduino, boards specific and Azure tools', function (callback) {
-    runSequence('install-tools-java', 'install-tools-arduino', 'install-tools-arduino-init-libraries',  'install-tools-package', 'install-tools-libraries', callback);
+    runSequence('install-tools-java', 'install-tools-arduino', 
+      'install-tools-arduino-init-libraries',  'install-tools-package', 'install-tools-libraries', callback);
   });
 
   gulp.task('build', 'Builds sample code', function (cb) {
     all.writeConfigH();    
-    all.localExecCmd(getArduinoCommand() + ' --verify --board ' + board_descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
+    all.localExecCmd(getArduinoCommand() + ' --verify --board ' + 
+      board_descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
-    updateConfigHeaderFileSync();
-    if (!!config.device_port.trim()) {
-      all.localExecCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor + ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
+    all.writeConfigH();
+    if (!config.device_port.trim()) {
+      all.localExecCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor +
+        ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
       cb(new Error('Port is not defined in config'));
     }
@@ -128,11 +132,11 @@ function getArduinoCommand() {
  */
 function getLibraryFolder() {
   if (process.platform === 'win32') {
-      return process.env['USERPROFILE'] + '/Documents/Arduino/libraries';
+    return process.env['USERPROFILE'] + '/Documents/Arduino/libraries';
   } else if (process.platform === 'linux') {
-      return process.env['HOME'] + '/Arduino/libraries';
+    return process.env['HOME'] + '/Arduino/libraries';
   } else if (process.platform === 'darwin') {
-      return process.env['HOME'] + '/Documents/Arduino/libraries';
+    return process.env['HOME'] + '/Documents/Arduino/libraries';
   }
 }
 
@@ -142,11 +146,11 @@ function getLibraryFolder() {
  */
 function getArduino15Folder() {
   if (process.platform === 'win32') {
-      return process.env['USERPROFILE'] + '/AppData/Local/Arduino15';
+    return process.env['USERPROFILE'] + '/AppData/Local/Arduino15';
   } else if (process.platform === 'linux') {
-      return process.env['HOME'] + '/.arduino15';
+    return process.env['HOME'] + '/.arduino15';
   } else if (process.platform === 'darwin') {
-      return process.env['HOME'] + '/Library/Arduino15';
+    return process.env['HOME'] + '/Library/Arduino15';
   }
 }
 
@@ -250,7 +254,9 @@ function installPackage(name, arch, addUrl, cb) {
     cb();
   } else {
     // add all known urls, if we remove any, packages will become invisible by arduino
-    all.localExecCmds( [ getArduinoCommand() + ' --pref boardsmanager.additional.urls=' + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json',
+    all.localExecCmds( [ getArduinoCommand() + ' --pref boardsmanager.additional.urls=' 
+                          + 'https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' 
+                          + ',' + 'http://arduino.esp8266.com/stable/package_esp8266com_index.json',
                          getArduinoCommand() + ' --install-boards ' + name + ':' + arch ],
                       args.verbose, cb);
   }

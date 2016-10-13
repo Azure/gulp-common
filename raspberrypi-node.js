@@ -23,7 +23,9 @@ function initTasks(gulp, options) {
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
     var ifNodeExist = "hash node 2>/dev/null";
     var ifNode4xOr6xExists = "(node -v | grep -q 'v[4|6]\.')";
-    var installNode4x = "((curl -sL http://deb.nodesource.com/setup_4.x --output ~/setup_4.x --write-out %{http_code} | grep 200) && sudo -E bash ~/setup_4.x && sudo apt-get -y install nodejs)";
+    var installNode4x = "((curl -sL http://deb.nodesource.com/setup_4.x "
+      + "--output ~/setup_4.x --write-out %{http_code} | grep 200) "
+      + "&& sudo -E bash ~/setup_4.x && sudo apt-get -y install nodejs)";
     all.sshExecCmd("(" + ifNodeExist + "&&" + ifNode4xOr6xExists + ") || " + installNode4x, { verbose: args.verbose }, cb);
   });
 
