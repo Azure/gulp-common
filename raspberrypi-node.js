@@ -21,7 +21,7 @@ function initTasks(gulp, options) {
   }
 
   gulp.task('init', 'Initializes sample', function (cb) {
-    
+
     if (options.config_postfix && options.config_template) {
       all.updateGlobalConfig(options.config_postfix, options.config_template);
     }
