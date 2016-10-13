@@ -19,6 +19,8 @@ function initTasks(gulp, options) {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
   }
 
+  gulp.config = all.getConfig();
+
   gulp.task('init', 'Initializes sample', function (cb) {
     
     if (options.config_postfix && options.config_template) {
