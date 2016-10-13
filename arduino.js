@@ -3,10 +3,10 @@
 */
 'use strict';
 
-var all = require('./all.js');
-var config = require(process.cwd() + '/config.json');
 var fs = require('fs');
 var args = require('get-gulp-args')();
+
+var all;
 
 /**
  * Main entry point for all Arduino configurations.
@@ -15,8 +15,10 @@ var args = require('get-gulp-args')();
  */
 function initTasks(gulp, options) {
 
-  var runSequence = require('run-sequence').use(gulp);
-
+  var runSequence = require('run-sequence').use(gulp);
+  var config = options.config;
+  all = require('./all.js')(config);
+  
   // package:arch:board[:parameters]
   var board_descriptor = options.board.package + ':' + 
                          options.board.arch + ":" + 
@@ -91,14 +93,17 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
-    updateConfigHeaderFileSync();
+    all.writeConfigH();
     if (!config.device_port.trim()) {
       all.localExecCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor +
         ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
-      cb(new Error('Port is not defined in config.json file'));
+      cb(new Error('Port is not defined in config'));
     }
   });
+
+  // Arduino doesn't really have 'run' as 'deploy' resets the board and runs the sample
+  gulp.task('run', 'Runs deployed sample on the board', [ 'deploy' ]);
 
   gulp.task('default', 'Installs tools, builds and deploys sample to the board', function(callback) {
     runSequence('install-tools', 'deploy', callback);
