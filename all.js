@@ -391,7 +391,7 @@ function localRetrieve(url, options, cb) {
  * @returns {string}
  */
 function getToolsFolder() {
-  var folder = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/vsc-iot-tools';
+  var folder = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/.iot-hub-getting-started';
 
   if (!folderExistsSync(folder)) {
     fs.mkdirSync(folder);
