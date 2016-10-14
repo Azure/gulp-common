@@ -4,6 +4,7 @@
 'use strict';
 
 var fs = require('fs');
+var path = require('path');
 var request = require('request');
 var unzip = require('unzip');
 var simssh = require('simple-ssh');
@@ -44,7 +45,7 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
     return;
   }
 
-  scp2.scp(sourceFileList[0], scpOptions, function(err) {
+  scp2.scp(sourceFileList[0], scpOptions, function (err) {
     if (err) {
       if (cb) {
         err.stack = "SCP file transfer failed (" + err + ")";
@@ -214,8 +215,8 @@ function sshExecCmd(cmd, options, cb) {
  * @param {string}    path      - folder to be deleted
  */
 function deleteFolderRecursivelySync(path) {
-  if(fs.existsSync(path)) {
-    fs.readdirSync(path).forEach(function(file){
+  if (fs.existsSync(path)) {
+    fs.readdirSync(path).forEach(function (file) {
       var curPath = path + "/" + file;
       if (fs.lstatSync(curPath).isDirectory()) { // recurse
         deleteFolderRecursivelySync(curPath);
@@ -355,10 +356,12 @@ function localRetrieve(url, options, cb) {
           return;
 
         } else if (process.platform == 'linux') {
+          var cmds;
+
           // Ubuntu specific stuff, just use tar to uncompress all the other archives
           if (filename.endsWith('.tar.gz')) {
 
-            var cmds = [
+            cmds = [
               'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
               'sudo rm ' + path];
 
@@ -367,7 +370,7 @@ function localRetrieve(url, options, cb) {
 
           } else if (filename.endsWith('.tar.xz')) {
 
-            let cmds = [
+            cmds = [
               'sudo apt-get update',
               'sudo apt-get install -y wget xz-utils',
               'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
@@ -379,8 +382,7 @@ function localRetrieve(url, options, cb) {
         }
 
         // format is not supported yet on current platform
-        let err = new Error('Archive format not supported');
-        cb(err);
+        cb(new Error('Archive format not supported'));
       }
     });
   }
@@ -391,7 +393,7 @@ function localRetrieve(url, options, cb) {
  * @returns {string}
  */
 function getToolsFolder() {
-  var folder = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/.iot-hub-getting-started';
+  var folder = path.join(process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'], '.iot-hub-getting-started');
 
   if (!folderExistsSync(folder)) {
     fs.mkdirSync(folder);
@@ -407,7 +409,7 @@ function getToolsFolder() {
 function findSshKey() {
   if (config.device_key_path) {
     if (fileExistsSync(config.device_key_path)) {
-      return fs.readFileSync(config.device_key_path, { encoding: 'ascii'});
+      return fs.readFileSync(config.device_key_path, { encoding: 'ascii' });
     }
   }
 
@@ -466,17 +468,20 @@ function writeGlobalConfig(postfix, config) {
  * @returns {object}
  */
 function updateGlobalConfig(postfix, template) {
-  var old_config = readGlobalConfig(postfix);
-  var new_config = Object.assign(template, old_config);
+  var configFilePath = getToolsFolder() + '/config-' + postfix + '.json';
+  console.log('Config file ' + configFilePath + ' was created / updated');
 
-  var old_config_string = JSON.stringify(old_config);
-  var new_config_string = JSON.stringify(new_config);
+  var oldConfig = readGlobalConfig(postfix);
+  var newConfig = Object.assign(template, oldConfig);
 
-  if (new_config_string != old_config_string) {
-    writeGlobalConfig(postfix, new_config);
+  var oldConfigString = JSON.stringify(oldConfig);
+  var newConfigString = JSON.stringify(newConfig);
+
+  if (newConfigString != oldConfigString) {
+    writeGlobalConfig(postfix, newConfig);
   }
 
-  return new_config;
+  return newConfig;
 }
 
 /**
