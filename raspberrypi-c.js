@@ -22,8 +22,8 @@ function initTasks(gulp, options) {
 
   gulp.task('init', 'Initializes sample', function (cb) {
 
-    if (options.config_postfix && options.config_template) {
-      all.updateGlobalConfig(options.config_postfix, options.config_template);
+    if (options.configPostfix && options.configTemplate) {
+      all.updateGlobalConfig(options.configPostfix, options.configTemplate);
     }
 
     cb();
@@ -65,7 +65,7 @@ function initTasks(gulp, options) {
     fs.mkdirSync('out');
 
     // in first step just compile sample file
-    var cmd_compile = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
+    var cmdCompile = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
       // XXX - don't include this
       //'-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
       '-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
@@ -79,7 +79,7 @@ function initTasks(gulp, options) {
       '-c app/' + SAMPLE_NAME + '.c';
 
     // second step -- link with prebuild libraries
-    var cmd_link = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
+    var cmdLink = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
       'out/' + SAMPLE_NAME + '.o ' +
       '-o out/' + SAMPLE_NAME +
       ' -rdynamic ' +
@@ -103,7 +103,7 @@ function initTasks(gulp, options) {
       '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,'
       + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
 
-    all.localExecCmds([cmd_compile, cmd_link], args.verbose, cb)
+    all.localExecCmds([cmdCompile, cmdLink], args.verbose, cb)
   });
 
   gulp.task('check-raspbian', false, function (cb) {

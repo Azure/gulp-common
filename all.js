@@ -489,7 +489,7 @@ function writeConfigH() {
 }
 
 module.exports = function (options) {
-  config = readCombinedConfig(options.config_postfix);
+  config = readCombinedConfig(options.configPostfix);
 
   return {
     uploadFilesViaScp,

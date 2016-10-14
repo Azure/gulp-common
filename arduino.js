@@ -18,7 +18,7 @@ function initTasks(gulp, options) {
   var config = all.getConfig();
 
   // package:arch:board[:parameters]
-  var board_descriptor = options.board.package + ':' +
+  var boardDescriptor = options.board.package + ':' +
     options.board.arch + ":" +
     options.board.board +
     ((options.board.parameters.length > 0) ? (':' + options.board.parameters) : '');
@@ -87,13 +87,13 @@ function initTasks(gulp, options) {
   gulp.task('build', 'Builds sample code', function (cb) {
     all.writeConfigH();
     all.localExecCmd(getArduinoCommand() + ' --verify --board ' +
-      board_descriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
+      boardDescriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
     all.writeConfigH();
     if (!config.device_port.trim()) {
-      all.localExecCmd(getArduinoCommand() + ' --upload --board ' + board_descriptor +
+      all.localExecCmd(getArduinoCommand() + ' --upload --board ' + boardDescriptor +
         ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
       cb(new Error('Port is not defined in config'));
