@@ -25,20 +25,20 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
     return;
   }
 
-  let scpOptions = {
+  var scpOptions = {
     host: config.device_host_name_or_ip_address,
     username: config.device_user_name,
     path: targetFileList[0]
   };
 
-  let sshKey = findSshKey();
+  var sshKey = findSshKey();
 
   if (sshKey) {
     scpOptions.privateKey = sshKey;
   } else if (config.device_password) {
     scpOptions.password = config.device_password;
   } else {
-    let err = new Error("No password or SSH key defined");
+    var err = new Error("No password or SSH key defined");
     err.stack = err.message;
     cb(err);
     return;
@@ -151,19 +151,19 @@ function localClone(url, folder, verbose, cb) {
  */
 function sshExecCmd(cmd, options, cb) {
 
-  let sshOptions = {
+  var sshOptions = {
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name
   };
 
-  let sshKey = findSshKey();
+  var sshKey = findSshKey();
 
   if (sshKey) {
     sshOptions.key = sshKey;
   } else if (config.device_password) {
     sshOptions.pass = config.device_password;
   } else {
-    let err = new Error("No password or SSH key defined");
+    var err = new Error("No password or SSH key defined");
     err.stack = err.message;
     cb(err);
     return;
