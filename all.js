@@ -358,7 +358,7 @@ function localRetrieve(url, options, cb) {
           // Ubuntu specific stuff, just use tar to uncompress all the other archives
           if (filename.endsWith('.tar.gz')) {
 
-            let cmds = [
+            var cmds = [
               'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
               'sudo rm ' + path];
 
@@ -367,7 +367,7 @@ function localRetrieve(url, options, cb) {
 
           } else if (filename.endsWith('.tar.xz')) {
 
-            let cmds = [
+            var cmds = [
               'sudo apt-get update',
               'sudo apt-get install -y wget xz-utils',
               'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
@@ -379,7 +379,7 @@ function localRetrieve(url, options, cb) {
         }
 
         // format is not supported yet on current platform
-        let err = new Error('Archive format not supported');
+        var err = new Error('Archive format not supported');
         cb(err);
       }
     });
