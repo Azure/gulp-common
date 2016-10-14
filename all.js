@@ -469,17 +469,11 @@ function writeGlobalConfig(postfix, config) {
  */
 function updateGlobalConfig(postfix, template) {
   var configFilePath = getToolsFolder() + '/config-' + postfix + '.json';
-  console.log('Config file ' + configFilePath + ' was created / updated');
+  console.log('Create / update global config file at ' + configFilePath);
 
   var oldConfig = readGlobalConfig(postfix);
   var newConfig = Object.assign(template, oldConfig);
-
-  var oldConfigString = JSON.stringify(oldConfig);
-  var newConfigString = JSON.stringify(newConfig);
-
-  if (newConfigString != oldConfigString) {
-    writeGlobalConfig(postfix, newConfig);
-  }
+  writeGlobalConfig(postfix, newConfig);
 
   return newConfig;
 }
