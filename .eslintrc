@@ -30,7 +30,7 @@
     "camelcase": [
       "error",
       {
-        "properties": "never"
+        "properties": "always"
       }
     ]
   }
