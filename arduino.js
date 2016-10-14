@@ -14,8 +14,8 @@ var all;
  */
 function initTasks(gulp, options) {
   var runSequence = require('run-sequence').use(gulp);
-  var config = options.config;
-  all = require('./all.js')(config);
+  all = require('./all.js')(options);
+  var config = all.getConfig();
 
   // package:arch:board[:parameters]
   var board_descriptor = options.board.package + ':' +

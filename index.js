@@ -11,6 +11,7 @@
  */
 function initTasks(gulp, boardId, options) {
   require('./' + boardId + '.js')(require('gulp-help')(gulp), options);
+  return gulp;
 }
 
 module.exports = initTasks;

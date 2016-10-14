@@ -4,6 +4,7 @@
 'use strict';
 
 var fs = require('fs');
+var path = require('path');
 var request = require('request');
 var unzip = require('unzip');
 var simssh = require('simple-ssh');
@@ -25,9 +26,26 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
     return;
   }
 
-  var prefix = config.device_user_name + ':' + config.device_password + '@' + config.device_host_name_or_ip_address + ':';
+  var scpOptions = {
+    host: config.device_host_name_or_ip_address,
+    username: config.device_user_name,
+    path: targetFileList[0]
+  };
 
-  scp2.scp(sourceFileList[0], prefix + targetFileList[0], function (err) {
+  var sshKey = findSshKey();
+
+  if (sshKey) {
+    scpOptions.privateKey = sshKey;
+  } else if (config.device_password) {
+    scpOptions.password = config.device_password;
+  } else {
+    var err = new Error("No password or SSH key defined");
+    err.stack = err.message;
+    cb(err);
+    return;
+  }
+
+  scp2.scp(sourceFileList[0], scpOptions, function (err) {
     if (err) {
       if (cb) {
         err.stack = "SCP file transfer failed (" + err + ")";
@@ -133,11 +151,26 @@ function localClone(url, folder, verbose, cb) {
  * @param {callback}  cb        - Callback on completion
  */
 function sshExecCmd(cmd, options, cb) {
-  var ssh = new simssh({
+
+  var sshOptions = {
     host: config.device_host_name_or_ip_address,
-    user: config.device_user_name,
-    pass: config.device_password
-  });
+    user: config.device_user_name
+  };
+
+  var sshKey = findSshKey();
+
+  if (sshKey) {
+    sshOptions.key = sshKey;
+  } else if (config.device_password) {
+    sshOptions.pass = config.device_password;
+  } else {
+    var err = new Error("No password or SSH key defined");
+    err.stack = err.message;
+    cb(err);
+    return;
+  }
+
+  var ssh = new simssh(sshOptions);
 
   var output = '';
 
@@ -182,8 +215,8 @@ function sshExecCmd(cmd, options, cb) {
  * @param {string}    path      - folder to be deleted
  */
 function deleteFolderRecursivelySync(path) {
-  if(fs.existsSync(path)) {
-    fs.readdirSync(path).forEach(function(file){
+  if (fs.existsSync(path)) {
+    fs.readdirSync(path).forEach(function (file) {
       var curPath = path + "/" + file;
       if (fs.lstatSync(curPath).isDirectory()) { // recurse
         deleteFolderRecursivelySync(curPath);
@@ -323,10 +356,12 @@ function localRetrieve(url, options, cb) {
           return;
 
         } else if (process.platform == 'linux') {
+          var cmds;
+
           // Ubuntu specific stuff, just use tar to uncompress all the other archives
           if (filename.endsWith('.tar.gz')) {
 
-            let cmds = [
+            cmds = [
               'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
               'sudo rm ' + path];
 
@@ -335,7 +370,7 @@ function localRetrieve(url, options, cb) {
 
           } else if (filename.endsWith('.tar.xz')) {
 
-            let cmds = [
+            cmds = [
               'sudo apt-get update',
               'sudo apt-get install -y wget xz-utils',
               'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
@@ -347,8 +382,7 @@ function localRetrieve(url, options, cb) {
         }
 
         // format is not supported yet on current platform
-        let err = new Error('Archive format not supported');
-        cb(err);
+        cb(new Error('Archive format not supported'));
       }
     });
   }
@@ -359,13 +393,89 @@ function localRetrieve(url, options, cb) {
  * @returns {string}
  */
 function getToolsFolder() {
-  var folder = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + '/vsc-iot-tools';
+  var folder = path.join(process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'], '.iot-hub-getting-started');
 
   if (!folderExistsSync(folder)) {
     fs.mkdirSync(folder);
   }
 
   return folder;
+}
+
+/**
+ * Finds SSH key
+ * @returns {string}
+ */
+function findSshKey() {
+  if (config.device_key_path) {
+    if (fileExistsSync(config.device_key_path)) {
+      return fs.readFileSync(config.device_key_path, { encoding: 'ascii' });
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Loads combined config
+ * @param {string} postfix  - postfix appended to global config filename
+ * @returns {object}
+ */
+function readCombinedConfig(postfix) {
+  var config = {};
+  var globalConfig = readGlobalConfig(postfix);
+  var localConfig = require(process.cwd() + '/config.json');
+  var combinedConfig = Object.assign(config, globalConfig, localConfig);
+  return combinedConfig;
+}
+
+/**
+ * Get loaded config
+ * @returns {object}
+ */
+function getConfig() {
+  return config;
+}
+
+/**
+ * Loads selected config from user folder
+ * @param {string} postfix  - postfix appended to config filename
+ * @returns {object}
+ */
+function readGlobalConfig(postfix) {
+  var filename = getToolsFolder() + '/config-' + postfix + '.json';
+
+  if (fileExistsSync(filename)) {
+    return require(filename);
+  }
+
+  return {};
+}
+
+/**
+ * Writes selected config to user folder
+ * @param {string} postfix  - postfix appended to config filename
+ * @param {object} config   - config object
+ */
+function writeGlobalConfig(postfix, config) {
+  fs.writeFileSync(getToolsFolder() + '/config-' + postfix + '.json', JSON.stringify(config, null, 2));
+}
+
+/**
+ * Updates or creates global config file
+ * @param {string} postfix    - postfix appended to config filename
+ * @param {object} template   - config template
+ * @returns {object}
+ */
+function updateGlobalConfig(postfix, template) {
+  var configFilePath = getToolsFolder() + '/config-' + postfix + '.json';
+  console.log('Create / update global config file at ' + configFilePath);
+
+  var oldConfig = readGlobalConfig(postfix);
+  var newConfig = Object.assign(template, oldConfig);
+  writeGlobalConfig(postfix, newConfig);
+
+  return newConfig;
 }
 
 /**
@@ -378,8 +488,8 @@ function writeConfigH() {
   }
 }
 
-module.exports = function (srcConfig) {
-  config = srcConfig;
+module.exports = function (options) {
+  config = readCombinedConfig(options.config_postfix);
 
   return {
     uploadFilesViaScp,
@@ -395,7 +505,8 @@ module.exports = function (srcConfig) {
     download,
     gulpTaskBI,
     getToolsFolder,
-    writeConfigH
+    writeConfigH,
+    updateGlobalConfig,
+    getConfig
   }
 }
-

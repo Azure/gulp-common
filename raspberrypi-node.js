@@ -13,12 +13,24 @@ var fs = require('fs');
  */
 function initTasks(gulp, options) {
   var runSequence = require('run-sequence').use(gulp);
-  var config = options.config;
-  var all = require('./all.js')(config);
+  var all = require('./all.js')(options);
+  var config = all.getConfig();
+
+  // stick config into gulp object
+  gulp.config = config;
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'nodejs', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
   }
+
+  gulp.task('init', 'Initializes sample', function (cb) {
+
+    if (options.config_postfix && options.config_template) {
+      all.updateGlobalConfig(options.config_postfix, options.config_template);
+    }
+
+    cb();
+  })
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
     var ifNodeExist = "hash node 2>/dev/null";

@@ -12,13 +12,22 @@ var PREBUILT_FOLDER = all.getToolsFolder() + '/az-iot-sdk-prebuilt';
 var all;
 
 function initTasks(gulp, options) {
-  all = require('./all.js')(options.config);
+  all = require('./all.js')(options);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
   }
 
   var runSequence = require('run-sequence').use(gulp);
+
+  gulp.task('init', 'Initializes sample', function (cb) {
+
+    if (options.config_postfix && options.config_template) {
+      all.updateGlobalConfig(options.config_postfix, options.config_template);
+    }
+
+    cb();
+  })
 
   gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function (cb) {
 
