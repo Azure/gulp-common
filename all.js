@@ -367,7 +367,7 @@ function localRetrieve(url, options, cb) {
 
           } else if (filename.endsWith('.tar.xz')) {
 
-            var cmds = [
+            let cmds = [
               'sudo apt-get update',
               'sudo apt-get install -y wget xz-utils',
               'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
@@ -379,7 +379,7 @@ function localRetrieve(url, options, cb) {
         }
 
         // format is not supported yet on current platform
-        var err = new Error('Archive format not supported');
+        let err = new Error('Archive format not supported');
         cb(err);
       }
     });
