@@ -6,13 +6,17 @@
 var fs = require('fs');
 var args = require('get-gulp-args')();
 
-var SAMPLE_NAME = 'main';
-var PREBUILT_FOLDER = all.getToolsFolder() + '/az-iot-sdk-prebuilt';
-
 var all;
 
 function initTasks(gulp, options) {
   all = require('./all.js')(options);
+
+  var SAMPLE_NAME = 'main';
+  var PREBUILT_FOLDER = all.getToolsFolder() + '/az-iot-sdk-prebuilt';
+  var config = all.getConfig();
+
+  // stick config into gulp object
+  gulp.config = config;
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
@@ -129,7 +133,7 @@ function initTasks(gulp, options) {
 
   gulp.task('run-internal', false, function (cb) {
     all.sshExecCmd('sudo chmod +x ./' + SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./'
-      + SAMPLE_NAME + '/' + SAMPLE_NAME, false, { verbose: true }, cb);
+      + SAMPLE_NAME + '/' + SAMPLE_NAME, { verbose: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
