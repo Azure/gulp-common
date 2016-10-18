@@ -33,11 +33,21 @@ function initTasks(gulp, options) {
     cb();
   })
 
-  gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
+  gulp.task('rpi-install-tools', false, function(cb) {
     all.sshExecCmd("sudo apt-get update && " +
                    "sudo apt-get -y install curl libcurl4-openssl-dev uuid-dev uuid g++ make cmake git unzip openjdk-7-jre libssl-dev libncurses-dev subversion gawk",
                    { verbose: args.verbose }, cb);
-  });
+  })
+
+  gulp.task('rpi-clone-azure-sdk', false, function(cb) {
+    all.sshExecCmd("git clone --recursive https://github.com/Azure/azure-iot-sdks.git", { verbose: args.verbose }, cb);
+  })
+
+  gulp.task('rpi-clone-wiring-pi', false, function(cb) {
+    all.sshExecCmd("git clone --recursive https://github.com/WiringPi/WiringPi.git", { verbose: args.verbose }, cb);
+  })
+
+  gulp.task('install-tools', 'Installs required software on Raspberry Pi', ['rpi-install-tools', 'rpi-clone-azure-sdk', 'rpi-clone-wiring-pi']);
 
   gulp.task('build', 'Builds sample code', function (cb) {
 
