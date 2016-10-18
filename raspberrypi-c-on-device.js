@@ -76,7 +76,7 @@ function initTasks(gulp, options) {
       //'-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
       //'-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
       '-o ' + SAMPLE_NAME + '.o ' +
-      '-c ' + SAMPLE_NAME + '/app/main.c';
+      '-c ' + SAMPLE_NAME + '/main.c';
 
     // second step -- link with prebuild libraries
     var cmdLink = 'arm-linux-gnueabihf-gcc ' +
