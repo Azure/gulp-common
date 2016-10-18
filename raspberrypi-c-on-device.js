@@ -13,6 +13,7 @@ function initTasks(gulp, options) {
 
   var config = all.getConfig();
   var targetFolder = config.project_folder ? config.project_folder : '.';
+  var startFile = config.start_file ? config.start_file : 'app';
 
   // stick config into gulp object
   gulp.config = config;
@@ -75,7 +76,7 @@ function initTasks(gulp, options) {
     // second step -- link with prebuild libraries
     var cmdLink = 'arm-linux-gnueabihf-gcc ' +
       targetFolder + '/main.o ' +
-      '-o ' + targetFolder + '/main' +
+      '-o ' + targetFolder + '/' + startFile +
       ' -rdynamic ' +
       '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/serializer/libserializer.a ' +
       '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client.a ' +
@@ -113,8 +114,8 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('run-internal', false, function (cb) {
-    all.sshExecCmd('sudo chmod +x ' + targetFolder + '/main ; sudo '
-      + targetFolder + '/main', { verbose: true }, cb);
+    all.sshExecCmd('sudo chmod +x ' + targetFolder + '/' + startFile + ' ; sudo '
+      + targetFolder + '/' + startFile, { verbose: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
