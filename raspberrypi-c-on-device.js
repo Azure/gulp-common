@@ -47,7 +47,14 @@ function initTasks(gulp, options) {
     all.sshExecCmd("git clone --recursive https://github.com/WiringPi/WiringPi.git", { verbose: args.verbose }, cb);
   })
 
-  gulp.task('install-tools', 'Installs required software on Raspberry Pi', ['rpi-install-tools', 'rpi-clone-azure-sdk', 'rpi-clone-wiring-pi']);
+  gulp.task('rpi-build-azure-iot-sdk', false, function(cb) {
+    all.sshExecCmd("sudo ~/azure-iot-sdks/c/build_all/linux/setup.sh && " +
+                   "sudo ~/azure-iot-sdks/c/build_all/linux/build.sh --skip-unittests", { verbose: args.verbose }, cb);
+  })
+
+  gulp.task('install-tools', 'Installs required software on Raspberry Pi', function(cb) {
+    runSequence('rpi-install-tools', 'rpi-clone-azure-sdk', 'rpi-clone-wiring-pi', 'rpi-build-azure-iot-sdk', cb);
+  });
 
   gulp.task('build', 'Builds sample code', function (cb) {
 
