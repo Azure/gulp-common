@@ -61,7 +61,7 @@ function initTasks(gulp, options) {
     // write config file only if any
     all.writeConfigH();
 
-    all.uploadFilesViaScp(['./app/main.c', './app/config.h'], ['./' + SAMPLE_NAME + '/config.h'], cb);
+    all.uploadFilesViaScp(['./app/main.c', './app/config.h'], ['./' + SAMPLE_NAME + '/main.c', './' + SAMPLE_NAME + '/config.h'], cb);
   });
 
   gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
@@ -76,7 +76,7 @@ function initTasks(gulp, options) {
       //'-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
       //'-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
       '-o ' + SAMPLE_NAME + '.o ' +
-      '-c app/main.c';
+      '-c ' + SAMPLE_NAME + '/app/main.c';
 
     // second step -- link with prebuild libraries
     var cmdLink = 'arm-linux-gnueabihf-gcc ' +
