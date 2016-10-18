@@ -35,7 +35,7 @@ function initTasks(gulp, options) {
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
     all.sshExecCmd("sudo apt-get update && " +
-                   "sudo apt-get install curl libcurl4-openssl-dev uuid-dev uuid g++ make cmake git unzip openjdk-7-jre libssl-dev libncurses-dev subversion gawk",
+                   "sudo apt-get -y install curl libcurl4-openssl-dev uuid-dev uuid g++ make cmake git unzip openjdk-7-jre libssl-dev libncurses-dev subversion gawk",
                    { verbose: args.verbose }, cb);
   });
 
