@@ -33,30 +33,10 @@ function initTasks(gulp, options) {
     cb();
   })
 
-  gulp.task('install-tools', 'Installs Raspberry Pi crosscompiler and libraries', function (cb) {
-
-    // clone helper repository to tools folder -- if it doesn't exists
-    all.localRetrieve('https://github.com/zikalino/az-iot-sdk-prebuilt.git', null, function (error) {
-
-      if (error) {
-        cb(error);
-        return;
-      }
-
-      if (process.platform == 'win32') {
-        all.localRetrieve(
-          'https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32.zip', null, cb);
-      } else if (process.platform == 'linux') {
-        all.localRetrieve(
-          'https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-linux64.tar.gz', null, cb);
-      } else if (process.platform == 'darwin') {
-        all.localRetrieve(
-          'https://github.com/me-no-dev/RasPiArduino/releases/download/0.0.1/arm-linux-gnueabihf-osx.tar.gz', null, cb);
-      } else {
-        console.log('We dont have tools for your operating system at this time');
-        cb(new Error('We dont have tools for your operating system at this time'));
-      }
-    });
+  gulp.task('install-tools', 'Installs required software on Raspberry Pi', function (cb) {
+    all.sshExecCmd("sudo apt-get update && " +
+                   "sudo apt-get install curl libcurl4-openssl-dev uuid-dev uuid g++ make cmake git unzip openjdk-7-jre libssl-dev libncurses-dev subversion gawk",
+                   { verbose: args.verbose }, cb);
   });
 
   gulp.task('build', 'Builds sample code', function (cb) {
