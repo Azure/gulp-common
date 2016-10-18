@@ -43,9 +43,9 @@ function initTasks(gulp, options) {
     all.sshExecCmd("git clone --recursive https://github.com/Azure/azure-iot-sdks.git", { verbose: args.verbose }, cb);
   })
 
-  gulp.task('rpi-clone-wiring-pi', false, function(cb) {
-    all.sshExecCmd("git clone --recursive https://github.com/WiringPi/WiringPi.git", { verbose: args.verbose }, cb);
-  })
+  //gulp.task('rpi-clone-wiring-pi', false, function(cb) {
+  //  all.sshExecCmd("git clone --recursive https://github.com/WiringPi/WiringPi.git", { verbose: args.verbose }, cb);
+  //})
 
   gulp.task('rpi-build-azure-iot-sdk', false, function(cb) {
     all.sshExecCmd("cd ~/azure-iot-sdks && " + 
@@ -54,7 +54,7 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function(cb) {
-    runSequence('rpi-install-tools', 'rpi-clone-azure-sdk', 'rpi-clone-wiring-pi', 'rpi-build-azure-iot-sdk', cb);
+    runSequence('rpi-install-tools', 'rpi-clone-azure-sdk', /*'rpi-clone-wiring-pi',*/ 'rpi-build-azure-iot-sdk', cb);
   });
 
   gulp.task('deploy', false, ['check-raspbian'], function (cb) {
@@ -67,30 +67,30 @@ function initTasks(gulp, options) {
   gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
 
     // in first step just compile sample file
-    var cmdCompile = 'arm-linux-gnueabihf-gcc ' +
+    var cmdCompile = 'arm-linux-gnueabihf-gcc -std=c99 ' +
       //'-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
       //'-I' + PREBUILT_FOLDER + '/inc/serializer ' +
-      '-I~/azure-iot-sdks/c/azure-c-shared-utility/inc ' +
+      '-I/home/pi/azure-iot-sdks/c/azure-c-shared-utility/inc ' +
       //'-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
       //'-I' + PREBUILT_FOLDER + '/inc ' +
-      //'-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
+      '-I/home/pi/azure-iot-sdks/c/iothub_client/inc ' +
       //'-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
       '-o ' + SAMPLE_NAME + '.o ' +
       '-c ' + SAMPLE_NAME + '/main.c';
 
     // second step -- link with prebuild libraries
     var cmdLink = 'arm-linux-gnueabihf-gcc ' +
-      'main.o ' +
-      '-o ' + SAMPLE_NAME +
+      SAMPLE_NAME + '.o ' +
+      '-o ' + SAMPLE_NAME + 'xx' +
       ' -rdynamic ' +
-      //PREBUILT_FOLDER + '/raspbian-jessie/libserializer.a ' +
-      //PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client.a ' +
-      //PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client_amqp_transport.a ' +
-      //PREBUILT_FOLDER + '/raspbian-jessie/libaziotplatform.a ' +
+      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/serializer/libserializer.a ' +
+      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client.a ' +
+      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client_amqp_transport.a ' +
+      //'/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux//libaziotplatform.a ' +
       '-lwiringPi ' +
-      //PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
-      //PREBUILT_FOLDER + '/raspbian-jessie/libuamqp.a ' +
-      //PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
+      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/azure-c-shared-utility/libaziotsharedutil.a ' +
+      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/azure-uamqp-c/libuamqp.a ' +
+      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/azure-c-shared-utility/libaziotsharedutil.a ' +
       '-lssl ' +
       '-lcrypto ' +
       '-lcurl ' +
