@@ -70,7 +70,7 @@ function initTasks(gulp, options) {
     var cmdCompile = 'arm-linux-gnueabihf-gcc ' +
       //'-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
       //'-I' + PREBUILT_FOLDER + '/inc/serializer ' +
-      '-I~/azure-iot-sdks/c/azure-c-shared-utility/inc/azure_c_shared_utility ' +
+      '-I~/azure-iot-sdks/c/azure-c-shared-utility/inc ' +
       //'-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
       //'-I' + PREBUILT_FOLDER + '/inc ' +
       //'-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
