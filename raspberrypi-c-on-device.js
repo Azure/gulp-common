@@ -11,9 +11,8 @@ var all;
 function initTasks(gulp, options) {
   all = require('./all.js')(options);
 
-  var SAMPLE_NAME = 'main';
-  var PREBUILT_FOLDER = all.getToolsFolder() + '/az-iot-sdk-prebuilt';
   var config = all.getConfig();
+  var targetFolder = config.project_folder ? config.project_folder : '.';
 
   // stick config into gulp object
   gulp.config = config;
@@ -61,7 +60,7 @@ function initTasks(gulp, options) {
     // write config file only if any
     all.writeConfigH();
 
-    all.uploadFilesViaScp(['./app/main.c', './app/config.h'], ['./' + SAMPLE_NAME + '/main.c', './' + SAMPLE_NAME + '/config.h'], cb);
+    all.uploadFilesViaScp(['./app/main.c', './app/config.h'], [targetFolder + '/main.c', targetFolder + '/config.h'], cb);
   });
 
   gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
@@ -70,13 +69,13 @@ function initTasks(gulp, options) {
     var cmdCompile = 'arm-linux-gnueabihf-gcc -std=c99 ' +
       '-I/home/pi/azure-iot-sdks/c/azure-c-shared-utility/inc ' +
       '-I/home/pi/azure-iot-sdks/c/iothub_client/inc ' +
-      '-o ' + SAMPLE_NAME + '.o ' +
-      '-c ' + SAMPLE_NAME + '/main.c';
+      '-o ' + targetFolder + '/main.o ' +
+      '-c ' + targetFolder + '/main.c';
 
     // second step -- link with prebuild libraries
     var cmdLink = 'arm-linux-gnueabihf-gcc ' +
-      SAMPLE_NAME + '.o ' +
-      '-o ' + SAMPLE_NAME + 'xx' +
+      targetFolder + '/main.o ' +
+      '-o ' + targetFolder + '/main' +
       ' -rdynamic ' +
       '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/serializer/libserializer.a ' +
       '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client.a ' +
@@ -114,8 +113,8 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('run-internal', false, function (cb) {
-    all.sshExecCmd('sudo chmod +x ./' + SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./'
-      + SAMPLE_NAME + '/' + SAMPLE_NAME, { verbose: true }, cb);
+    all.sshExecCmd('sudo chmod +x ' + targetFolder + '/main ; sudo '
+      + targetFolder + '/main', { verbose: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
@@ -123,23 +122,6 @@ function initTasks(gulp, options) {
   gulp.task('all', 'Builds, deploys and runs sample on the board', function (callback) {
     runSequence('install-tools', 'build', 'deploy', 'run', callback);
   })
-}
-
-function getCompilerName() {
-
-  if (process.platform == 'win32') {
-    return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
-  } else if (process.platform == 'linux') {
-    return 'arm-linux-gnueabihf';
-  } else if (process.platform == 'darwin') {
-    return 'arm-linux-gnueabihf';
-  }
-
-  return '';
-}
-
-function getCompilerFolder() {
-  return all.getToolsFolder() + '/' + getCompilerName() + '/bin';
 }
 
 module.exports = initTasks;
