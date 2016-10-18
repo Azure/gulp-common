@@ -57,55 +57,53 @@ function initTasks(gulp, options) {
     runSequence('rpi-install-tools', 'rpi-clone-azure-sdk', 'rpi-clone-wiring-pi', 'rpi-build-azure-iot-sdk', cb);
   });
 
-  gulp.task('build', 'Builds sample code', function (cb) {
-
+  gulp.task('deploy', false, ['check-raspbian'], function (cb) {
     // write config file only if any
     all.writeConfigH();
 
-    // remove old out directory and create empty one
-    all.deleteFolderRecursivelySync('out');
-    fs.mkdirSync('out');
+    all.uploadFilesViaScp(['./app/main.c', './app/config.h'], ['./' + SAMPLE_NAME + '/config.h'], cb);
+  });
+
+  gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
 
     // in first step just compile sample file
-    var cmdCompile = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
-      // XXX - don't include this
-      //'-I' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/include ' +
-      '-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
-      '-I' + PREBUILT_FOLDER + '/inc/serializer ' +
-      '-I' + PREBUILT_FOLDER + '/inc/azure-c-shared-utility ' +
-      '-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
-      '-I' + PREBUILT_FOLDER + '/inc ' +
-      '-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
-      '-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
-      '-o out/' + SAMPLE_NAME + '.o ' +
-      '-c app/' + SAMPLE_NAME + '.c';
+    var cmdCompile = 'arm-linux-gnueabihf-gcc ' +
+      //'-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
+      //'-I' + PREBUILT_FOLDER + '/inc/serializer ' +
+      //'-I' + PREBUILT_FOLDER + '/inc/azure-c-shared-utility ' +
+      //'-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
+      //'-I' + PREBUILT_FOLDER + '/inc ' +
+      //'-I' + PREBUILT_FOLDER + '/inc/iothub_client ' +
+      //'-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
+      '-o ' + SAMPLE_NAME + '.o ' +
+      '-c app/main.c';
 
     // second step -- link with prebuild libraries
-    var cmdLink = getCompilerFolder() + '/arm-linux-gnueabihf-gcc ' +
-      'out/' + SAMPLE_NAME + '.o ' +
-      '-o out/' + SAMPLE_NAME +
+    var cmdLink = 'arm-linux-gnueabihf-gcc ' +
+      'main.o ' +
+      '-o ' + SAMPLE_NAME +
       ' -rdynamic ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libserializer.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client_amqp_transport.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libaziotplatform.a ' +
+      //PREBUILT_FOLDER + '/raspbian-jessie/libserializer.a ' +
+      //PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client.a ' +
+      //PREBUILT_FOLDER + '/raspbian-jessie/libiothub_client_amqp_transport.a ' +
+      //PREBUILT_FOLDER + '/raspbian-jessie/libaziotplatform.a ' +
       '-lwiringPi ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libuamqp.a ' +
-      PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
+      //PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
+      //PREBUILT_FOLDER + '/raspbian-jessie/libuamqp.a ' +
+      //PREBUILT_FOLDER + '/raspbian-jessie/libaziotsharedutil.a ' +
       '-lssl ' +
       '-lcrypto ' +
       '-lcurl ' +
       '-lpthread ' +
       '-lm ' +
       '-lssl ' +
-      '-lcrypto ' +
-      '--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
+      '-lcrypto ';// +
+      //'--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
       // for some reason --sysroot option doesn't work very well on OS X, so i had to add following:
-      '-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,'
-      + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
+      //'-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,'
+      //+ PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
 
-    all.localExecCmds([cmdCompile, cmdLink], args.verbose, cb)
+    all.sshExecCmd(cmdCompile + " && " + cmdLink, { verbose: args.verbose }, cb);
   });
 
   gulp.task('check-raspbian', false, function (cb) {
@@ -124,10 +122,6 @@ function initTasks(gulp, options) {
       }
     });
   })
-
-  gulp.task('deploy', 'Deploys compiled sample to the board', ['check-raspbian'], function (cb) {
-    all.uploadFilesViaScp(['./out/' + SAMPLE_NAME], ['./' + SAMPLE_NAME + '/' + SAMPLE_NAME], cb);
-  });
 
   gulp.task('run-internal', false, function (cb) {
     all.sshExecCmd('sudo chmod +x ./' + SAMPLE_NAME + '/' + SAMPLE_NAME + ' ; sudo ./'
