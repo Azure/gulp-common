@@ -48,8 +48,9 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('rpi-build-azure-iot-sdk', false, function(cb) {
-    all.sshExecCmd("sudo ~/azure-iot-sdks/c/build_all/linux/setup.sh && " +
-                   "sudo ~/azure-iot-sdks/c/build_all/linux/build.sh --skip-unittests", { verbose: args.verbose }, cb);
+    all.sshExecCmd("cd ~/azure-iot-sdks && " + 
+                   "sudo c/build_all/linux/setup.sh && " +
+                   "sudo c/build_all/linux/build.sh --skip-unittests", { verbose: args.verbose }, cb);
   })
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function(cb) {
