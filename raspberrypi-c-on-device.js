@@ -68,13 +68,8 @@ function initTasks(gulp, options) {
 
     // in first step just compile sample file
     var cmdCompile = 'arm-linux-gnueabihf-gcc -std=c99 ' +
-      //'-I' + PREBUILT_FOLDER + '/inc/wiringpi ' +
-      //'-I' + PREBUILT_FOLDER + '/inc/serializer ' +
       '-I/home/pi/azure-iot-sdks/c/azure-c-shared-utility/inc ' +
-      //'-I' + PREBUILT_FOLDER + '/inc/platform_specific ' +
-      //'-I' + PREBUILT_FOLDER + '/inc ' +
       '-I/home/pi/azure-iot-sdks/c/iothub_client/inc ' +
-      //'-I' + PREBUILT_FOLDER + '/inc/azure-uamqp-c ' +
       '-o ' + SAMPLE_NAME + '.o ' +
       '-c ' + SAMPLE_NAME + '/main.c';
 
@@ -86,7 +81,6 @@ function initTasks(gulp, options) {
       '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/serializer/libserializer.a ' +
       '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client.a ' +
       '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client_amqp_transport.a ' +
-      //'/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux//libaziotplatform.a ' +
       '-lwiringPi ' +
       '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/azure-c-shared-utility/libaziotsharedutil.a ' +
       '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/azure-uamqp-c/libuamqp.a ' +
@@ -97,11 +91,7 @@ function initTasks(gulp, options) {
       '-lpthread ' +
       '-lm ' +
       '-lssl ' +
-      '-lcrypto ';// +
-      //'--sysroot=' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot ' +
-      // for some reason --sysroot option doesn't work very well on OS X, so i had to add following:
-      //'-Wl,-rpath,' + PREBUILT_FOLDER + '/raspbian-jessie-sysroot/usr/lib/arm-linux-gnueabihf,-rpath,'
-      //+ PREBUILT_FOLDER + '/raspbian-jessie-sysroot/lib/arm-linux-gnueabihf';
+      '-lcrypto ';
 
     all.sshExecCmd(cmdCompile + " && " + cmdLink, { verbose: args.verbose }, cb);
   });
