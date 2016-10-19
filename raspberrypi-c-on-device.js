@@ -33,19 +33,9 @@ function initTasks(gulp, options) {
     cb();
   })
 
-  gulp.task('rpi-install-tools', false, function(cb) {
-    all.sshExecCmd("sudo apt-get update && " +
-                   "sudo apt-get -y install curl libcurl4-openssl-dev uuid-dev uuid g++ make cmake git unzip openjdk-7-jre libssl-dev libncurses-dev subversion gawk",
-                   { verbose: args.verbose }, cb);
-  })
-
   gulp.task('rpi-clone-azure-sdk', false, function(cb) {
     all.sshExecCmd("git clone --recursive https://github.com/Azure/azure-iot-sdks.git", { verbose: args.verbose }, cb);
   })
-
-  //gulp.task('rpi-clone-wiring-pi', false, function(cb) {
-  //  all.sshExecCmd("git clone --recursive https://github.com/WiringPi/WiringPi.git", { verbose: args.verbose }, cb);
-  //})
 
   gulp.task('rpi-build-azure-iot-sdk', false, function(cb) {
     all.sshExecCmd("cd ~/azure-iot-sdks && " + 
@@ -54,7 +44,7 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function(cb) {
-    runSequence('rpi-install-tools', 'rpi-clone-azure-sdk', /*'rpi-clone-wiring-pi',*/ 'rpi-build-azure-iot-sdk', cb);
+    runSequence('rpi-clone-azure-sdk', 'rpi-build-azure-iot-sdk', cb);
   });
 
   gulp.task('deploy', false, ['check-raspbian'], function (cb) {
