@@ -154,7 +154,7 @@ function localClone(url, folder, verbose, cb) {
 function sshExecCmd(cmd, options, cb) {
 
   if (options && options.verbose) {
-    chalk.blue(cmd);
+    console.log(chalk.yellow(cmd));
   }
 
   var sshOptions = {
