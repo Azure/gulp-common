@@ -236,7 +236,7 @@ function sshExecCmds(cmds, options, cb) {
     }
 
     // continue with remaining commands
-    sshExecCmds(cmds, verbose, cb);
+    sshExecCmds(cmds, options, cb);
   })
 }
 
