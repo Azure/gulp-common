@@ -133,9 +133,7 @@ function initTasks(gulp, options) {
       }
     }
 
-    cmds += cmdLink;
-
-    console.log(cmds.join(' && '));
+    cmds.push(cmdLink);
 
     all.sshExecCmd(cmds.join(' && '), { verbose: args.verbose }, cb);
   });
