@@ -67,10 +67,21 @@ function initTasks(gulp, options) {
   gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
 
     // in first step just compile sample file
-    var cmdCompile = 'arm-linux-gnueabihf-gcc -std=c99 ' +
-      '-I/home/pi/azure-iot-sdks/c/azure-c-shared-utility/inc ' +
-      '-I/home/pi/azure-iot-sdks/c/iothub_client/inc ' +
-      '-o ' + targetFolder + '/main.o ' +
+    var cmdCompile = 'arm-linux-gnueabihf-gcc -std=c99';
+
+    if (options.inc) {
+      for (let i = 0; i < options.inc.length; i++) {
+        let p = options.inc[i];
+
+        if (p.startsWith('~')) {
+          cmdLink += ' -I/home/pi' + p.split('~')[1];
+        } else {
+          cmdLink += ' -I' + p;
+        }
+      }
+    }
+
+    cmdCompile += ' -o ' + targetFolder + '/main.o ' +
       '-c ' + targetFolder + '/main.c';
 
     // second step -- link with prebuild libraries
