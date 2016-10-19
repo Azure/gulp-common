@@ -135,7 +135,8 @@ function initTasks(gulp, options) {
 
     cmds.push(cmdLink);
 
-    all.sshExecCmd(cmds.join(' && '), { verbose: args.verbose }, cb);
+    //all.sshExecCmd(cmds.join(' && '), { verbose: args.verbose }, cb);
+    all.sshExecCmds(cmds, { verbose: args.verbose }, cb);
   });
 
   gulp.task('check-raspbian', false, function (cb) {
