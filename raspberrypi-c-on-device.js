@@ -79,9 +79,9 @@ function initTasks(gulp, options) {
       '-o ' + targetFolder + '/' + startFile +
       ' -rdynamic ';
 
-    if (config.lib) {
-      for (let i = 0; i < config.lib.length; i++) {
-        let l = config.lib[i];
+    if (options.lib) {
+      for (let i = 0; i < options.lib.length; i++) {
+        let l = options.lib[i];
 
         if (l.startsWith('~')) {
           cmdLink += ' /home/pi' + l.split('~')[1];
