@@ -148,7 +148,7 @@ function localClone(url, folder, verbose, cb) {
 /**
  * Execute command via SSH
  * @param {string}    cmd       - command to be executed
- * @param {object}    options   - If true, command output will be printed to stdout
+ * @param {object}    options   - options
  * @param {callback}  cb        - Callback on completion
  */
 function sshExecCmd(cmd, options, cb) {
