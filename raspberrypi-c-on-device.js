@@ -61,7 +61,18 @@ function initTasks(gulp, options) {
     // write config file only if any
     all.writeConfigH();
 
-    all.uploadFilesViaScp(['./app/main.c', './app/config.h'], [targetFolder + '/main.c', targetFolder + '/config.h'], cb);
+    let src = [];
+    let dst = [];
+
+    if (options.app) {
+      for (let i = 0; i < options.app.length; i++) {
+        let f = options.app[i];
+        src.push('./app/' + f);
+        dst.push(targetFolder + '/' + f);
+      }
+    }
+
+    all.uploadFilesViaScp(src, dst, cb);
   });
 
   gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
