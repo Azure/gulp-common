@@ -76,29 +76,49 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
+    let cmds = [];
+    let objs = '';
 
-    // in first step just compile sample file
-    var cmdCompile = 'arm-linux-gnueabihf-gcc -std=c99';
+    if (options.app) {
+      for (let i = 0; i < options.app.length; i++) {
+        let f = targetFolder + '/' + options.app[i];
 
-    if (options.inc) {
-      for (let i = 0; i < options.inc.length; i++) {
-        let p = options.inc[i];
+        if (f.endsWith('.c') || f.endsWith('.cpp')) {
+          // in first step just compile sample file
+          var cmdCompile = 'arm-linux-gnueabihf-gcc';
 
-        if (p.startsWith('~')) {
-          cmdCompile += ' -I/home/pi' + p.split('~')[1];
-        } else {
-          cmdCompile += ' -I' + p;
+          if (f.endsWith('.c')) {
+            cmdCompile += ' -std=c99';
+          }
+          
+          let o = f.substring(0, f.lastIndexOf('.')) + '.o';
+
+          if (options.inc) {
+            for (let i = 0; i < options.inc.length; i++) {
+              let p = options.inc[i];
+
+              if (p.startsWith('~')) {
+                cmdCompile += ' -I/home/pi' + p.split('~')[1];
+              } else {
+                cmdCompile += ' -I' + p;
+              }
+            }
+          }
+
+          cmdCompile += ' -o ' + o +
+            ' -c ' + f;
+
+          cmds.push(cmdCompile);
+          objs += ' ' + o;
         }
       }
     }
 
-    cmdCompile += ' -o ' + targetFolder + '/main.o ' +
-      '-c ' + targetFolder + '/main.c';
 
     // second step -- link with prebuild libraries
     var cmdLink = 'arm-linux-gnueabihf-gcc ' +
-      targetFolder + '/main.o ' +
-      '-o ' + targetFolder + '/' + startFile +
+      objs +
+      ' -o ' + targetFolder + '/' + startFile +
       ' -rdynamic ';
 
     if (options.lib) {
@@ -113,7 +133,11 @@ function initTasks(gulp, options) {
       }
     }
 
-    all.sshExecCmd(cmdCompile + " && " + cmdLink, { verbose: args.verbose }, cb);
+    cmds += cmdLink;
+
+    console.log(cmds.join(' && '));
+
+    all.sshExecCmd(cmds.join(' && '), { verbose: args.verbose }, cb);
   });
 
   gulp.task('check-raspbian', false, function (cb) {
