@@ -528,6 +528,7 @@ module.exports = function (options) {
     localClone,
     localRetrieve,
     sshExecCmd,
+    sshExecCmds,
     deleteFolderRecursivelySync,
     fileExistsSync,
     folderExistsSync,
