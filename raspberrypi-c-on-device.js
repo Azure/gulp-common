@@ -3,7 +3,6 @@
 */
 'use strict';
 
-var fs = require('fs');
 var args = require('get-gulp-args')();
 
 var all;
@@ -45,7 +44,7 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('rpi-build-azure-iot-sdk', false, function(cb) {
-    all.sshExecCmd("cd ~/azure-iot-sdks && " + 
+    all.sshExecCmd("cd ~/azure-iot-sdks && " +
                    "sudo c/build_all/linux/setup.sh && " +
                    "sudo c/build_all/linux/build.sh --skip-unittests", { verbose: args.verbose }, cb);
   })
@@ -87,7 +86,7 @@ function initTasks(gulp, options) {
           if (f.endsWith('.c')) {
             cmdCompile += ' -std=c99';
           }
-          
+
           let o = f.substring(0, f.lastIndexOf('.')) + '.o';
 
           if (options.inc) {
