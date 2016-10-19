@@ -34,7 +34,7 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('rpi-clone-azure-sdk', false, function(cb) {
-    all.sshExecCmd("git clone --recursive https://github.com/Azure/azure-iot-sdks.git", { verbose: args.verbose }, cb);
+    all.sshExecCmd("git clone https://github.com/Azure/azure-iot-sdks.git", { verbose: args.verbose }, cb);
   })
 
   gulp.task('rpi-build-azure-iot-sdk', false, function(cb) {
