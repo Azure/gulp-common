@@ -74,9 +74,9 @@ function initTasks(gulp, options) {
         let p = options.inc[i];
 
         if (p.startsWith('~')) {
-          cmdLink += ' -I/home/pi' + p.split('~')[1];
+          cmdCompile += ' -I/home/pi' + p.split('~')[1];
         } else {
-          cmdLink += ' -I' + p;
+          cmdCompile += ' -I' + p;
         }
       }
     }
