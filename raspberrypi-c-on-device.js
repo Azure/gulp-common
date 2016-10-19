@@ -77,21 +77,19 @@ function initTasks(gulp, options) {
     var cmdLink = 'arm-linux-gnueabihf-gcc ' +
       targetFolder + '/main.o ' +
       '-o ' + targetFolder + '/' + startFile +
-      ' -rdynamic ' +
-      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/serializer/libserializer.a ' +
-      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client.a ' +
-      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client_amqp_transport.a ' +
-      '-lwiringPi ' +
-      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/azure-c-shared-utility/libaziotsharedutil.a ' +
-      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/azure-uamqp-c/libuamqp.a ' +
-      '/home/pi/azure-iot-sdks/c/cmake/iotsdk_linux/azure-c-shared-utility/libaziotsharedutil.a ' +
-      '-lssl ' +
-      '-lcrypto ' +
-      '-lcurl ' +
-      '-lpthread ' +
-      '-lm ' +
-      '-lssl ' +
-      '-lcrypto ';
+      ' -rdynamic ';
+
+    if (config.lib) {
+      for (let i = 0; i < config.lib.length; i++) {
+        let l = config.lib[i];
+
+        if (l.startsWith('~')) {
+          cmdLink += ' /home/pi' + l.split('~')[1];
+        } else {
+          cmdLink += ' -l' + l;
+        }
+      }
+    }
 
     all.sshExecCmd(cmdCompile + " && " + cmdLink, { verbose: args.verbose }, cb);
   });
