@@ -72,67 +72,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
-    let cmds = [];
-    let objs = '';
-
-    if (options.app) {
-      for (let i = 0; i < options.app.length; i++) {
-        let f = targetFolder + '/' + options.app[i];
-
-        if (f.endsWith('.c') || f.endsWith('.cpp')) {
-          // in first step just compile sample file
-          var cmdCompile = 'arm-linux-gnueabihf-gcc';
-
-          if (f.endsWith('.c')) {
-            cmdCompile += ' -std=c99';
-          }
-
-          let o = f.substring(0, f.lastIndexOf('.')) + '.o';
-
-          if (options.inc) {
-            for (let i = 0; i < options.inc.length; i++) {
-              let p = options.inc[i];
-
-              if (p.startsWith('~')) {
-                cmdCompile += ' -I/home/pi' + p.split('~')[1];
-              } else {
-                cmdCompile += ' -I' + p;
-              }
-            }
-          }
-
-          cmdCompile += ' -o ' + o +
-            ' -c ' + f;
-
-          cmds.push(cmdCompile);
-          objs += ' ' + o;
-        }
-      }
-    }
-
-
-    // second step -- link with prebuild libraries
-    var cmdLink = 'arm-linux-gnueabihf-gcc ' +
-      objs +
-      ' -o ' + targetFolder + '/' + startFile +
-      ' -rdynamic ';
-
-    if (options.lib) {
-      for (let i = 0; i < options.lib.length; i++) {
-        let l = options.lib[i];
-
-        if (l.startsWith('~')) {
-          cmdLink += ' /home/pi' + l.split('~')[1];
-        } else {
-          cmdLink += ' -l' + l;
-        }
-      }
-    }
-
-    cmds.push(cmdLink);
-
-    //all.sshExecCmd(cmds.join(' && '), { verbose: args.verbose }, cb);
-    all.sshExecCmds(cmds, { verbose: args.verbose }, cb);
+    all.sshExecCmd('cd ' + targetFolder + ' && cmake . && make', { verbose: args.verbose }, cb);
   });
 
   gulp.task('check-raspbian', false, function (cb) {
