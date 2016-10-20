@@ -72,7 +72,7 @@ function initTasks(gulp, options) {
       nodejsParam = ' "' + config.iot_device_connection_string + '"';
     }
 
-    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit', { verbose: true }, cb);
+    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit', { verbose: args.verbose }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
