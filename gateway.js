@@ -83,7 +83,7 @@ function initTasks(gulp, options) {
   // remove the file in the local profile folder and remote NUC
   gulp.task('clean', 'clean local and remote', ['clean-local', 'clean-remote']);
 
-  // discovery the ble devices
+  // discover sensortag device
   gulp.task('devdisco', 'discovery Sensortag device', function(cb) {
     all.sshExecCmd('cd ' + workspace + '; node sensortagdisco.js', {
       verbose: true
@@ -96,7 +96,7 @@ function initTasks(gulp, options) {
     });
   });
 
-  // test mac's connectivity
+  // test sensortag's connectivity
   // usage: gulp testconnect --mac <mac address>
   gulp.task('testconnect', 'test connectivity of mac address', function(cb) {
     all.sshExecCmd('cd ' + workspace + '; node testconnect.js ' + args['mac'], {
@@ -110,7 +110,7 @@ function initTasks(gulp, options) {
     });
   });
 
-  // run samples on NUC
+  // run BLE sample on NUC
   gulp.task('run', 'run ble_sample on NUC', ['setup-remote', 'upload-config'], function(cb) {
     all.sshExecCmd('cd ' + workspace + '; node run.js', {
       verbose: true
@@ -123,7 +123,11 @@ function initTasks(gulp, options) {
     });
   });
 
-  // copy all need file into NUC, and generate the ble_gateway.json
+  // copy all needed files into NUC, and generate the ble_gateway.json
+  // usage: gulp deploy [options]
+  // options:
+  //     -g, --global: directly save the file into NUC's /usr/share/azureiotgatewaysdk/sample/ble_gateway/
+  //     -f, --force: not update the config base on global config, but always reset the ble_gateway.json to default
   gulp.task('deploy', 'deplo ble_sample on NUC', ['setup-remote', 'upload-config'], function(cb) {
     var force = args['force'] || args['f'];
     var global = args['global'] || args['g'];
@@ -139,7 +143,7 @@ function initTasks(gulp, options) {
     });
   });
 
-  // copy file into NUC
+  // copy config.json into NUC
   gulp.task('upload-config', 'upload config.json to NUC', function(cb) {
     all.uploadFilesViaScp([getConfigFilepath(config.bleConfig)], [workspace + 'config.json'], cb);
   });
