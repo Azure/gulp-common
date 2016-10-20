@@ -11,7 +11,6 @@ var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var gulpTaskBI = require('./biHelper.js').gulpTaskBI;
 var args = require('get-gulp-args')();
-var chalk = require('chalk');
 
 var config;
 
@@ -152,11 +151,6 @@ function localClone(url, folder, verbose, cb) {
  * @param {callback}  cb        - Callback on completion
  */
 function sshExecCmd(cmd, options, cb) {
-
-  if (options && options.verbose) {
-    console.log(chalk.yellow(cmd));
-  }
-
   var sshOptions = {
     host: config.device_host_name_or_ip_address,
     user: config.device_user_name
