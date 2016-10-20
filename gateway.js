@@ -21,8 +21,6 @@ function initTasks(gulp, options) {
     all.gulpTaskBI(gulp, 'nodejs', 'gateway', ((options && options.appName) ? options.appName : 'unknown'));
   }
 
-  var runSequence = require('run-sequence').use(gulp);
-
   // copy files into profile folder
   gulp.task('init', 'Initializes sample', function(cb) {
 
