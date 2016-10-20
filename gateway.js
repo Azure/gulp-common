@@ -23,6 +23,7 @@ function initTasks(gulp, options) {
 
   var runSequence = require('run-sequence').use(gulp);
 
+  // copy files into profile folder
   gulp.task('init', 'Initializes sample', function(cb) {
 
     if (options.configPostfix && options.configTemplate) {
@@ -34,6 +35,7 @@ function initTasks(gulp, options) {
     cb();
   });
 
+  // copy inital files to the NUC
   gulp.task('setup-remote', 'Copy script to remote', function(cb) {
     var cpList = [
       'app/.ble_gateway.json',
@@ -80,8 +82,10 @@ function initTasks(gulp, options) {
     cb();
   });
 
+  // remove the file in the local profile folder and remote NUC
   gulp.task('clean', 'clean local and remote', ['clean-local', 'clean-remote']);
 
+  // discovery the ble devices
   gulp.task('devdisco', 'discovery Sensortag device', function(cb) {
     all.sshExecCmd('cd ' + workspace + '; node sensortagdisco.js', {
       verbose: true
@@ -94,6 +98,8 @@ function initTasks(gulp, options) {
     });
   });
 
+  // test mac's connectivity
+  // usage: gulp testconnect --mac <mac address>
   gulp.task('testconnect', 'test connectivity of mac address', function(cb) {
     all.sshExecCmd('cd ' + workspace + '; node testconnect.js ' + args['mac'], {
       verbose: true
@@ -106,6 +112,7 @@ function initTasks(gulp, options) {
     });
   });
 
+  // run samples on NUC
   gulp.task('run', 'run ble_sample on NUC', ['setup-remote', 'upload-config'], function(cb) {
     all.sshExecCmd('cd ' + workspace + '; node run.js', {
       verbose: true
@@ -118,6 +125,7 @@ function initTasks(gulp, options) {
     });
   });
 
+  // copy all need file into NUC, and generate the ble_gateway.json
   gulp.task('deploy', 'deplo ble_sample on NUC', ['setup-remote', 'upload-config'], function(cb) {
     var force = args['force'] || args['f'];
     var global = args['global'] || args['g'];
@@ -133,27 +141,14 @@ function initTasks(gulp, options) {
     });
   });
 
+  // copy file into NUC
   gulp.task('upload-config', 'upload config.json to NUC', function(cb) {
-    // copy file into NUC
     all.uploadFilesViaScp([getConfigFilepath(config.bleConfig)], [workspace + 'config.json'], cb);
   });
 }
 
-function getCompilerName() {
-
-  if (process.platform == 'win32') {
-    return 'gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_win32';
-  } else if (process.platform == 'linux') {
-    return 'arm-linux-gnueabihf';
-  } else if (process.platform == 'darwin') {
-    return 'arm-linux-gnueabihf';
-  }
-
-  return '';
-}
-
 function saveConfigFile(filename, config) {
-  var oldConfig = readGlobalConfig(filename);
+  var oldConfig = readConfig(filename);
   var newConfig = Object.assign(config, oldConfig);
   fs.writeFileSync(filename, JSON.stringify(newConfig, null, 2));
 }
@@ -162,7 +157,7 @@ function getConfigFilepath(postfix) {
   return all.getToolsFolder() + '/config-' + postfix + '.json';
 }
 
-function readGlobalConfig(filename) {
+function readConfig(filename) {
   if (all.fileExistsSync(filename)) {
     return require(filename);
   }
@@ -178,8 +173,8 @@ function flatten(rawConfig) {
   };
 
   // two object
-  var bleConfig = readGlobalConfig(config.bleConfigPath);
-  var azFuncConfig = readGlobalConfig(config.azFuncConfigPath);
+  var bleConfig = readConfig(config.bleConfigPath);
+  var azFuncConfig = readConfig(config.azFuncConfigPath);
 
   // merge
   var mergeConfig = Object.assign(bleConfig, azFuncConfig);
