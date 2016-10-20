@@ -15,7 +15,7 @@ function initTasks(gulp, options) {
   var workspace = './ble_sample/';
 
   // stick config into gulp object
-  gulp.config = config;
+  gulp.config = flatten(config);
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'nodejs', 'gateway', ((options && options.appName) ? options.appName : 'unknown'));
@@ -152,23 +152,38 @@ function getCompilerName() {
   return '';
 }
 
-function saveConfigFile(postfix, config) {
-  var oldConfig = readGlobalConfig(postfix);
+function saveConfigFile(filename, config) {
+  var oldConfig = readGlobalConfig(filename);
   var newConfig = Object.assign(config, oldConfig);
-  fs.writeFileSync(getConfigFilepath(postfix), JSON.stringify(newConfig, null, 2));
+  fs.writeFileSync(filename, JSON.stringify(newConfig, null, 2));
 }
 
 function getConfigFilepath(postfix) {
   return all.getToolsFolder() + '/config-' + postfix + '.json';
 }
 
-function readGlobalConfig(postfix) {
-  var filename = getConfigFilepath(postfix);
+function readGlobalConfig(filename) {
   if (all.fileExistsSync(filename)) {
     return require(filename);
   }
 
   return {};
+}
+
+function flatten(rawConfig) {
+  // path
+  var config = {
+    bleConfigPath: getConfigFilepath(rawConfig.bleConfig),
+    azFuncConfigPath: getConfigFilepath(rawConfig.azFuncConfig)
+  };
+
+  // two object
+  var bleConfig = readGlobalConfig(config.bleConfigPath);
+  var azFuncConfig = readGlobalConfig(config.azFuncConfigPath);
+
+  // merge
+  var mergeConfig = Object.assign(bleConfig, azFuncConfig);
+  return Object.assign(mergeConfig, rawConfig);
 }
 
 module.exports = initTasks;
