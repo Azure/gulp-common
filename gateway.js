@@ -1,6 +1,6 @@
 /*
-* Gulp Common - Microsoft Sample Code - Copyright (c) 2016 - Licensed MIT
-*/
+ * Gulp Common - Microsoft Sample Code - Copyright (c) 2016 - Licensed MIT
+ */
 'use strict';
 
 var fs = require('fs');
@@ -23,7 +23,7 @@ function initTasks(gulp, options) {
 
   var runSequence = require('run-sequence').use(gulp);
 
-  gulp.task('init', 'Initializes sample', function (cb) {
+  gulp.task('init', 'Initializes sample', function(cb) {
 
     if (options.configPostfix && options.configTemplate) {
       all.updateGlobalConfig(options.configPostfix, options.configTemplate['ssh-config']);
@@ -34,7 +34,7 @@ function initTasks(gulp, options) {
     cb();
   });
 
-  gulp.task('setup-remote', 'Copy script to remote', function (cb) {
+  gulp.task('setup-remote', 'Copy script to remote', function(cb) {
     var cpList = [
       'app/.ble_gateway.json',
       'app/sensortagdisco.js',
@@ -53,8 +53,10 @@ function initTasks(gulp, options) {
     all.uploadFilesViaScp(cpList, link, cb);
   });
 
-  gulp.task('clean-remote', 'clean remote', function (cb) {
-    all.sshExecCmd('sudo rm -rf ' + workspace, { verbose: false }, function(err) {
+  gulp.task('clean-remote', 'clean remote', function(cb) {
+    all.sshExecCmd('sudo rm -rf ' + workspace, {
+      verbose: false
+    }, function(err) {
       if (err) {
         cb(err);
       } else {
@@ -63,15 +65,15 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('clean-local', 'clean local', function (cb) {
-    try{
-      if(all.fileExistsSync(config.bleConfig)) {
+  gulp.task('clean-local', 'clean local', function(cb) {
+    try {
+      if (all.fileExistsSync(config.bleConfig)) {
         fs.unlinkSync(config.bleConfig);
       }
-      if(all.fileExistsSync(config.azFuncConfig)) {
+      if (all.fileExistsSync(config.azFuncConfig)) {
         fs.unlinkSync(config.azFuncConfig);
       }
-    }catch(err){
+    } catch (err) {
       cb(err);
       return;
     }
@@ -80,8 +82,10 @@ function initTasks(gulp, options) {
 
   gulp.task('clean', 'clean local and remote', ['clean-local', 'clean-remote']);
 
-  gulp.task('devdisco', 'discovery Sensortag device', ['setup-remote'], function (cb) {
-    all.sshExecCmd('cd ' + workspace + '; node sensortagdisco.js', { verbose: true }, function (err) {
+  gulp.task('devdisco', 'discovery Sensortag device', function(cb) {
+    all.sshExecCmd('cd ' + workspace + '; node sensortagdisco.js', {
+      verbose: true
+    }, function(err) {
       if (err) {
         cb(err);
       } else {
@@ -90,8 +94,10 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('testconnect', 'test connectivity of mac address', ['setup-remote'], function (cb) {
-    all.sshExecCmd('cd ' + workspace + '; node testconnect.js ' + args['mac'], { verbose: true }, function (err) {
+  gulp.task('testconnect', 'test connectivity of mac address', function(cb) {
+    all.sshExecCmd('cd ' + workspace + '; node testconnect.js ' + args['mac'], {
+      verbose: true
+    }, function(err) {
       if (err) {
         cb(err);
       } else {
@@ -100,8 +106,10 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('run', 'run ble_sample on NUC', ['setup-remote', 'upload-config'], function (cb) {
-    all.sshExecCmd('cd ' + workspace + '; node run.js', { verbose: true }, function (err) {
+  gulp.task('run', 'run ble_sample on NUC', ['setup-remote', 'upload-config'], function(cb) {
+    all.sshExecCmd('cd ' + workspace + '; node run.js', {
+      verbose: true
+    }, function(err) {
       if (err) {
         cb(err);
       } else {
@@ -114,7 +122,9 @@ function initTasks(gulp, options) {
     var force = args['force'] || args['f'];
     var global = args['global'] || args['g'];
     var options = '' + (force ? ' --force' : '') + (global ? ' --global' : '');
-    all.sshExecCmd('cd ' + workspace + '; node deploy.js' + options, { verbose: true }, function (err) {
+    all.sshExecCmd('cd ' + workspace + '; node deploy.js' + options, {
+      verbose: true
+    }, function(err) {
       if (err) {
         cb(err);
       } else {
@@ -123,9 +133,9 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('upload-config', 'upload config.json to NUC', function (cb) {
+  gulp.task('upload-config', 'upload config.json to NUC', function(cb) {
     // copy file into NUC
-    all.uploadFilesViaScp([ getConfigFilepath(config.bleConfig) ], [workspace + 'config.json'], cb);
+    all.uploadFilesViaScp([getConfigFilepath(config.bleConfig)], [workspace + 'config.json'], cb);
   });
 }
 
