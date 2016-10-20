@@ -11,6 +11,7 @@ var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var gulpTaskBI = require('./biHelper.js').gulpTaskBI;
 var args = require('get-gulp-args')();
+var chalk = require('chalk');
 
 var config;
 
@@ -146,11 +147,15 @@ function localClone(url, folder, verbose, cb) {
 
 /**
  * Execute command via SSH
- * @param {string}    cmd       - command to be execture
- * @param {object}    options   - If true, command output will be printed to stdout
+ * @param {string}    cmd       - command to be executed
+ * @param {object}    options   - options
  * @param {callback}  cb        - Callback on completion
  */
 function sshExecCmd(cmd, options, cb) {
+
+  if (options && options.verbose) {
+    console.log(chalk.yellow(cmd));
+  }
 
   var sshOptions = {
     host: config.device_host_name_or_ip_address,
@@ -208,6 +213,31 @@ function sshExecCmd(cmd, options, cb) {
       }, 1000);
     }
   }).start();
+}
+
+/**
+ * Execute commands via SSH
+ * @param {string[]}    cmds    - list of commands to be executed
+ * @param {object}    options   - options
+ * @param {callback}  cb        - Callback on completion
+ */
+function sshExecCmds(cmds, options, cb) {
+  // check if there are any commands to execute
+  if (cmds.length == 0) {
+    if (cb) cb();
+    return;
+  }
+
+  // execute first command
+  sshExecCmd(cmds.splice(0, 1)[0], options, function (e) {
+    if (e) {
+      if (cb) cb(e);
+      return;
+    }
+
+    // continue with remaining commands
+    sshExecCmds(cmds, options, cb);
+  })
 }
 
 /**
@@ -498,6 +528,7 @@ module.exports = function (options) {
     localClone,
     localRetrieve,
     sshExecCmd,
+    sshExecCmds,
     deleteFolderRecursivelySync,
     fileExistsSync,
     folderExistsSync,
