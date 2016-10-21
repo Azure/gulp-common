@@ -40,13 +40,13 @@ function initTasks(gulp, options) {
                       "cd azure-iot-sdks && git submodule update --init -- c/parson",
                       "cd azure-iot-sdks/c/azure-uamqp-c && git submodule update --init -- azure-c-shared-utility",
                       "cd azure-iot-sdks/c/azure-umqtt-c && git submodule update --init -- azure-c-shared-utility",
-                      ], { verbose: args.verbose }, cb);
+                      ], { verbose: args.verbose, sshPrintCommands: true }, cb);
   })
 
   gulp.task('rpi-build-azure-iot-sdk', false, function(cb) {
     all.sshExecCmd("cd ~/azure-iot-sdks && " +
                    "sudo c/build_all/linux/setup.sh && " +
-                   "sudo c/build_all/linux/build.sh --skip-unittests", { verbose: args.verbose }, cb);
+                   "sudo c/build_all/linux/build.sh --skip-unittests", { verbose: args.verbose, sshPrintCommands: true }, cb);
   })
 
   gulp.task('install-tools', 'Installs required software on Raspberry Pi', function(cb) {
@@ -72,11 +72,11 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
-    all.sshExecCmd('cd ' + targetFolder + ' && cmake . && make', { verbose: args.verbose }, cb);
+    all.sshExecCmd('cd ' + targetFolder + ' && cmake . && make', { verbose: args.verbose, sshPrintCommands: true }, cb);
   });
 
   gulp.task('check-raspbian', false, function (cb) {
-    all.sshExecCmd('uname -a', { verbose: args.verbose, marker: 'Linux raspberrypi 4.4' }, function (err) {
+    all.sshExecCmd('uname -a', { verbose: args.verbose, marker: 'Linux raspberrypi 4.4', sshPrintCommands: true }, function (err) {
       if (err) {
         if (err.marker) {
           console.log('--------------------');
@@ -94,7 +94,7 @@ function initTasks(gulp, options) {
 
   gulp.task('run-internal', false, function (cb) {
     all.sshExecCmd('sudo chmod +x ' + targetFolder + '/' + startFile + ' ; sudo '
-      + targetFolder + '/' + startFile, { verbose: true }, cb);
+      + targetFolder + '/' + startFile, { verbose: true, sshPrintCommands: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
