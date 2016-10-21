@@ -183,7 +183,7 @@ function sshExecCmd(cmd, options, cb) {
   });
 
   if (options && options.verbose && options.sshPrintCommands) {
-    process.stdout.write(chalk.inverse(cmd));
+    process.stdout.write('\n ssh: ' + chalk.bgWhite.blue(' ' + cmd + ' \n\n'));
   }
 
   ssh.exec(cmd, {
