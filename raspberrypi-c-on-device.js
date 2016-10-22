@@ -35,11 +35,9 @@ function initTasks(gulp, options) {
   gulp.task('rpi-clone-azure-sdk', false, function(cb) {
     all.sshExecCmds([ "git clone https://github.com/Azure/azure-iot-sdks.git",
                       "cd azure-iot-sdks && git submodule update --init -- c/azure-uamqp-c",
-                      "cd azure-iot-sdks && git submodule update --init -- c/azure-umqtt-c",
                       "cd azure-iot-sdks && git submodule update --init -- c/azure-c-shared-utility",
                       "cd azure-iot-sdks && git submodule update --init -- c/parson",
                       "cd azure-iot-sdks/c/azure-uamqp-c && git submodule update --init -- azure-c-shared-utility",
-                      "cd azure-iot-sdks/c/azure-umqtt-c && git submodule update --init -- azure-c-shared-utility",
                       ], { verbose: args.verbose, sshPrintCommands: true }, cb);
   })
 
