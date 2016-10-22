@@ -11,6 +11,7 @@ var simssh = require('simple-ssh');
 var scp2 = require('scp2')
 var gulpTaskBI = require('./biHelper.js').gulpTaskBI;
 var args = require('get-gulp-args')();
+var chalk = require('chalk');
 
 var config;
 
@@ -180,6 +181,10 @@ function sshExecCmd(cmd, options, cb) {
     console.log("ERROR OCCURED");
     cb(e);
   });
+
+  if (options && options.verbose && options.sshPrintCommands) {
+    process.stdout.write('\n ssh: ' + chalk.bgWhite.blue(' ' + cmd + ' \n\n'));
+  }
 
   ssh.exec(cmd, {
     pty: true,
