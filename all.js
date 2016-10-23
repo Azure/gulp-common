@@ -186,6 +186,17 @@ function sshExecCmd(cmd, options, cb) {
     process.stdout.write('\n ssh: ' + chalk.bgWhite.blue(' ' + cmd + ' \n\n'));
   }
 
+  var marker = false;
+
+  if (options && options.marker) {
+    marker = options.marker;
+  }
+
+  if (options && options.validate) {
+    marker = "X-COMPLETED-X";
+    cmd += ' && echo ' + marker;
+  }
+
   ssh.exec(cmd, {
     pty: true,
     out: function (o) {
@@ -199,8 +210,8 @@ function sshExecCmd(cmd, options, cb) {
       // setting short timeout, as exit handler may be called before remaining data
       // arrives via out
       setTimeout(function () {
-        if (options && options.marker) {
-          if (output.indexOf(options.marker) < 0) {
+        if (marker) {
+          if (output.indexOf(marker) < 0) {
             var err = new Error("SSH command hasn't completed successfully");
             err.stack = err.message;
             err.marker = true;

@@ -71,7 +71,11 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
-    all.sshExecCmd('cd ' + targetFolder + ' && cmake . && make', { verbose: args.verbose, sshPrintCommands: true }, cb);
+    all.sshExecCmds( [ 'cd ' + targetFolder + ' && cmake .',
+                       'cd ' + targetFolder + ' && make' ],
+                     { verbose: args.verbose,
+                       sshPrintCommands: true,
+                       validate: true }, cb);
   });
 
   gulp.task('check-raspbian', false, function (cb) {
