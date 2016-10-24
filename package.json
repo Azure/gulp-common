@@ -4,7 +4,7 @@
   "description": "Azure IoT Samples common gulp tasks",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node_modules/.bin/ava test/functest"
   },
   "license": "MIT",
   "author": "Microsoft Corp.",
@@ -20,6 +20,8 @@
     "unzip": "^0.1.11"
   },
   "devDependencies": {
-    "eslint": "^3.6.1"
+    "ava": "^0.16.0",
+    "eslint": "^3.6.1",
+    "gulp": "^3.9.1"
   }
 }
