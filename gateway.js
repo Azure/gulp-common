@@ -66,22 +66,12 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('clean-local', 'clean local', function(cb) {
-    try {
-      if (all.fileExistsSync(config.bleConfig)) {
-        fs.unlinkSync(config.bleConfig);
-      }
-      if (all.fileExistsSync(config.azFuncConfig)) {
-        fs.unlinkSync(config.azFuncConfig);
-      }
-    } catch (err) {
-      cb(err);
-      return;
-    }
+    all.deleteFolderRecursivelySync(all.getToolsFolder());
     cb();
   });
 
   // remove the file in the local profile folder and remote NUC
-  gulp.task('clean', 'clean local and remote', ['clean-local', 'clean-remote']);
+  gulp.task('clean', 'clean local and remote', ['clean-remote', 'clean-local']);
 
   // discover sensortag device
   gulp.task('devdisco', 'discovery Sensortag device', function(cb) {
@@ -149,7 +139,8 @@ function initTasks(gulp, options) {
   });
 }
 
-function saveConfigFile(filename, config) {
+function saveConfigFile(postfix, config) {
+  var filename = getConfigFilepath(postfix);
   var oldConfig = readConfig(filename);
   var newConfig = Object.assign(config, oldConfig);
   fs.writeFileSync(filename, JSON.stringify(newConfig, null, 2));
