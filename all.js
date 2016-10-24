@@ -56,7 +56,7 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
         cb = null;
       }
     } else {
-      console.log("- file '" + sourceFileList[0] + "' transferred");
+      process.stdout.write(' SCP: ' + chalk.bgWhite.blue(' ' + sourceFileList[0] + ' \n'));
 
       sourceFileList.splice(0, 1);
       targetFileList.splice(0, 1);
@@ -182,8 +182,19 @@ function sshExecCmd(cmd, options, cb) {
     cb(e);
   });
 
-  if (options && options.verbose && options.sshPrintCommands) {
-    process.stdout.write('\n ssh: ' + chalk.bgWhite.blue(' ' + cmd + ' \n\n'));
+  if (options && options.sshPrintCommands) {
+    process.stdout.write(' SSH: ' + chalk.bgWhite.blue(' ' + cmd + ' \n'));
+  }
+
+  var marker = false;
+
+  if (options && options.marker) {
+    marker = options.marker;
+  }
+
+  if (options && options.validate) {
+    marker = "X-COMPLETED-X";
+    cmd += ' && echo ' + marker;
   }
 
   ssh.exec(cmd, {
@@ -199,8 +210,8 @@ function sshExecCmd(cmd, options, cb) {
       // setting short timeout, as exit handler may be called before remaining data
       // arrives via out
       setTimeout(function () {
-        if (options && options.marker) {
-          if (output.indexOf(options.marker) < 0) {
+        if (marker) {
+          if (output.indexOf(marker) < 0) {
             var err = new Error("SSH command hasn't completed successfully");
             err.stack = err.message;
             err.marker = true;
