@@ -75,7 +75,7 @@ function initTasks(gulp, options) {
     runSequence('check-raspbian', 'rpi-clone-azure-sdk', 'rpi-build-azure-iot-sdk', cb);
   });
 
-  gulp.task('deploys', 'Deploy and build sample code on the device', function (cb) {
+  gulp.task('deploy', 'Deploy and build sample code on the device', function (cb) {
     // write config file only if any
     all.writeConfigH();
 
