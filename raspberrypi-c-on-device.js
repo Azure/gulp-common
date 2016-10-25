@@ -32,6 +32,23 @@ function initTasks(gulp, options) {
     cb();
   })
 
+  gulp.task('check-raspbian', false, function (cb) {
+    all.sshExecCmd('uname -a', { verbose: args.verbose, marker: 'Linux raspberrypi 4.4', sshPrintCommands: true }, function (err) {
+      if (err) {
+        if (err.marker) {
+          console.log('--------------------');
+          console.log('WARNING: Unsupported OS version - sample code may not work properly');
+          console.log('--------------------');
+          cb();
+        } else {
+          cb(err);
+        }
+      } else {
+        cb();
+      }
+    });
+  })
+
   gulp.task('rpi-clone-azure-sdk', false, function(cb) {
     all.sshExecCmds([ "if [ ! -d ~/azure-iot-sdks ]; then git clone https://github.com/Azure/azure-iot-sdks.git; fi",
                       "cd azure-iot-sdks && git submodule update --init -- c/uamqp",
@@ -54,11 +71,11 @@ function initTasks(gulp, options) {
                       validate: true }, cb);
   })
 
-  gulp.task('install-tools', 'Installs required software on Raspberry Pi', function(cb) {
-    runSequence('rpi-clone-azure-sdk', 'rpi-build-azure-iot-sdk', cb);
+  gulp.task('install-tools', 'Installs required software on the device', function(cb) {
+    runSequence('check-raspbian', 'rpi-clone-azure-sdk', 'rpi-build-azure-iot-sdk', cb);
   });
 
-  gulp.task('deploy', false, ['check-raspbian'], function (cb) {
+  gulp.task('deploys', 'Deploy and build sample code on the device', function (cb) {
     // write config file only if any
     all.writeConfigH();
 
@@ -73,33 +90,18 @@ function initTasks(gulp, options) {
       }
     }
 
-    all.uploadFilesViaScp(src, dst, cb);
-  });
-
-  gulp.task('build', 'Builds sample code', ['deploy'], function (cb) {
-    all.sshExecCmds( [ 'cd ' + targetFolder + ' && cmake .',
-                       'cd ' + targetFolder + ' && make' ],
-                     { verbose: args.verbose,
-                       sshPrintCommands: true,
-                       validate: true }, cb);
-  });
-
-  gulp.task('check-raspbian', false, function (cb) {
-    all.sshExecCmd('uname -a', { verbose: args.verbose, marker: 'Linux raspberrypi 4.4', sshPrintCommands: true }, function (err) {
+    all.uploadFilesViaScp(src, dst, function (err) {
       if (err) {
-        if (err.marker) {
-          console.log('--------------------');
-          console.log('WARNING: Unsupported OS version - sample code may not work properly');
-          console.log('--------------------');
-          cb();
-        } else {
-          cb(err);
-        }
+        cb(err);
       } else {
-        cb();
+        all.sshExecCmds( [ 'cd ' + targetFolder + ' && cmake .',
+                           'cd ' + targetFolder + ' && make' ],
+                         { verbose: args.verbose,
+                           sshPrintCommands: true,
+                           validate: true }, cb);        
       }
     });
-  })
+  });
 
   gulp.task('run-internal', false, function (cb) {
     all.sshExecCmd('sudo chmod +x ' + targetFolder + '/' + startFile + ' ; sudo '
