@@ -98,7 +98,7 @@ function initTasks(gulp, options) {
                            'cd ' + targetFolder + ' && make' ],
                          { verbose: args.verbose,
                            sshPrintCommands: true,
-                           validate: true }, cb);        
+                           validate: true }, cb);
       }
     });
   });
