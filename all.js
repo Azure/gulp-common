@@ -213,6 +213,12 @@ function sshExecCmd(cmd, options, cb) {
       setTimeout(function () {
         if (marker) {
           if (output.indexOf(marker) < 0) {
+
+            // dump output in non-verbose error if command was not successful
+            if (!(options && options.verbose)) {
+              process.stdout.write(output);
+            }
+
             var err = new Error("SSH command hasn't completed successfully");
             err.stack = err.message;
             err.marker = true;
