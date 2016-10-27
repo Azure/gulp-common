@@ -154,7 +154,8 @@ function localClone(url, folder, verbose, cb) {
 function sshExecCmd(cmd, options, cb) {
   var sshOptions = {
     host: config.device_host_name_or_ip_address,
-    user: config.device_user_name
+    user: config.device_user_name,
+    timeout: 30000
   };
 
   var sshKey = findSshKey();
