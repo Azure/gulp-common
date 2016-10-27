@@ -214,7 +214,7 @@ function sshExecCmd(cmd, options, cb) {
           if (output.indexOf(marker) < 0) {
 
             // dump output in non-verbose error if command was not successful
-            if (options && options.verbose) {
+            if (!(options && options.verbose)) {
               process.stdout.write(output);
             }
 
