@@ -7,9 +7,9 @@ var args = require('get-gulp-args')();
 var fs = require('fs');
 
 /**
- * Main entry point for all Rapberry Pi Node configuration.
+ * Main entry point for all Intel Edison Node configuration.
  * @param {object} gulp     - Gulp instance
- * @param {object} options  - Raspberry Pi Node Specific options
+ * @param {object} options  - Intel Edison Node Specific options
  */
 function initTasks(gulp, options) {
   var runSequence = require('run-sequence').use(gulp);
