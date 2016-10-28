@@ -56,7 +56,7 @@ function uploadFilesViaScp(sourceFileList, targetFileList, cb) {
         cb = null;
       }
     } else {
-      process.stdout.write(' SCP: ' + chalk.bgWhite.blue(' ' + sourceFileList[0] + ' \n'));
+      process.stdout.write(' SCP: ' + chalk.bgWhite.blue(' ' + sourceFileList[0] + ' ') + '\n');
 
       sourceFileList.splice(0, 1);
       targetFileList.splice(0, 1);
@@ -184,7 +184,7 @@ function sshExecCmd(cmd, options, cb) {
   });
 
   if (options && options.sshPrintCommands) {
-    process.stdout.write(' SSH: ' + chalk.bgWhite.blue(' ' + cmd + ' \n'));
+    process.stdout.write(' SSH: ' + chalk.bgWhite.blue(' ' + cmd + ' ') + '\n');
   }
 
   var marker = false;
