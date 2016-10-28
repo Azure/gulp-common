@@ -20,6 +20,15 @@ biHelper.gulpTaskBI = function (gulpInst, language, board, sample) {
     return;
   }
 
+  gulpInst.on('task_start', function(e) {
+    bi.trackEvent(e.task + '-start' || 'gulp_task_start', {
+      language: language,
+      board: board,
+      sample: sample,
+    });
+    bi.flush();
+  });
+
   gulpInst.on('task_stop', function(e) {
     bi.trackEvent(e.task || 'gulp_task_stop', {
       language: language,
