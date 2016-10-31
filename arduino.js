@@ -92,7 +92,11 @@ function initTasks(gulp, options) {
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
     all.writeConfigH();
-    if (!config.device_port.trim()) {
+    var port = null;
+    if (config.device_port) {
+      port = config.device_port.trim();
+    }
+    if (port) {
       all.localExecCmd(getArduinoCommand() + ' --upload --board ' + boardDescriptor +
         ' --port ' + config.device_port + ' ' + process.cwd() + '/app/app.ino --verbose-upload', args.verbose, cb);
     } else {
