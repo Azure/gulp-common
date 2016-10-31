@@ -23,6 +23,13 @@ function initTasks(gulp, options) {
     options.board.board +
     ((options.board.parameters.length > 0) ? (':' + options.board.parameters) : '');
 
+  gulp.task('init', 'Initializes sample', function (cb) {
+    if (options.configPostfix && options.configTemplate) {
+      all.updateGlobalConfig(options.configPostfix, options.configTemplate);
+    }
+    cb();
+  });
+
   gulp.task('install-tools-java', false, function (cb) {
     if (process.platform == 'win32') {
       cb();
@@ -82,12 +89,6 @@ function initTasks(gulp, options) {
   gulp.task('install-tools', 'Installs Arduino, boards specific and Azure tools', function (callback) {
     runSequence('install-tools-java', 'install-tools-arduino',
       'install-tools-arduino-init-libraries', 'install-tools-package', 'install-tools-libraries', callback);
-  });
-
-  gulp.task('build', 'Builds sample code', function (cb) {
-    all.writeConfigH();
-    all.localExecCmd(getArduinoCommand() + ' --verify --board ' +
-      boardDescriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {

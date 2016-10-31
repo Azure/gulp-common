@@ -2,7 +2,7 @@
 * Gulp Common - Microsoft Sample Code - Copyright (c) 2016 - Licensed MIT
 */
 'use strict';
-
+var os = require('os');
 var fs = require('fs');
 var path = require('path');
 var request = require('request');
@@ -521,7 +521,11 @@ function updateGlobalConfig(postfix, template) {
  */
 function writeConfigH() {
   if (config.iot_device_connection_string) {
-    var headerContent = 'static const char* connectionString = ' + '"' + config.iot_device_connection_string + '"' + ';';
+    var headerContent = `static const char* connectionString = "${config.iot_device_connection_string}";`;
+    if (config.wifi_ssid && config.wifi_password) {
+      headerContent =
+        `${headerContent}${os.EOL}static const char* ssid="${config.wifi_ssid}";${os.EOL}static const char* pass="${config.wifi_password}";`;
+    }
     fs.writeFileSync('./app/config.h', headerContent);
   }
 }
