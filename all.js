@@ -519,10 +519,10 @@ function updateGlobalConfig(postfix, template) {
 /**
  * Writes app/config.h file (for C and Arduino)
  */
-function writeConfigH(containsWifiConfig) {
+function writeConfigH() {
   if (config.iot_device_connection_string) {
     var headerContent = `static const char* connectionString = "${config.iot_device_connection_string}";`;
-    if (containsWifiConfig) {
+    if (config.wifi_ssid && config.wifi_password) {
       headerContent =
         `${headerContent}${os.EOL}static const char* ssid="${config.wifi_ssid}";${os.EOL}static const char* pass="${config.wifi_password}";`;
     }

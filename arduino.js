@@ -91,14 +91,8 @@ function initTasks(gulp, options) {
       'install-tools-arduino-init-libraries', 'install-tools-package', 'install-tools-libraries', callback);
   });
 
-  gulp.task('build', 'Builds sample code', function (cb) {
-    all.writeConfigH(true);
-    all.localExecCmd(getArduinoCommand() + ' --verify --board ' +
-      boardDescriptor + ' ' + process.cwd() + '/app/app.ino --verbose-build', args.verbose, cb);
-  });
-
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
-    all.writeConfigH(true);
+    all.writeConfigH();
     var port = null;
     if (config.device_port) {
       port = config.device_port.trim();
