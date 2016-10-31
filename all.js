@@ -2,7 +2,7 @@
 * Gulp Common - Microsoft Sample Code - Copyright (c) 2016 - Licensed MIT
 */
 'use strict';
-
+var os = require('os');
 var fs = require('fs');
 var path = require('path');
 var request = require('request');
@@ -519,9 +519,13 @@ function updateGlobalConfig(postfix, template) {
 /**
  * Writes app/config.h file (for C and Arduino)
  */
-function writeConfigH() {
+function writeConfigH(containsWifiConfig) {
   if (config.iot_device_connection_string) {
-    var headerContent = 'static const char* connectionString = ' + '"' + config.iot_device_connection_string + '"' + ';';
+    var headerContent = `static const char* connectionString = "${config.iot_device_connection_string}";`;
+    if (containsWifiConfig) {
+      headerContent =
+        `${headerContent}${os.EOL}static const char* ssid="${config.wifi_ssid}";${os.EOL}static const char* pass="${config.wifi_password}";`;
+    }
     fs.writeFileSync('./app/config.h', headerContent);
   }
 }
