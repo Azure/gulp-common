@@ -49,29 +49,33 @@ function initTasks(gulp, options) {
     });
   })
 
-  gulp.task('rpi-clone-azure-sdk', false, function(cb) {
-    all.sshExecCmds([ "if [ ! -d ~/azure-iot-sdks ]; then git clone https://github.com/Azure/azure-iot-sdks.git; fi",
-                      "cd azure-iot-sdks && git submodule update --init -- c/uamqp",
-                      "cd azure-iot-sdks && git submodule update --init -- c/umqtt",
-                      "cd azure-iot-sdks && git submodule update --init -- c/c-utility",
-                      "cd azure-iot-sdks && git submodule update --init -- c/parson",
-                      "cd azure-iot-sdks/c/uamqp && git submodule update --init -- c-utility",
-                      "cd azure-iot-sdks/c/umqtt && git submodule update --init -- c-utility",
-                      ],
-                      { verbose: args.verbose,
-                        sshPrintCommands: true,
-                        validate: true }, cb);
+  gulp.task('rpi-clone-azure-sdk', false, function (cb) {
+    all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; then git clone https://github.com/Azure/azure-iot-sdks.git; fi",
+      "cd azure-iot-sdks && git submodule update --init -- c/uamqp",
+      "cd azure-iot-sdks && git submodule update --init -- c/umqtt",
+      "cd azure-iot-sdks && git submodule update --init -- c/c-utility",
+      "cd azure-iot-sdks && git submodule update --init -- c/parson",
+      "cd azure-iot-sdks/c/uamqp && git submodule update --init -- c-utility",
+      "cd azure-iot-sdks/c/umqtt && git submodule update --init -- c-utility",
+    ],
+      {
+        verbose: args.verbose,
+        sshPrintCommands: true,
+        validate: true
+      }, cb);
   })
 
-  gulp.task('rpi-build-azure-iot-sdk', false, function(cb) {
-    all.sshExecCmds([ "cd ~/azure-iot-sdks && sudo c/build_all/linux/setup.sh --no-mqtt",
-                      "cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests --no-mqtt" ],
-                    { verbose: args.verbose,
-                      sshPrintCommands: true,
-                      validate: true }, cb);
+  gulp.task('rpi-build-azure-iot-sdk', false, function (cb) {
+    all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/setup.sh --no-mqtt",
+      "cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests --no-mqtt"],
+      {
+        verbose: args.verbose,
+        sshPrintCommands: true,
+        validate: true
+      }, cb);
   })
 
-  gulp.task('install-tools', 'Installs required software on the device', function(cb) {
+  gulp.task('install-tools', 'Installs required software on the device', function (cb) {
     runSequence('check-raspbian', 'rpi-clone-azure-sdk', 'rpi-build-azure-iot-sdk', cb);
   });
 
@@ -94,11 +98,13 @@ function initTasks(gulp, options) {
       if (err) {
         cb(err);
       } else {
-        all.sshExecCmds( [ 'cd ' + targetFolder + ' && cmake .',
-                           'cd ' + targetFolder + ' && make' ],
-                         { verbose: args.verbose,
-                           sshPrintCommands: true,
-                           validate: true }, cb);
+        all.sshExecCmds(['cd ' + targetFolder + ' && cmake .',
+          'cd ' + targetFolder + ' && make'],
+          {
+            verbose: args.verbose,
+            sshPrintCommands: true,
+            validate: true
+          }, cb);
       }
     });
   });

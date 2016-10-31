@@ -32,7 +32,7 @@ function initTasks(gulp, options) {
     cb();
   })
 
-  gulp.task('install-tools', 'Installs required software on the device', function(cb) {
+  gulp.task('install-tools', 'Installs required software on the device', function (cb) {
     all.sshExecCmd("opkg install mraa", { verbose: args.verbose }, cb);
   });
 
@@ -55,11 +55,13 @@ function initTasks(gulp, options) {
       if (err) {
         cb(err);
       } else {
-        all.sshExecCmds( [ 'cd ' + targetFolder + ' && cmake .',
-                           'cd ' + targetFolder + ' && make' ],
-                         { verbose: args.verbose,
-                           sshPrintCommands: true,
-                           validate: true }, cb);
+        all.sshExecCmds(['cd ' + targetFolder + ' && cmake .',
+          'cd ' + targetFolder + ' && make'],
+          {
+            verbose: args.verbose,
+            sshPrintCommands: true,
+            validate: true
+          }, cb);
       }
     });
   });
