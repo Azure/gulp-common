@@ -187,17 +187,6 @@ function sshExecCmd(cmd, options, cb) {
     process.stdout.write(' SSH: ' + chalk.bgWhite.blue(' ' + cmd + ' ') + '\n');
   }
 
-  var marker = false;
-
-  if (options && options.marker) {
-    marker = options.marker;
-  }
-
-  if (options && options.validate) {
-    marker = "X-COMPLETED-X";
-    cmd += ' && echo ' + marker;
-  }
-
   ssh.exec(cmd, {
     pty: true,
     out: function (o) {
@@ -207,26 +196,28 @@ function sshExecCmd(cmd, options, cb) {
 
       output += String(o);
     },
-    exit: function () {
+    exit: function (code) {
       // setting short timeout, as exit handler may be called before remaining data
       // arrives via out
       setTimeout(function () {
-        if (marker) {
-          if (output.indexOf(marker) < 0) {
+        var succeeded = true;
 
-            // dump output in non-verbose error if command was not successful
-            if (!(options && options.verbose)) {
-              process.stdout.write(output);
-            }
+        if (code != 0 || (options && options.marker && output.indexOf(options.marker < 0))) {
+          succeeded = false;
+        }
 
-            var err = new Error("SSH command hasn't completed successfully");
-            err.stack = err.message;
-            err.marker = true;
-            cb(err);
-            return;
+        if (succeeded) {
+          if (cb) cb();
+        } else {
+          // dump output in non-verbose error if command was not successful
+          if (!(options && options.verbose)) {
+            process.stdout.write(output);
+          }
+
+          if (cb) {
+            cb(new Error("SSH command hasn't completed successfully"));
           }
         }
-        if (cb) cb();
       }, 1000);
     }
   }).start();
