@@ -80,8 +80,6 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('deploy', 'Deploy and build sample code on the device', function (cb) {
-    // write config file only if any
-    all.writeConfigH();
 
     let src = [];
     let dst = [];
@@ -110,8 +108,14 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('run-internal', false, function (cb) {
+
+    var param = '';
+    if (config.iot_device_connection_string) {
+      param = config.iot_device_connection_string;
+    }
+    
     all.sshExecCmd('sudo chmod +x ' + targetFolder + '/' + startFile + ' ; sudo '
-      + targetFolder + '/' + startFile, { verbose: true, sshPrintCommands: true }, cb);
+      + targetFolder + '/' + startFile + ' ' + param, { verbose: true, sshPrintCommands: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
