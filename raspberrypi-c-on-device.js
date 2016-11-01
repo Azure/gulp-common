@@ -113,7 +113,7 @@ function initTasks(gulp, options) {
     if (config.iot_device_connection_string) {
       param = '"' + config.iot_device_connection_string + '"';
     }
-    
+
     all.sshExecCmd('sudo chmod +x ' + targetFolder + '/' + startFile + ' ; sudo '
       + targetFolder + '/' + startFile + ' ' + param, { verbose: true, sshPrintCommands: true }, cb);
   });
