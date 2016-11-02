@@ -89,9 +89,6 @@ function initTasks(gulp, options) {
 
 
   gulp.task('deploy', 'Deploy and build sample code on the device', function (cb) {
-    // write config file only if any
-    all.writeConfigH();
-
     let src = [];
     let dst = [];
 
