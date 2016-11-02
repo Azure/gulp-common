@@ -44,12 +44,7 @@ function initTasks(gulp, options) {
         console.log('Azure IoT SDK repo already exists in folder ' + repoFolderPath);
       } else {
         console.log('Clone Azure IoT SDK to folder ' + repoFolderPath + '. It will take several minutes.');
-        all.sshExecCmds(["git clone --recursive https://github.com/Azure/azure-iot-sdks.git"],
-          {
-            verbose: args.verbose,
-            sshPrintCommands: true,
-            validate: true
-          }, cb);
+        all.localExecCmd("git clone --recursive https://github.com/Azure/azure-iot-sdks.git " + repoFolderPath, args.verbose, cb);
       }
     });
   });
