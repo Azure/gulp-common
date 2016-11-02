@@ -202,7 +202,7 @@ function sshExecCmd(cmd, options, cb) {
       setTimeout(function () {
         var succeeded = true;
 
-        if (code != 0 || (options && options.marker && output.indexOf(options.marker < 0))) {
+        if (code != 0 || (options && options.marker && output.indexOf(options.marker) < 0)) {
           succeeded = false;
         }
 
