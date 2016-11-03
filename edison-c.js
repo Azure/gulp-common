@@ -38,7 +38,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('clone-iot-sdk', false, function (cb) {
-    all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; then git clone https://github.com/Azure/azure-iot-sdks.git; fi",
+    all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; then git clone https://github.com/Azure/azure-iot-sdks.git && git checkout a291a82; fi",
       'cd ~/azure-iot-sdks/c/uamqp && if ! [ "$(ls -A .)" ]; then git clone https://github.com/Azure/azure-uamqp-c.git . && git checkout 6f05a06; fi',
       'cd ~/azure-iot-sdks/c/umqtt && if ! [ "$(ls -A .)" ]; then git clone https://github.com/Azure/azure-umqtt-c.git . && git checkout d09ed25; fi',
       'cd ~/azure-iot-sdks/c/parson && if ! [ "$(ls -A .)" ]; then git clone https://github.com/kgabis/parson.git . && git checkout c22be79; fi',
