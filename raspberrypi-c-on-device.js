@@ -76,7 +76,7 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('install-tools', 'Installs required software on the device', function (cb) {
-    runSequence('check-raspbian', 'rpi-clone-azure-sdk', 'rpi-build-azure-iot-sdk', cb);
+    runSequence('rpi-clone-azure-sdk', 'rpi-build-azure-iot-sdk', cb);
   });
 
   gulp.task('deploy', 'Deploy and build sample code on the device', function (cb) {
