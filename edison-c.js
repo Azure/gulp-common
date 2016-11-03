@@ -3,7 +3,6 @@
 */
 'use strict';
 
-var fs = require('fs');
 var args = require('get-gulp-args')();
 
 var all;
@@ -38,39 +37,28 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('clone-iot-sdk', false, function (cb) {
-    var repoFolderPath = all.getToolsFolder() + '/' + 'azure-iot-sdks';
-    fs.exists(repoFolderPath, function (exists) {
-      if (exists) {
-        console.log('Azure IoT SDK repo already exists in folder ' + repoFolderPath);
-      } else {
-        console.log('Clone Azure IoT SDK to folder ' + repoFolderPath + '. It will take several minutes.');
-        all.localExecCmd("git clone --recursive https://github.com/Azure/azure-iot-sdks.git " + repoFolderPath, args.verbose, cb);
-      }
-    });
+    all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; " +
+      "then git clone https://github.com/Azure/azure-iot-sdks.git && cd ~/azure-iot-sdks && git checkout a291a82; fi",
+      'cd ~/azure-iot-sdks/c/uamqp && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-uamqp-c.git . && git checkout 6f05a06; fi',
+      'cd ~/azure-iot-sdks/c/umqtt && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-umqtt-c.git . && git checkout d09ed25; fi',
+      'cd ~/azure-iot-sdks/c/parson && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/kgabis/parson.git . && git checkout c22be79; fi',
+      'cd ~/azure-iot-sdks/c/c-utility && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout d42faec; fi',
+      'cd ~/azure-iot-sdks/c/uamqp/c-utility && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi',
+      'cd ~/azure-iot-sdks/c/umqtt/c-utility && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi'],
+      {
+        verbose: args.verbose,
+        sshPrintCommands: true,
+        validate: true
+      }, cb);
   });
 
-  gulp.task('upload-sdk-to-device', false, function (cb) {
-    // TODO: check the folder existence on device before copy.
-    // Console output: 1. already exists; 2. may take several minutes.
-    var folderName = 'azure-iot-sdks';
-    var repoFolderPath = all.getToolsFolder() + '/' + folderName + '/';
-
-    var src = [];
-    src.push(repoFolderPath);
-    var target = [];
-    target.push('./' + folderName + '/');
-
-    all.uploadFilesViaScp(src, target, function (err) {
-      if (err) {
-        console.log(err);
-      }
-      if (cb) {
-        cb(err);
-      }
-    });
-  });
-
-  gulp.task('build-iot-sdk-on-device', false, function (cb) {
+  gulp.task('build-iot-sdk', false, function (cb) {
     all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests"],
       {
         verbose: args.verbose,
@@ -80,7 +68,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('install-tools', 'Installs required software on the device', function (cb) {
-    runSequence('install-mraa', 'clone-iot-sdk', 'upload-sdk-to-device', 'build-iot-sdk-on-device', cb);
+    runSequence('install-mraa', 'clone-iot-sdk', 'build-iot-sdk', cb);
   });
 
 
