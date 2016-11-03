@@ -63,13 +63,9 @@ function initTasks(gulp, options) {
     all.uploadFilesViaScp(src, target, function (err) {
       if (err) {
         console.log(err);
-        if (cb) {
-          cb(err);
-        }
-      } else {
-        if (cb) {
-          cb();
-        }
+      }
+      if (cb) {
+        cb(err);
       }
     });
   });
