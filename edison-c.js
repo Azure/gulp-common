@@ -51,7 +51,7 @@ function initTasks(gulp, options) {
 
   gulp.task('upload-sdk-to-device', false, function (cb) {
     // TODO: check the folder existence on device before copy.
-    // Console output: 1. already exists; 2. may take several minutes. 
+    // Console output: 1. already exists; 2. may take several minutes.
     var folderName = 'azure-iot-sdks';
     var repoFolderPath = all.getToolsFolder() + '/' + folderName + '/';
 
@@ -101,7 +101,7 @@ function initTasks(gulp, options) {
         cb(err);
       } else {
         all.sshExecCmds(['cd ' + targetFolder + ' && cmake .',
-        'cd ' + targetFolder + ' && make'],
+          'cd ' + targetFolder + ' && make'],
           {
             verbose: args.verbose,
             sshPrintCommands: true,
