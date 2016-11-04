@@ -21,8 +21,7 @@ function initTasks(gulp, options) {
     all.gulpTaskBI(gulp, 'nodejs', 'gateway', ((options && options.appName) ? options.appName : 'unknown'));
   }
 
-  // copy files into profile folder
-  gulp.task('init', 'Initialize config files in the user’s profile folder', function(cb) {
+  gulp.task('init', 'Initialize config files in user\'s profile folder', function(cb) {
 
     if (options.configPostfix && options.configTemplate) {
       all.updateGlobalConfig(options.configPostfix, options.configTemplate['ssh-config']);
@@ -33,12 +32,11 @@ function initTasks(gulp, options) {
     cb();
   });
 
-  // copy inital files to the NUC
-  gulp.task('install-tools', 'Install necessary tools into the gateway', function(cb) {
+  gulp.task('install-tools', 'Install necessary tools on the gateway', function(cb) {
     var cpList = [
       'app/.ble_gateway.json',
-      'app/sensortagdisco.js',
-      'app/testconnect.js',
+      'app/discover-sensortag.js',
+      'app/test-connectivity.js',
       'app/deploy.js',
       'app/run.js',
       'app/lib/bleconfig.js',
@@ -53,7 +51,7 @@ function initTasks(gulp, options) {
     all.uploadFilesViaScp(cpList, link, cb);
   });
 
-  gulp.task('clean-remote', 'clean remote', function(cb) {
+  gulp.task('clean-remote', 'remove all copied files on the gateway', function(cb) {
     all.sshExecCmd('sudo rm -rf ' + workspace, {
       verbose: false
     }, function(err) {
@@ -65,17 +63,15 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('clean-local', 'clean local', function(cb) {
+  gulp.task('clean-local', 'remove config files in user\'s profile folder', function(cb) {
     all.deleteFolderRecursivelySync(all.getToolsFolder());
     cb();
   });
 
-  // remove the file in the local profile folder and remote NUC
   gulp.task('clean', 'clean local and remote', ['clean-remote', 'clean-local']);
 
-  // discover sensortag device
-  gulp.task('discover-sensortag', 'Discover sensortag devices, need run "install-tools" first', function(cb) {
-    all.sshExecCmd('cd ' + workspace + '; node sensortagdisco.js', {
+  gulp.task('discover-sensortag', 'Discover TI SensorTag. Run after "install-tools"', function(cb) {
+    all.sshExecCmd('cd ' + workspace + '; node discover-sensortag.js', {
       verbose: true
     }, function(err) {
       if (err) {
@@ -86,10 +82,14 @@ function initTasks(gulp, options) {
     });
   });
 
-  // test sensortag's connectivity
-  // usage: gulp testconnect --mac <mac address>
-  gulp.task('test-connectivity', 'Test connectivity of the SensorTag, need run "install-tools" first', function(cb) {
-    all.sshExecCmd('cd ' + workspace + '; node testconnect.js ' + args['mac'], {
+  // usage: gulp test-connectivity --mac <mac address>
+  gulp.task('test-connectivity', 'Test connectivity of the SensorTag. Run after "install-tools"', function(cb) {
+    if(!args['mac']) {
+      cb('usage: gulp test-connectivity --mac <mac address>');
+      return;
+    }
+
+    all.sshExecCmd('cd ' + workspace + '; node test-connectivity.js ' + args['mac'], {
       verbose: true
     }, function(err) {
       if (err) {
@@ -100,7 +100,6 @@ function initTasks(gulp, options) {
     });
   });
 
-  // run BLE sample on NUC
   gulp.task('run', 'Run the BLE sample application in the Gateway SDK', ['install-tools', 'upload-config'], function(cb) {
     all.sshExecCmd('cd ' + workspace + '; node run.js', {
       verbose: true
