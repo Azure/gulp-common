@@ -9,6 +9,10 @@ var args = require('get-gulp-args')();
 var all;
 
 function initTasks(gulp, options) {
+  gulp = require('gulp-help')(gulp, {
+    hideDepsMessage: true
+  });
+
   all = require('./all.js')(options);
 
   var config = flatten(all.getConfig());
@@ -51,7 +55,7 @@ function initTasks(gulp, options) {
     all.uploadFilesViaScp(cpList, link, cb);
   });
 
-  gulp.task('clean-remote', 'remove all copied files on the gateway', function(cb) {
+  gulp.task('clean-remote', false, function(cb) {
     all.sshExecCmd('sudo rm -rf ' + workspace, {
       verbose: false
     }, function(err) {
@@ -63,12 +67,12 @@ function initTasks(gulp, options) {
     });
   });
 
-  gulp.task('clean-local', 'remove config files in user\'s profile folder', function(cb) {
+  gulp.task('clean-local', false, function(cb) {
     all.deleteFolderRecursivelySync(all.getToolsFolder());
     cb();
   });
 
-  gulp.task('clean', 'clean local and remote', ['clean-remote', 'clean-local']);
+  gulp.task('clean', 'Remove config files in user\'s profile folder and remove tools on the gateway', ['clean-remote', 'clean-local']);
 
   gulp.task('discover-sensortag', 'Discover TI SensorTag. Run after "install-tools"', function(cb) {
     all.sshExecCmd('cd ' + workspace + '; node discover-sensortag.js', {
@@ -98,6 +102,10 @@ function initTasks(gulp, options) {
         cb();
       }
     });
+  }, {
+    options: {
+      'mac <mac address>': '[Required] Specific your SensorTag\'s mac address'
+    }
   });
 
   gulp.task('run', 'Run the BLE sample application in the Gateway SDK', ['install-tools', 'upload-config'], function(cb) {
@@ -112,8 +120,8 @@ function initTasks(gulp, options) {
     });
   });
 
-  // copy config.json into NUC
-  gulp.task('upload-config', 'Copy config file to the gateway machine', function(cb) {
+  // Copy config file to the gateway machine
+  gulp.task('upload-config', false, function(cb) {
     all.uploadFilesViaScp([config.sensortagConfigPath], [workspace + 'config.json'], cb);
   });
 }
