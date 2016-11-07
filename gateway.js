@@ -17,6 +17,9 @@ function initTasks(gulp, options) {
 
   var config = flatten(all.getConfig());
   var workspace = './ble_sample/';
+  var nodeCmd = getNodeCmd({
+    'debug': args['debug']
+  });
 
   // stick config into gulp object
   gulp.config = config;
@@ -78,7 +81,7 @@ function initTasks(gulp, options) {
   gulp.task('clean', 'Remove config files in user\'s profile folder and remove tools on the gateway.', ['clean-remote', 'clean-local']);
 
   gulp.task('discover-sensortag', 'Discover TI SensorTag. Run after "install-tools".', function(cb) {
-    all.sshExecCmd('cd ' + workspace + '; node discover-sensortag.js', {
+    all.sshExecCmd('cd ' + workspace + '; ' + nodeCmd + ' discover-sensortag.js', {
       verbose: true
     }, function(err) {
       if (err) {
@@ -91,12 +94,12 @@ function initTasks(gulp, options) {
 
   // usage: gulp test-connectivity --mac <mac address>
   gulp.task('test-connectivity', 'Test connectivity of the SensorTag. Run after "install-tools".', function(cb) {
-    if(!args['mac']) {
+    if (!args['mac']) {
       cb('usage: gulp test-connectivity --mac <mac address>');
       return;
     }
 
-    all.sshExecCmd('cd ' + workspace + '; node test-connectivity.js ' + args['mac'], {
+    all.sshExecCmd('cd ' + workspace + '; ' + nodeCmd + ' test-connectivity.js ' + args['mac'], {
       verbose: true
     }, function(err) {
       if (err) {
@@ -112,11 +115,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('run', 'Run the BLE sample application in the Gateway SDK.', ['install-tools', 'upload-config'], function(cb) {
-    var nodeArgs = '';
-    if(args['debug']) {
-      nodeArgs += ' --debug-brk=5858'
-    }
-    all.sshExecCmd('cd ' + workspace + '; node run.js' + nodeArgs, {
+    all.sshExecCmd('cd ' + workspace + '; ' + nodeCmd + ' run.js', {
       verbose: true
     }, function(err) {
       if (err) {
@@ -165,6 +164,17 @@ function flatten(rawConfig) {
 
   // merge
   return Object.assign(config, sensortagConfig, azureConfig, rawConfig);
+}
+
+function getNodeCmd(options) {
+  options = Object.assign({
+    'debug': false
+  }, options);
+  var cmd = 'node';
+  if (options.debug) {
+    cmd += ' --debug-brk=5858';
+  }
+  return cmd;
 }
 
 module.exports = initTasks;
