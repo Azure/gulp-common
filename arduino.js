@@ -92,7 +92,9 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('deploy', 'Deploys binary to the device', function (cb) {
-    all.writeConfigH();
+    if (options.app && options.app.indexOf('config.h') > -1) {
+      all.writeConfigH();
+    }
     var port = null;
     if (config.device_port) {
       port = config.device_port.trim();

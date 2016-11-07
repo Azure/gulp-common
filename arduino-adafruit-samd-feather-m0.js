@@ -9,6 +9,8 @@
  */
 function initTasks(gulp, options) {
   var all = require('./all.js')(options);
+  // stick config into gulp object
+  gulp.config = all.getConfig();
 
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'feather_m0', ((options && options.appName) ? options.appName : 'unknown'));
