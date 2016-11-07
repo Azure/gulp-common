@@ -25,7 +25,7 @@ function initTasks(gulp, options) {
     all.gulpTaskBI(gulp, 'nodejs', 'gateway', ((options && options.appName) ? options.appName : 'unknown'));
   }
 
-  gulp.task('init', 'Initialize config files in user\'s profile folder', function(cb) {
+  gulp.task('init', 'Initialize config files in user\'s profile folder.', function(cb) {
 
     if (options.configPostfix && options.configTemplate) {
       all.updateGlobalConfig(options.configPostfix, options.configTemplate['ssh-config']);
@@ -36,21 +36,24 @@ function initTasks(gulp, options) {
     cb();
   });
 
-  gulp.task('install-tools', 'Install necessary tools on the gateway', function(cb) {
-    var cpList = [
-      'app/.ble_gateway.json',
-      'app/discover-sensortag.js',
-      'app/test-connectivity.js',
-      'app/deploy.js',
-      'app/run.js',
-      'app/lib/bleconfig.js',
-      'app/lib/bluetoothctl.js',
-      'app/lib/interactcli.js',
-      'app/lib/util.js'
+  gulp.task('install-tools', 'Install necessary tools on the gateway.', function(cb) {
+    var fileList = [
+      '.ble_gateway.json',
+      'discover-sensortag.js',
+      'test-connectivity.js',
+      'deploy.js',
+      'run.js',
+      'lib/bleconfig.js',
+      'lib/bluetoothctl.js',
+      'lib/interactcli.js',
+      'lib/util.js'
     ];
+    var appfolder = '../Tools/';
+    var cpList = [];
     var link = [];
-    for (var i = 0; i < cpList.length; i++) {
-      link.push(workspace + cpList[i].slice('app/'.length));
+    for (var i = 0; i < fileList.length; i++) {
+      cpList.push(appfolder + fileList[i]);
+      link.push(workspace + fileList[i]);
     }
     all.uploadFilesViaScp(cpList, link, cb);
   });
@@ -72,9 +75,9 @@ function initTasks(gulp, options) {
     cb();
   });
 
-  gulp.task('clean', 'Remove config files in user\'s profile folder and remove tools on the gateway', ['clean-remote', 'clean-local']);
+  gulp.task('clean', 'Remove config files in user\'s profile folder and remove tools on the gateway.', ['clean-remote', 'clean-local']);
 
-  gulp.task('discover-sensortag', 'Discover TI SensorTag. Run after "install-tools"', function(cb) {
+  gulp.task('discover-sensortag', 'Discover TI SensorTag. Run after "install-tools".', function(cb) {
     all.sshExecCmd('cd ' + workspace + '; node discover-sensortag.js', {
       verbose: true
     }, function(err) {
@@ -87,7 +90,7 @@ function initTasks(gulp, options) {
   });
 
   // usage: gulp test-connectivity --mac <mac address>
-  gulp.task('test-connectivity', 'Test connectivity of the SensorTag. Run after "install-tools"', function(cb) {
+  gulp.task('test-connectivity', 'Test connectivity of the SensorTag. Run after "install-tools".', function(cb) {
     if(!args['mac']) {
       cb('usage: gulp test-connectivity --mac <mac address>');
       return;
@@ -104,12 +107,16 @@ function initTasks(gulp, options) {
     });
   }, {
     options: {
-      'mac <mac address>': '[Required] Specific your SensorTag\'s mac address'
+      'mac <mac address>': '[Required] Specific your SensorTag\'s mac address.'
     }
   });
 
-  gulp.task('run', 'Run the BLE sample application in the Gateway SDK', ['install-tools', 'upload-config'], function(cb) {
-    all.sshExecCmd('cd ' + workspace + '; node run.js', {
+  gulp.task('run', 'Run the BLE sample application in the Gateway SDK.', ['install-tools', 'upload-config'], function(cb) {
+    var nodeArgs = '';
+    if(args['debug']) {
+      nodeArgs += ' --debug-brk=5858'
+    }
+    all.sshExecCmd('cd ' + workspace + '; node run.js' + nodeArgs, {
       verbose: true
     }, function(err) {
       if (err) {
