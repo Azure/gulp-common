@@ -32,8 +32,8 @@ function initTasks(gulp, options) {
 
     if (options.configPostfix && options.configTemplate) {
       all.updateGlobalConfig(options.configPostfix, options.configTemplate['ssh-config']);
-      saveConfigFile(config.sensortagConfig, options.configTemplate['sensortag-config']);
-      saveConfigFile(config.azureConfig, options.configTemplate['azure-config']);
+      saveConfigFile(config['sensortag_config_postfix'], options.configTemplate['sensortag-config']);
+      saveConfigFile(config['azure_config_postfix'], options.configTemplate['azure-config']);
     }
 
     cb();
@@ -154,8 +154,8 @@ function readConfig(filename) {
 function flatten(rawConfig) {
   // path
   var config = {
-    sensortagConfigPath: getConfigFilepath(rawConfig.sensortagConfig),
-    azureConfigPath: getConfigFilepath(rawConfig.azureConfig)
+    sensortagConfigPath: getConfigFilepath(rawConfig['sensortag_config_postfix']),
+    azureConfigPath: getConfigFilepath(rawConfig['azure_config_postfix'])
   };
 
   // two object
