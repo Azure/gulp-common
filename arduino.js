@@ -139,6 +139,10 @@ function getLibraryFolder() {
   if (process.platform === 'win32') {
     return process.env['USERPROFILE'] + '/Documents/Arduino/libraries';
   } else if (process.platform === 'linux') {
+    // Use root folder to be consistent with arduino commands:
+    if (process.getuid && process.getuid() === 0) {
+      return '/root/Arduino/libraries';
+    }
     return process.env['HOME'] + '/Arduino/libraries';
   } else if (process.platform === 'darwin') {
     return process.env['HOME'] + '/Documents/Arduino/libraries';

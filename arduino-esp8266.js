@@ -13,6 +13,9 @@ function initTasks(gulp, options) {
   options.board.package = 'esp8266';
   options.board.arch = 'esp8266';
   options.board.packageUrl = 'http://arduino.esp8266.com/stable/package_esp8266com_index.json';
+
+  options.libraries = options.libraries || [];
+  options.libraries.push('AzureIoTHub');
   require('./arduino.js')(gulp, options);
 }
 
