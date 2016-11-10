@@ -58,6 +58,15 @@ function initTasks(gulp, options) {
       }, cb);
   });
 
+  gulp.task('change-make-parallelism-to-2', false, function (cb) {
+    all.sshExecCmds(["sed -i 's/--jobs=$CORES/--jobs=2/g' ~/azure-iot-sdks/c/build_all/linux/build.sh"],
+      {
+        verbose: args.verbose,
+        sshPrintCommands: true,
+        validate: true
+      }, cb);
+  });
+
   gulp.task('build-iot-sdk', false, function (cb) {
     all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests"],
       {
@@ -68,7 +77,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('install-tools', 'Installs required software on the device', function (cb) {
-    runSequence('install-mraa', 'clone-iot-sdk', 'build-iot-sdk', cb);
+    runSequence('install-mraa', 'clone-iot-sdk', 'change-make-parallelism-to-2', 'build-iot-sdk', cb);
   });
 
 
