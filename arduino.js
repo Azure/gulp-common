@@ -3,6 +3,7 @@
 */
 'use strict';
 
+var path = require('path');
 var args = require('get-gulp-args')();
 
 var all;
@@ -61,10 +62,11 @@ function initTasks(gulp, options) {
     } else if (process.platform == 'darwin') {
       // at the moment we will attempt the same approach as for windows
       if (all.folderExistsSync(all.getToolsFolder() + '/Arduino.app')) {
-        console.log('ARDUINO TOOLS ALREADY INSTALLED');
+        console.log('Arduino tools were already installed');
         cb();
       } else {
-        all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip', { folder: 'arduino-1.6.11' }, cb);
+        all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip',
+          { folder: path.join(all.getToolsFolder(), 'arduino-1.6.11') }, cb);
       }
     }
   })
