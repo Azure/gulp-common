@@ -6,6 +6,7 @@
 var args = require('get-gulp-args')();
 
 var all;
+var azureHelper = require('./azure-helper.js');
 
 function initTasks(gulp, options) {
   all = require('./all.js')(options);
@@ -20,6 +21,8 @@ function initTasks(gulp, options) {
   if (typeof all.gulpTaskBI === 'function') {
     all.gulpTaskBI(gulp, 'c', 'RaspberryPi', ((options && options.appName) ? options.appName : 'unknown'));
   }
+
+  azureHelper.initTasks(gulp, options);
 
   var runSequence = require('run-sequence').use(gulp);
 
