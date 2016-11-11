@@ -377,7 +377,7 @@ function localRetrieve(url, options, cb) {
         if (process.platform == 'darwin') {
 
           // for OS X use open command to uncompress all the archives
-          localExecCmd(`ditto -xk ${filePath} ${path.dirname(filePath)}`, args.verbose, cb, { cwd: getToolsFolder() });
+          localExecCmd(`ditto -xk ${filePath} ${path.dirname(filePath)}`, args.verbose, cb);
           return;
 
         } else if (filename.endsWith('.zip')) {
