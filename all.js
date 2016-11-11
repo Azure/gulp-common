@@ -359,7 +359,7 @@ function localRetrieve(url, options, cb) {
     }
   }
 
-  var path = getToolsFolder() + '/' + filename;
+  var filePath = path.join(getToolsFolder(), filename);
 
   if (folderExistsSync(getToolsFolder() + '/' + folder)) {
     console.log(" ... package '" + filename + "' already installed...");
@@ -370,20 +370,20 @@ function localRetrieve(url, options, cb) {
   if (filename.endsWith('.git')) {
     localClone(url, getToolsFolder() + '/' + folder, args.verbose, cb);
   } else {
-    download(url, path, function (err) {
+    download(url, filePath, function (err) {
       if (err) {
         if (cb) cb(err);
       } else {
         if (process.platform == 'darwin') {
 
           // for OS X use open command to uncompress all the archives
-          localExecCmd('open --wait-apps ' + path, args.verbose, cb);
+          localExecCmd(`ditto -xk ${filePath} ${path.dirname(filePath)}`, args.verbose, cb);
           return;
 
         } else if (filename.endsWith('.zip')) {
 
           // for all zip archives on Windows and Ubuntu we will use node module
-          var extractStream = fs.createReadStream(path).pipe(unzip.Extract({ path: getToolsFolder() }));
+          var extractStream = fs.createReadStream(filePath).pipe(unzip.Extract({ path: getToolsFolder() }));
           extractStream.on('error', function (err) {
             err.stack = err.message;
             if (cb) cb(err);
@@ -400,8 +400,8 @@ function localRetrieve(url, options, cb) {
           if (filename.endsWith('.tar.gz')) {
 
             cmds = [
-              'sudo tar xvz --file=' + path + ' -C ' + getToolsFolder(),
-              'sudo rm ' + path];
+              'sudo tar xvz --file=' + filePath + ' -C ' + getToolsFolder(),
+              'sudo rm ' + filePath];
 
             localExecCmds(cmds, args.verbose, cb)
             return;
@@ -411,8 +411,8 @@ function localRetrieve(url, options, cb) {
             cmds = [
               'sudo apt-get update',
               'sudo apt-get install -y wget xz-utils',
-              'sudo tar xJ --file=' + path + ' -C ' + getToolsFolder(),
-              'sudo rm ' + path];
+              'sudo tar xJ --file=' + filePath + ' -C ' + getToolsFolder(),
+              'sudo rm ' + filePath];
 
             localExecCmds(cmds, args.verbose, cb)
             return;
