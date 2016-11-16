@@ -58,11 +58,7 @@ function initTasks(gulp, options) {
       nodeCommand += ' --debug-brk=5858';
     }
 
-    var nodejsParam = '';
-    if (config.iot_device_connection_string) {
-      nodejsParam = ' "' + config.iot_device_connection_string + '"';
-    }
-
+    var nodejsParam = options.appParams ? options.appParams : '';
     all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit', { verbose: true }, cb);
   });
 
