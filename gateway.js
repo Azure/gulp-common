@@ -49,7 +49,8 @@ function initTasks(gulp, options) {
       'lib/bleconfig.js',
       'lib/bluetoothctl.js',
       'lib/interactcli.js',
-      'lib/util.js'
+      'lib/util.js',
+      'lib/test-connectivity.js'
     ];
     var appfolder = '../Tools/';
     var cpList = [];
@@ -110,11 +111,13 @@ function initTasks(gulp, options) {
     });
   }, {
     options: {
-      'mac <mac address>': '[Required] Specific your SensorTag\'s mac address.'
+      'mac <mac address>': '[REQUIRED] Specific your SensorTag\'s mac address.'
     }
   });
 
-  gulp.task('run', 'Run the BLE sample application in the Gateway SDK.', ['install-tools', 'upload-config'], function(cb) {
+  gulp.task('run', 'Run the BLE sample application in the Gateway SDK.', ['run-internal']);
+
+  gulp.task('run-internal', false, ['install-tools', 'upload-config'], function(cb) {
     all.sshExecCmd('cd ' + workspace + '; ' + nodeCmd + ' run.js', {
       verbose: true
     }, function(err) {
@@ -137,6 +140,7 @@ function saveConfigFile(postfix, config) {
   var oldConfig = readConfig(filename);
   var newConfig = Object.assign(config, oldConfig);
   fs.writeFileSync(filename, JSON.stringify(newConfig, null, 2));
+  console.log('Create / update global config file at ' + filename);
 }
 
 function getConfigFilepath(postfix) {
