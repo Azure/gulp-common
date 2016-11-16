@@ -5,6 +5,7 @@
 
 var args = require('get-gulp-args')();
 var fs = require('fs');
+var path = require('path');
 
 /**
  * Main entry point for all Rapberry Pi Node configuration.
@@ -52,9 +53,19 @@ function initTasks(gulp, options) {
       filesRemote.push(targetFolder + '/' + files[i]);
     }
 
+    // optionally copy X.509 certificate(s) and associated private key(s) to the device
+    var toolsFolder = all.getToolsFolder();
+    files = fs.readdirSync(toolsFolder);
+    for (var i = 0; i < files.length; i++) {
+      if (path.extname(files[i]) === '.pem') {
+        filesLocal.push(path.join(toolsFolder, files[i]));
+        filesRemote.push(targetFolder + '/' + files[i]);
+      }
+    }
+
     all.uploadFilesViaScp(filesLocal, filesRemote, function () {
       console.log("- Installing NPM packages on the device. It might take several minutes.");
-      all.sshExecCmd('cd ' + targetFolder + ' && npm install', { verbose: args.verbose }, cb);
+      all.sshExecCmd('cd ' + targetFolder + ' && chmod 600 *.pem && npm install', { verbose: args.verbose }, cb);
     });
   });
 
