@@ -109,7 +109,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('run-internal', false, function (cb) {
-    var param = options.appParams ? options.appParams : '';
+    var param = options.appParams || '';
     all.sshExecCmd('sudo chmod +x ' + targetFolder + '/' + startFile + ' ; sudo '
       + targetFolder + '/' + startFile + ' ' + param, { verbose: true, sshPrintCommands: true }, cb);
   });

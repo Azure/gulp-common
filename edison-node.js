@@ -58,7 +58,7 @@ function initTasks(gulp, options) {
       nodeCommand += ' --debug-brk=5858';
     }
 
-    var nodejsParam = options.appParams ? options.appParams : '';
+    var nodejsParam = options.appParams || '';
     all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit',
       { verbose: true, sshPrintCommands: true }, cb);
   });
