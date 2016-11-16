@@ -59,7 +59,7 @@ function initTasks(gulp, options) {
     }
 
     var nodejsParam = options.appParams ? options.appParams : '';
-    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit', { verbose: true }, cb);
+    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit', { verbose: true, sshPrintCommands: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
