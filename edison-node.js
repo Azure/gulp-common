@@ -58,12 +58,9 @@ function initTasks(gulp, options) {
       nodeCommand += ' --debug-brk=5858';
     }
 
-    var nodejsParam = '';
-    if (config.iot_device_connection_string) {
-      nodejsParam = ' "' + config.iot_device_connection_string + '"';
-    }
-
-    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit', { verbose: true }, cb);
+    var nodejsParam = options.appParams || '';
+    all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit',
+      { verbose: true, sshPrintCommands: true }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);

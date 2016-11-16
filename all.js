@@ -530,8 +530,25 @@ function writeConfigH() {
   }
 }
 
+function getDeviceConnectionString(postfix) {
+  return readGlobalConfig(postfix).iot_device_connection_string;
+}
+
+function getDeviceId(postfix) {
+  var connectionString = getDeviceConnectionString(postfix);
+  var elements = connectionString.split(';');
+  var dict = {};
+  for (var i = 0; i < elements.length; i++) {
+    var kvp = elements[i].split('=');
+    dict[kvp[0]] = kvp[1];
+  }
+  return dict.DeviceId;
+}
+
 module.exports = function (options) {
-  config = readCombinedConfig(options.configPostfix);
+  if (options) {
+    config = readCombinedConfig(options.configPostfix);
+  }
 
   return {
     uploadFilesViaScp,
@@ -550,6 +567,8 @@ module.exports = function (options) {
     getToolsFolder,
     writeConfigH,
     updateGlobalConfig,
-    getConfig
+    getConfig,
+    getDeviceConnectionString,
+    getDeviceId
   }
 }
