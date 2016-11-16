@@ -56,7 +56,7 @@ function initTasks(gulp, options) {
     // optionally copy X.509 certificate(s) and associated private key(s) to the device
     var toolsFolder = all.getToolsFolder();
     files = fs.readdirSync(toolsFolder);
-    for (var i = 0; i < files.length; i++) {
+    for (i = 0; i < files.length; i++) {
       if (path.extname(files[i]) === '.pem') {
         filesLocal.push(path.join(toolsFolder, files[i]));
         filesRemote.push(targetFolder + '/' + files[i]);
