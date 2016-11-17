@@ -127,7 +127,7 @@ function getArduinoCommand() {
     // i assume that that it's available in the path
     return all.getToolsFolder() + '/arduino-1.6.11/arduino_debug.exe';
   } else if (process.platform === 'linux') {
-    return 'sudo ./node_modules/gulp-common/arduino-headless.sh';
+    return './node_modules/gulp-common/arduino-headless.sh';
   } else if (process.platform === 'darwin') {
     return 'open ' + all.getToolsFolder() + '/Arduino.app --wait-apps --args';
   }
