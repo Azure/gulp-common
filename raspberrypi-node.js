@@ -65,7 +65,7 @@ function initTasks(gulp, options) {
 
     all.uploadFilesViaScp(filesLocal, filesRemote, function () {
       console.log("- Installing NPM packages on the device. It might take several minutes.");
-      all.sshExecCmd('cd ' + targetFolder + ' && chmod -f 600 *.pem && npm install', { verbose: args.verbose }, cb);
+      all.sshExecCmd('cd ' + targetFolder + ' && ls *.pem &>/dev/null && chmod -f 600 *.pem || : && npm install', { verbose: args.verbose }, cb);
     });
   });
 
