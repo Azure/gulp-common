@@ -446,8 +446,9 @@ function getToolsFolder() {
  */
 function findSshKey() {
   if (config.device_key_path) {
-    if (fileExistsSync(config.device_key_path)) {
-      return fs.readFileSync(config.device_key_path, { encoding: 'ascii' });
+    let p = path.resolve(config.device_key_path)
+    if (fileExistsSync(p)) {
+      return fs.readFileSync(p, { encoding: 'ascii' });
     }
   }
 
