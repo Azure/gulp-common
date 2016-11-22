@@ -5,6 +5,7 @@
 
 var path = require('path');
 var args = require('get-gulp-args')();
+var chalk = require('chalk');
 
 var all;
 
@@ -93,7 +94,7 @@ function initTasks(gulp, options) {
       'install-tools-arduino-init-libraries', 'install-tools-package', 'install-tools-libraries', callback);
   });
 
-  gulp.task('deploy', 'Deploys binary to the device', function (cb) {
+  gulp.task('deploy-internal', function (cb) {
     if (options.app && options.app.indexOf('config.h') > -1) {
       all.writeConfigH();
     }
@@ -107,6 +108,18 @@ function initTasks(gulp, options) {
     } else {
       cb(new Error('Port is not defined in config'));
     }
+  });
+
+  gulp.task('deploy', function (cb) {
+    if (args.listen) {
+      runSequence('deploy-internal', 'listen', cb);
+    } else {
+      runSequence('deploy-internal', cb);
+    }
+  });
+
+  gulp.task('listen', null, function () {
+    listenPort(config.device_port, config.baudRate);
   });
 
   // Arduino doesn't really have 'run' as 'deploy' resets the board and runs the sample
@@ -271,6 +284,28 @@ function installPackage(name, arch, addUrl, cb) {
       getArduinoCommand() + ' --install-boards ' + name + ':' + arch],
       args.verbose, cb);
   }
+}
+
+function listenPort(devicePort, baudRate) {
+  var SerialPort = require('serialport');
+  var port = new SerialPort(devicePort, {
+    baudRate: baudRate || 115200,
+    parser: SerialPort.parsers.readline('\n')
+  });
+
+  port.on('open', function () {
+    port.write('main screen turn on', function (err) {
+      if (err) {
+        return console.log('Error on write: ', err.message);
+      }
+      console.log(chalk.green(`Serial port ${devicePort} opened for monitoring`));
+    });
+  });
+
+  var headerMessage = chalk.cyan(`[Serial Monitor - ${devicePort}]`);
+  port.on('data', function (data) {
+    console.log(`${headerMessage} ${data}`);
+  });
 }
 
 module.exports = initTasks;
