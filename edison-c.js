@@ -68,7 +68,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('build-iot-sdk', false, function (cb) {
-    all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests"],
+    all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests --no-amqp --no-http --no_uploadtoblob"],
       {
         verbose: args.verbose,
         sshPrintCommands: true,
