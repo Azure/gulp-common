@@ -91,7 +91,7 @@ function localExecCmd(cmd, verbose, cb) {
         if (0 == code) {
           cb();
         } else {
-          var e = new Error('External command failed.');
+          var e = new Error('External command failed');
           e.stack = 'Failed command: ' + cmd + '\nExit code: ' + code;
           cb(e);
         }
@@ -165,7 +165,7 @@ function sshExecCmd(cmd, options, cb) {
   } else if (config.device_password) {
     sshOptions.pass = config.device_password;
   } else {
-    var err = new Error("No password or SSH key defined");
+    var err = new Error('No password or SSH key defined');
     err.stack = 'Failed command: ' + cmd;
     cb(err);
     return;
@@ -205,7 +205,6 @@ function sshExecCmd(cmd, options, cb) {
         if (code != 0 || (options && options.marker && output.indexOf(options.marker) < 0)) {
           succeeded = false;
         }
-
 
         if (succeeded) {
           if (cb) cb();
