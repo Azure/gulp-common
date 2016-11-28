@@ -92,6 +92,7 @@ function localExecCmd(cmd, verbose, cb) {
           cb();
         } else {
           var e = new Error('External command failed\nFailed command: ' + cmd + '\nExit code: ' + code);
+          e.stack = e.message;
           cb(e);
         }
       }
@@ -165,6 +166,7 @@ function sshExecCmd(cmd, options, cb) {
     sshOptions.pass = config.device_password;
   } else {
     var err = new Error('No password or SSH key defined\nFailed command: ' + cmd);
+    err.stack = err.message;
     cb(err);
     return;
   }
@@ -176,8 +178,8 @@ function sshExecCmd(cmd, options, cb) {
   ssh.on('error', function (e) {
     // when we pass error via deferred.reject, stack will be displayed
     // as it is just string, we can just replace it with message
-    e.stack = 'Failed command: ' + cmd + '\n' + e.stack;
-    console.log("ERROR OCCURED");
+    e.stack = 'ERROR: ' + e.message + '\nFailed command: ' + cmd;
+    console.log('ERROR OCCURED');
     cb(e);
   });
 
