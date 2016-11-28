@@ -10,162 +10,162 @@ var path = require('path');
 var all;
 
 function initTasks(gulp, options) {
-    all = require('./all.js')(options);
+  all = require('./all.js')(options);
 
-    var config = all.getConfig();
-    var targetFolder = config.project_folder ? config.project_folder : '.';
-    var startFile = config.start_file ? config.start_file : 'app';
+  var config = all.getConfig();
+  var targetFolder = config.project_folder ? config.project_folder : '.';
+  var startFile = config.start_file ? config.start_file : 'app';
 
-    // stick config into gulp object
-    gulp.config = config;
+  // stick config into gulp object
+  gulp.config = config;
 
-    if (typeof all.gulpTaskBI === 'function') {
-        all.gulpTaskBI(gulp, 'c', 'Edison', ((options && options.appName) ? options.appName : 'unknown'));
+  if (typeof all.gulpTaskBI === 'function') {
+    all.gulpTaskBI(gulp, 'c', 'Edison', ((options && options.appName) ? options.appName : 'unknown'));
+  }
+
+  var runSequence = require('run-sequence').use(gulp);
+
+  gulp.task('init', 'Initializes sample', function (cb) {
+
+    if (options.configPostfix && options.configTemplate) {
+      all.updateGlobalConfig(options.configPostfix, options.configTemplate);
     }
 
-    var runSequence = require('run-sequence').use(gulp);
+    cb();
+  });
 
-    gulp.task('init', 'Initializes sample', function(cb) {
+  gulp.task('install-mraa', false, function (cb) {
+    all.sshExecCmd("opkg install mraa", { verbose: args.verbose }, cb);
+  });
 
-        if (options.configPostfix && options.configTemplate) {
-            all.updateGlobalConfig(options.configPostfix, options.configTemplate);
-        }
+  gulp.task('clone-iot-sdk', false, function (cb) {
+    all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; " +
+      "then git clone https://github.com/Azure/azure-iot-sdks.git && cd ~/azure-iot-sdks && git checkout a291a82; fi",
+    'cd ~/azure-iot-sdks/c/uamqp && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-uamqp-c.git . && git checkout 6f05a06; fi',
+    'cd ~/azure-iot-sdks/c/umqtt && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-umqtt-c.git . && git checkout d09ed25; fi',
+    'cd ~/azure-iot-sdks/c/parson && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/kgabis/parson.git . && git checkout c22be79; fi',
+    'cd ~/azure-iot-sdks/c/c-utility && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout d42faec; fi',
+    'cd ~/azure-iot-sdks/c/uamqp/c-utility && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi',
+    'cd ~/azure-iot-sdks/c/umqtt/c-utility && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi'],
+      {
+        verbose: args.verbose,
+        sshPrintCommands: true,
+        validate: true
+      }, cb);
+  });
 
-        cb();
+  gulp.task('change-make-parallelism-to-2', false, function (cb) {
+    all.sshExecCmds(["sed -i 's/--jobs=$CORES/--jobs=2/g' ~/azure-iot-sdks/c/build_all/linux/build.sh"],
+      {
+        verbose: args.verbose,
+        sshPrintCommands: true,
+        validate: true
+      }, cb);
+  });
+
+  gulp.task('build-iot-sdk', false, function (cb) {
+    all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests --no-amqp --no-http --no_uploadtoblob"],
+      {
+        verbose: args.verbose,
+        sshPrintCommands: true,
+        validate: true
+      }, cb);
+  });
+
+  gulp.task('install-tools', 'Installs required software on the device', function (cb) {
+    runSequence('install-mraa', 'clone-iot-sdk', 'change-make-parallelism-to-2', 'build-iot-sdk', cb);
+  });
+
+
+  gulp.task('deploy', 'Deploy and build sample code on the device', function (cb) {
+    let src = [];
+    let dst = [];
+
+    if (options.app) {
+      for (let i = 0; i < options.app.length; i++) {
+        let f = options.app[i];
+        src.push('./app/' + f);
+        dst.push(targetFolder + '/' + f);
+      }
+    }
+
+    // optionally copy X.509 certificate(s) and associated private key(s) to the device
+    var dict = createDictionary(config.iot_device_connection_string, ';');
+    if (dict['x509'] && dict['x509'] === 'true') {
+      var deviceId = dict['DeviceId'];
+      var toolsFolder = all.getToolsFolder();
+      var certName = deviceId + '-cert.pem';
+      var certPath = path.join(toolsFolder, certName);
+      var keyName = deviceId + '-key.pem';
+      var keyPath = path.join(toolsFolder, keyName);
+
+      if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+        src.push(certPath);
+        dst.push(targetFolder + '/' + certName);
+
+        src.push(keyPath);
+        dst.push(targetFolder + '/' + keyName);
+      }
+    }
+
+    all.uploadFilesViaScp(src, dst, function (err) {
+      if (err) {
+        cb(err);
+      } else {
+        all.sshExecCmds(['cd ' + targetFolder + ' && file=(*.pem) && if [ -e "$file" ]; then chmod 600 *.pem; fi',
+        'cd ' + targetFolder + ' && cmake .',
+        'cd ' + targetFolder + ' && make'],
+          {
+            verbose: args.verbose,
+            sshPrintCommands: true,
+            validate: true
+          }, cb);
+      }
     });
+  });
 
-    gulp.task('install-mraa', false, function(cb) {
-        all.sshExecCmd("opkg install mraa", { verbose: args.verbose }, cb);
-    });
+  gulp.task('run-internal', false, function (cb) {
+    var param = options.appParams || '';
 
-    gulp.task('clone-iot-sdk', false, function(cb) {
-        all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; " +
-            "then git clone https://github.com/Azure/azure-iot-sdks.git && cd ~/azure-iot-sdks && git checkout a291a82; fi",
-        'cd ~/azure-iot-sdks/c/uamqp && if ! [ "$(ls -A .)" ]; ' +
-        'then git clone https://github.com/Azure/azure-uamqp-c.git . && git checkout 6f05a06; fi',
-        'cd ~/azure-iot-sdks/c/umqtt && if ! [ "$(ls -A .)" ]; ' +
-        'then git clone https://github.com/Azure/azure-umqtt-c.git . && git checkout d09ed25; fi',
-        'cd ~/azure-iot-sdks/c/parson && if ! [ "$(ls -A .)" ]; ' +
-        'then git clone https://github.com/kgabis/parson.git . && git checkout c22be79; fi',
-        'cd ~/azure-iot-sdks/c/c-utility && if ! [ "$(ls -A .)" ]; ' +
-        'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout d42faec; fi',
-        'cd ~/azure-iot-sdks/c/uamqp/c-utility && if ! [ "$(ls -A .)" ]; ' +
-        'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi',
-        'cd ~/azure-iot-sdks/c/umqtt/c-utility && if ! [ "$(ls -A .)" ]; ' +
-        'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi'],
-            {
-                verbose: args.verbose,
-                sshPrintCommands: true,
-                validate: true
-            }, cb);
-    });
+    var dict = createDictionary(config.iot_device_connection_string, ';');
+    if (dict['x509'] && dict['x509'] === 'true') {
+      param += ' "x509=true"';
+    }
 
-    gulp.task('change-make-parallelism-to-2', false, function(cb) {
-        all.sshExecCmds(["sed -i 's/--jobs=$CORES/--jobs=2/g' ~/azure-iot-sdks/c/build_all/linux/build.sh"],
-            {
-                verbose: args.verbose,
-                sshPrintCommands: true,
-                validate: true
-            }, cb);
-    });
+    all.sshExecCmd('sudo chmod +x ' + './' + startFile + ' ; sudo ' + './' + startFile + ' ' + param,
+      { verbose: true, sshPrintCommands: true, baseDir: targetFolder }, cb);
+  });
 
-    gulp.task('build-iot-sdk', false, function(cb) {
-        all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests --no-amqp --no-http --no_uploadtoblob"],
-            {
-                verbose: args.verbose,
-                sshPrintCommands: true,
-                validate: true
-            }, cb);
-    });
+  gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
 
-    gulp.task('install-tools', 'Installs required software on the device', function(cb) {
-        runSequence('install-mraa', 'clone-iot-sdk', 'change-make-parallelism-to-2', 'build-iot-sdk', cb);
-    });
-
-
-    gulp.task('deploy', 'Deploy and build sample code on the device', function(cb) {
-        let src = [];
-        let dst = [];
-
-        if (options.app) {
-            for (let i = 0; i < options.app.length; i++) {
-                let f = options.app[i];
-                src.push('./app/' + f);
-                dst.push(targetFolder + '/' + f);
-            }
-        }
-
-        // optionally copy X.509 certificate(s) and associated private key(s) to the device
-        var dict = createDictionary(config.iot_device_connection_string, ';');
-        if (dict['x509'] && dict['x509'] === 'true') {
-            var deviceId = dict['DeviceId'];
-            var toolsFolder = all.getToolsFolder();
-            var certName = deviceId + '-cert.pem';
-            var certPath = path.join(toolsFolder, certName);
-            var keyName = deviceId + '-key.pem';
-            var keyPath = path.join(toolsFolder, keyName);
-
-            if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-                src.push(certPath);
-                dst.push(targetFolder + '/' + certName);
-
-                src.push(keyPath);
-                dst.push(targetFolder + '/' + keyName);
-            }
-        }
-
-        all.uploadFilesViaScp(src, dst, function(err) {
-            if (err) {
-                cb(err);
-            } else {
-                all.sshExecCmds(['cd ' + targetFolder + ' && file=(*.pem) && if [ -e "$file" ]; then chmod 600 *.pem; fi',
-                'cd ' + targetFolder + ' && cmake .',
-                'cd ' + targetFolder + ' && make'],
-                    {
-                        verbose: args.verbose,
-                        sshPrintCommands: true,
-                        validate: true
-                    }, cb);
-            }
-        });
-    });
-
-    gulp.task('run-internal', false, function(cb) {
-        var param = options.appParams || '';
-
-        var dict = createDictionary(config.iot_device_connection_string, ';');
-        if (dict['x509'] && dict['x509'] === 'true') {
-            param += ' "x509=true"';
-        }
-
-        all.sshExecCmd('sudo chmod +x ' + './' + startFile + ' ; sudo ' + './' + startFile + ' ' + param,
-            { verbose: true, sshPrintCommands: true, baseDir: targetFolder }, cb);
-    });
-
-    gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
-
-    gulp.task('default', 'Deploys and runs sample on the board', function(callback) {
-        runSequence('install-tools', 'deploy', 'run', callback);
-    });
+  gulp.task('default', 'Deploys and runs sample on the board', function (callback) {
+    runSequence('install-tools', 'deploy', 'run', callback);
+  });
 }
 
 function createDictionary(source, separator) {
-    var dict = Object.create(null);
-    var elems = String(source).split(String(separator));
+  var dict = Object.create(null);
+  var elems = String(source).split(String(separator));
 
-    elems.forEach(function(elem) {
-        var pos = elem.indexOf('=');
-        if (pos < 0) return;
+  elems.forEach(function (elem) {
+    var pos = elem.indexOf('=');
+    if (pos < 0) return;
 
-        var name = elem.substring(0, pos);
-        var value = elem.substring(pos + 1);
+    var name = elem.substring(0, pos);
+    var value = elem.substring(pos + 1);
 
-        if (name && value) {
-            dict[name] = value;
-        }
-    });
+    if (name && value) {
+      dict[name] = value;
+    }
+  });
 
-    return dict;
+  return dict;
 }
 
 module.exports = initTasks;
