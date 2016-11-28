@@ -158,6 +158,10 @@ function sshExecCmd(cmd, options, cb) {
     timeout: 30000
   };
 
+  if (options.baseDir) {
+    sshOptions.baseDir = options.baseDir;
+  }
+
   var sshKey = findSshKey();
 
   if (sshKey) {
@@ -449,8 +453,8 @@ function findSshKey() {
 
     // if no directory we have only filename and assume it's in ~/.ssh
     let p = path.dirname(config.device_key_path) === '.' ?
-            path.join(process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'], '.ssh', config.device_key_path) :
-            path.resolve(config.device_key_path);
+      path.join(process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'], '.ssh', config.device_key_path) :
+      path.resolve(config.device_key_path);
 
     if (fileExistsSync(p)) {
       return fs.readFileSync(p, { encoding: 'ascii' });
