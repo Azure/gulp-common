@@ -9,7 +9,7 @@
   "license": "MIT",
   "author": "Microsoft Corp.",
   "dependencies": {
-    "az-iot-bi": "0.1.11",
+    "az-iot-bi": "0.1.13",
     "chalk": "^1.1.3",
     "get-gulp-args": "0.0.1",
     "gulp-help": "^1.6.1",
