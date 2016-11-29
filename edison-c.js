@@ -4,6 +4,8 @@
 'use strict';
 
 var args = require('get-gulp-args')();
+var fs = require('fs');
+var path = require('path');
 
 var all;
 
@@ -93,11 +95,30 @@ function initTasks(gulp, options) {
       }
     }
 
+    // optionally copy X.509 certificate(s) and associated private key(s) to the device
+    if (config.iot_device_connection_string &&
+      config.iot_device_connection_string.toLowerCase().indexOf('x509=true')) {
+      var toolsFolder = all.getToolsFolder();
+      var certName = all.getDeviceId() + '-cert.pem';
+      var certPath = path.join(toolsFolder, certName);
+      var keyName = all.getDeviceId() + '-key.pem';
+      var keyPath = path.join(toolsFolder, keyName);
+
+      if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+        src.push(certPath);
+        dst.push(targetFolder + '/' + certName);
+
+        src.push(keyPath);
+        dst.push(targetFolder + '/' + keyName);
+      }
+    }
+
     all.uploadFilesViaScp(src, dst, function (err) {
       if (err) {
         cb(err);
       } else {
-        all.sshExecCmds(['cd ' + targetFolder + ' && cmake .',
+        all.sshExecCmds(['cd ' + targetFolder + ' && file=(*.pem) && if [ -e "$file" ]; then chmod 600 *.pem; fi',
+          'cd ' + targetFolder + ' && cmake .',
           'cd ' + targetFolder + ' && make'],
           {
             verbose: args.verbose,
@@ -110,8 +131,9 @@ function initTasks(gulp, options) {
 
   gulp.task('run-internal', false, function (cb) {
     var param = options.appParams || '';
-    all.sshExecCmd('sudo chmod +x ' + targetFolder + '/' + startFile + ' ; sudo '
-      + targetFolder + '/' + startFile + ' ' + param, { verbose: true, sshPrintCommands: true }, cb);
+
+    all.sshExecCmd('sudo chmod +x ' + './' + startFile + ' ; sudo ' + './' + startFile + ' ' + param,
+      { verbose: true, sshPrintCommands: true, baseDir: targetFolder }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
