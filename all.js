@@ -545,7 +545,7 @@ function getDeviceConnectionString(postfix) {
 }
 
 function getDeviceId(postfix) {
-  var connectionString = getDeviceConnectionString(postfix);
+  var connectionString = postfix ? getDeviceConnectionString(postfix) : config.iot_device_connection_string;
   var elements = connectionString.split(';');
   var dict = {};
   for (var i = 0; i < elements.length; i++) {
