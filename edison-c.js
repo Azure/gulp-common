@@ -41,17 +41,17 @@ function initTasks(gulp, options) {
   gulp.task('clone-iot-sdk', false, function (cb) {
     all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; " +
       "then git clone https://github.com/Azure/azure-iot-sdks.git && cd ~/azure-iot-sdks && git checkout a291a82; fi",
-    'cd ~/azure-iot-sdks/c/uamqp && if ! [ "$(ls -A .)" ]; ' +
+      'cd ~/azure-iot-sdks/c/uamqp && if ! [ "$(ls -A .)" ]; ' +
     'then git clone https://github.com/Azure/azure-uamqp-c.git . && git checkout 6f05a06; fi',
-    'cd ~/azure-iot-sdks/c/umqtt && if ! [ "$(ls -A .)" ]; ' +
+      'cd ~/azure-iot-sdks/c/umqtt && if ! [ "$(ls -A .)" ]; ' +
     'then git clone https://github.com/Azure/azure-umqtt-c.git . && git checkout d09ed25; fi',
-    'cd ~/azure-iot-sdks/c/parson && if ! [ "$(ls -A .)" ]; ' +
+      'cd ~/azure-iot-sdks/c/parson && if ! [ "$(ls -A .)" ]; ' +
     'then git clone https://github.com/kgabis/parson.git . && git checkout c22be79; fi',
-    'cd ~/azure-iot-sdks/c/c-utility && if ! [ "$(ls -A .)" ]; ' +
+      'cd ~/azure-iot-sdks/c/c-utility && if ! [ "$(ls -A .)" ]; ' +
     'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout d42faec; fi',
-    'cd ~/azure-iot-sdks/c/uamqp/c-utility && if ! [ "$(ls -A .)" ]; ' +
+      'cd ~/azure-iot-sdks/c/uamqp/c-utility && if ! [ "$(ls -A .)" ]; ' +
     'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi',
-    'cd ~/azure-iot-sdks/c/umqtt/c-utility && if ! [ "$(ls -A .)" ]; ' +
+      'cd ~/azure-iot-sdks/c/umqtt/c-utility && if ! [ "$(ls -A .)" ]; ' +
     'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi'],
       {
         verbose: args.verbose,
@@ -118,8 +118,8 @@ function initTasks(gulp, options) {
         cb(err);
       } else {
         all.sshExecCmds(['cd ' + targetFolder + ' && file=(*.pem) && if [ -e "$file" ]; then chmod 600 *.pem; fi',
-        'cd ' + targetFolder + ' && cmake .',
-        'cd ' + targetFolder + ' && make'],
+          'cd ' + targetFolder + ' && cmake .',
+          'cd ' + targetFolder + ' && make'],
           {
             verbose: args.verbose,
             sshPrintCommands: true,
