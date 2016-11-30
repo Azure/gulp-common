@@ -15,12 +15,8 @@ function initTasks(gulp, options) {
   options.board.packageUrl = 'http://arduino.esp8266.com/stable/package_esp8266com_index.json';
 
   options.libraries = options.libraries || [];
-  options.libraries.push('AzureIoTHub');
-  options.libraries.push('AzureIoTUtility');
-  options.libraries.push('AzureIoTProtocol_MQTT');
-  options.libraries.push('AzureIoTProtocol_HTTP');
+  options.libraries.push('AzureIoTHub:0.2.0');
   require('./arduino.js')(gulp, options);
 }
 
 module.exports = initTasks;
-
