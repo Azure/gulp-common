@@ -51,10 +51,10 @@ function initTasks(gulp, options) {
       'test-connectivity.js',
       'deploy.js',
       'run-ble-sample.js',
-      'run-simulate-sample.js',
+      'run-simudev-sample.js',
       'lib/ble-config.js',
       'lib/gateway-config.js',
-      'lib/simulate-config.js',
+      'lib/simudev-config.js',
       'lib/bluetoothctl.js',
       'lib/interactcli.js',
       'lib/util.js',
@@ -126,7 +126,7 @@ function initTasks(gulp, options) {
   gulp.task('run', 'Run the BLE sample application in the Gateway SDK.', ['run-internal']);
 
   gulp.task('run-internal', false, ['install-tools', 'upload-config'], function(cb) {
-    var script = config.has_sensortag ? 'run-ble-sample.js' : 'run-simulate-sample.js';
+    var script = config.has_sensortag ? 'run-ble-sample.js' : 'run-simudev-sample.js';
     all.sshExecCmd('cd ' + workspace + '; ' + nodeCmd + ' ' + script, {
       verbose: true
     }, function(err) {
