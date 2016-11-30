@@ -18,11 +18,7 @@ function initTasks(gulp, options) {
   // add adafruit specific libraries
   options.libraries.push('https://github.com/adafruit/Adafruit_WINC1500.git');
   options.libraries.push('RTCZero');
-  options.libraries.push('NTPClient');
-  options.libraries.push('AzureIoTHub');
-  options.libraries.push('AzureIoTUtility');
-  options.libraries.push('AzureIoTProtocol_MQTT');
-  options.libraries.push('AzureIoTProtocol_HTTP');
+  options.libraries.push('AzureIoTHub:0.2.0');
 
   // init base arduino tasks
   require('./arduino.js')(gulp, options);
