@@ -79,6 +79,15 @@ function initTasks(gulp, options) {
     runSequence('clone-iot-sdk', 'change-make-parallelism-to-2', 'build-iot-sdk', cb);
   });
 
+  gulp.task('clean', 'Remove installed SDK and deployed sample code from device', function (cb) {
+    all.sshExecCmds(["rm -rf ~/azure-iot-sdks",
+      "rm -rf " + targetFolder],
+      {
+        verbose: args.verbose,
+        sshPrintCommands: true,
+        validate: true
+      }, cb);
+  });
 
   gulp.task('deploy', 'Deploy and build sample code on the device', function (cb) {
     let src = [];
