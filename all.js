@@ -472,7 +472,7 @@ function findSshKey() {
 function readCombinedConfig(postfix) {
   var config = {};
   var globalConfig = readGlobalConfig(postfix);
-  var localConfig = require(process.cwd() + '/config.json');
+  var localConfig = readLocalConfig();
   var combinedConfig = Object.assign(config, globalConfig, localConfig);
   return combinedConfig;
 }
@@ -492,6 +492,19 @@ function getConfig() {
  */
 function readGlobalConfig(postfix) {
   var filename = getToolsFolder() + '/config-' + postfix + '.json';
+
+  if (fileExistsSync(filename)) {
+    return require(filename);
+  }
+
+  return {};
+}
+
+/**
+ * Load config.json from current folder
+ */
+function readLocalConfig() {
+  var filename = process.cwd() + '/config.json';
 
   if (fileExistsSync(filename)) {
     return require(filename);

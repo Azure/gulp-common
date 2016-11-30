@@ -29,10 +29,14 @@ function initTasks(gulp, options) {
   }
 
   gulp.task('init', 'Initialize config files in user\'s profile folder.', function(cb) {
-
     if (options.configPostfix && options.configTemplate) {
-      all.updateGlobalConfig(options.configPostfix, options.configTemplate['ssh-config']);
-      saveConfigFile(config['sensortag_config_postfix'], options.configTemplate['sensortag-config']);
+      var sensortagConfig = options.configTemplate['sensortag-config'];
+      if (config['has_sensortag']) {
+        sensortagConfig['devices'][0]['BLE_mac_address'] = '[SensorTag mac address]';
+      }
+
+      saveConfigFile(options.configPostfix, options.configTemplate['ssh-config']);
+      saveConfigFile(config['sensortag_config_postfix'], sensortagConfig);
       saveConfigFile(config['azure_config_postfix'], options.configTemplate['azure-config']);
     }
 
@@ -42,11 +46,15 @@ function initTasks(gulp, options) {
   gulp.task('install-tools', 'Install necessary tools on the gateway.', function(cb) {
     var fileList = [
       '.ble_gateway.json',
+      '.simulate_device_cloud_upload.json',
       'discover-sensortag.js',
       'test-connectivity.js',
       'deploy.js',
-      'run.js',
-      'lib/bleconfig.js',
+      'run-ble-sample.js',
+      'run-simudev-sample.js',
+      'lib/ble-config.js',
+      'lib/gateway-config.js',
+      'lib/simudev-config.js',
       'lib/bluetoothctl.js',
       'lib/interactcli.js',
       'lib/util.js',
@@ -63,7 +71,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('clean-remote', false, function(cb) {
-    all.sshExecCmd('sudo rm -rf ' + workspace, {
+    all.sshExecCmd('rm -rf ' + workspace, {
       verbose: false
     }, function(err) {
       if (err) {
@@ -118,7 +126,8 @@ function initTasks(gulp, options) {
   gulp.task('run', 'Run the BLE sample application in the Gateway SDK.', ['run-internal']);
 
   gulp.task('run-internal', false, ['install-tools', 'upload-config'], function(cb) {
-    all.sshExecCmd('cd ' + workspace + '; ' + nodeCmd + ' run.js', {
+    var script = config.has_sensortag ? 'run-ble-sample.js' : 'run-simudev-sample.js';
+    all.sshExecCmd('cd ' + workspace + '; ' + nodeCmd + ' ' + script, {
       verbose: true
     }, function(err) {
       if (err) {
@@ -156,6 +165,9 @@ function readConfig(filename) {
 }
 
 function flatten(rawConfig) {
+  // read local config
+  rawConfig = Object.assign(readConfig('../config.json'), rawConfig);
+
   // path
   var config = {
     sensortagConfigPath: getConfigFilepath(rawConfig['sensortag_config_postfix']),
