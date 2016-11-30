@@ -34,10 +34,6 @@ function initTasks(gulp, options) {
     cb();
   });
 
-  gulp.task('install-mraa', false, function (cb) {
-    all.sshExecCmd("opkg install mraa", { verbose: args.verbose }, cb);
-  });
-
   gulp.task('clone-iot-sdk', false, function (cb) {
     all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; " +
       "then git clone https://github.com/Azure/azure-iot-sdks.git && cd ~/azure-iot-sdks && git checkout a291a82; fi",
@@ -70,7 +66,8 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('build-iot-sdk', false, function (cb) {
-    all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests --no-amqp --no-http --no_uploadtoblob"],
+    all.sshExecCmds(["test -e ~/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client_mqtt_transport.a || " +
+      "(cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests --no-amqp --no-http --no_uploadtoblob)"],
       {
         verbose: args.verbose,
         sshPrintCommands: true,
@@ -79,7 +76,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('install-tools', 'Installs required software on the device', function (cb) {
-    runSequence('install-mraa', 'clone-iot-sdk', 'change-make-parallelism-to-2', 'build-iot-sdk', cb);
+    runSequence('clone-iot-sdk', 'change-make-parallelism-to-2', 'build-iot-sdk', cb);
   });
 
 
