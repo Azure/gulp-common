@@ -16,7 +16,11 @@ function initTasks(gulp, options) {
 
   options.libraries = options.libraries || [];
   options.libraries.push('AzureIoTHub');
+  options.libraries.push('AzureIoTUtility');
+  options.libraries.push('AzureIoTProtocol_MQTT');
+  options.libraries.push('AzureIoTProtocol_HTTP');
   require('./arduino.js')(gulp, options);
 }
 
 module.exports = initTasks;
+
