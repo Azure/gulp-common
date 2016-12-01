@@ -136,7 +136,8 @@ function initTasks(gulp, options) {
       param = '"' + config.iot_device_connection_string + '"';
     }
 
-    all.sshExecCmd('sudo chmod +x ./' + startFile + ' ; sudo ./' + startFile + ' ' + param, { verbose: true, sshPrintCommands: true, baseDir: targetFolder }, cb);
+    all.sshExecCmd('sudo chmod +x ./' + startFile + ' ; sudo ./' + startFile + ' ' + param,
+       { verbose: true, sshPrintCommands: true, baseDir: targetFolder }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
