@@ -104,8 +104,6 @@ function initTasks(gulp, options) {
       var keyName = all.getDeviceId() + '-key.pem';
       var keyPath = path.join(toolsFolder, keyName);
 
-      console.log(targetFolder);
-
       if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
         src.push(certPath);
         dst.push(targetFolder + '/' + certName);
