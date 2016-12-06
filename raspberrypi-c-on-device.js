@@ -41,7 +41,8 @@ function initTasks(gulp, options) {
       + "|| sudo sh -c \"echo 'deb-src http://ppa.launchpad.net/aziotsdklinux/ppa-azureiot/ubuntu vivid main' >> /etc/apt/sources.list\"",
       "sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FDA6A393E4C2257F",
       "sudo apt-get update",
-      "sudo apt-get install -y azure-iot-sdk-c-dev"
+      "sudo apt-get install -y azure-iot-sdk-c-dev",
+      "sudo apt-get install -y cmake"
     ],
       {
         verbose: args.verbose,
