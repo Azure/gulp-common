@@ -34,31 +34,14 @@ function initTasks(gulp, options) {
     cb();
   })
 
-  gulp.task('check-raspbian', false, function (cb) {
-    all.sshExecCmd('uname -a', { verbose: args.verbose, marker: 'Linux raspberrypi 4.4', sshPrintCommands: true }, function (err) {
-      if (err) {
-        if (err.marker) {
-          console.log('--------------------');
-          console.log('WARNING: Unsupported OS version - sample code may not work properly');
-          console.log('--------------------');
-          cb();
-        } else {
-          cb(err);
-        }
-      } else {
-        cb();
-      }
-    });
-  })
-
-  gulp.task('rpi-clone-azure-sdk', false, function (cb) {
-    all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; then git clone https://github.com/Azure/azure-iot-sdks.git; fi",
-      "cd azure-iot-sdks && git submodule update --init -- c/uamqp",
-      "cd azure-iot-sdks && git submodule update --init -- c/umqtt",
-      "cd azure-iot-sdks && git submodule update --init -- c/c-utility",
-      "cd azure-iot-sdks && git submodule update --init -- c/parson",
-      "cd azure-iot-sdks/c/uamqp && git submodule update --init -- c-utility",
-      "cd azure-iot-sdks/c/umqtt && git submodule update --init -- c-utility",
+  gulp.task('install-tools', 'Installs required software on the device', function (cb) {
+    all.sshExecCmds(["grep -q -F 'deb http://ppa.launchpad.net/aziotsdklinux/ppa-azureiot/ubuntu vivid main' /etc/apt/sources.list "
+      + "|| sudo sh -c \"echo 'deb http://ppa.launchpad.net/aziotsdklinux/ppa-azureiot/ubuntu vivid main' >> /etc/apt/sources.list\"",
+      "grep -q -F 'deb-src http://ppa.launchpad.net/aziotsdklinux/ppa-azureiot/ubuntu vivid main' /etc/apt/sources.list "
+      + "|| sudo sh -c \"echo 'deb-src http://ppa.launchpad.net/aziotsdklinux/ppa-azureiot/ubuntu vivid main' >> /etc/apt/sources.list\"",
+      "sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FDA6A393E4C2257F",
+      "sudo apt-get update",
+      "sudo apt-get install -y azure-iot-sdk-c-dev"
     ],
       {
         verbose: args.verbose,
@@ -66,20 +49,6 @@ function initTasks(gulp, options) {
         validate: true
       }, cb);
   })
-
-  gulp.task('rpi-build-azure-iot-sdk', false, function (cb) {
-    all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/setup.sh",
-      "cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests"],
-      {
-        verbose: args.verbose,
-        sshPrintCommands: true,
-        validate: true
-      }, cb);
-  })
-
-  gulp.task('install-tools', 'Installs required software on the device', function (cb) {
-    runSequence('rpi-clone-azure-sdk', 'rpi-build-azure-iot-sdk', cb);
-  });
 
   gulp.task('deploy', 'Deploy and build sample code on the device', function (cb) {
 
@@ -135,7 +104,7 @@ function initTasks(gulp, options) {
     }
 
     all.sshExecCmd('sudo chmod +x ./' + startFile + ' ; sudo ./' + startFile + ' ' + param,
-       { verbose: true, sshPrintCommands: true, baseDir: targetFolder }, cb);
+      { verbose: true, sshPrintCommands: true, baseDir: targetFolder }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
