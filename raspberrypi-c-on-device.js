@@ -110,7 +110,7 @@ function initTasks(gulp, options) {
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);
 
   gulp.task('all', 'Builds, deploys and runs sample on the board', function (callback) {
-    runSequence('install-tools', 'build', 'deploy', 'run', callback);
+    runSequence('install-tools', 'deploy', 'run', callback);
   })
 }
 
