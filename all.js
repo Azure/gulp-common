@@ -77,12 +77,16 @@ function localExecCmd(cmd, verbose, cb) {
     cmd = args.splice(0, 1);
     var cp = require('child_process').spawn(cmd[0], args);
 
+    var stdout = '';
     cp.stdout.on('data', function (data) {
       if (verbose) process.stdout.write(String(data));
+      stdout += String(data);
     });
 
+    var stderr = '';
     cp.stderr.on('data', function (data) {
       if (verbose) process.stdout.write(String(data));
+      stderr += String(data);
     });
 
     cp.on('close', function (code) {
@@ -91,7 +95,10 @@ function localExecCmd(cmd, verbose, cb) {
         if (0 == code) {
           cb();
         } else {
-          var e = new Error('External command failed\nFailed command: ' + cmd + '\nExit code: ' + code);
+          var message = `External command failed\nFailed command: ${cmd}\n` +
+            (stdout ? `stdout: ${stdout}` : '') +
+            (stderr ? `stderr: ${stderr}` : '');
+          var e = new Error(message);
           e.stack = e.message;
           cb(e);
         }
@@ -177,8 +184,6 @@ function sshExecCmd(cmd, options, cb) {
 
   var ssh = new simssh(sshOptions);
 
-  var output = '';
-
   ssh.on('error', function (e) {
     // when we pass error via deferred.reject, stack will be displayed
     // as it is just string, we can just replace it with message
@@ -197,32 +202,25 @@ function sshExecCmd(cmd, options, cb) {
       if (options && options.verbose) {
         process.stdout.write(o);
       }
-
-      output += String(o);
     },
-    exit: function (code) {
-      // setting short timeout, as exit handler may be called before remaining data
-      // arrives via out
-      setTimeout(function () {
-        var succeeded = true;
+    exit: function (code, stdout, stderr) {
+      var succeeded = true;
+      if (code != 0 || (options && options.marker && stdout.indexOf(options.marker) < 0)) {
+        succeeded = false;
+      }
 
-        if (code != 0 || (options && options.marker && output.indexOf(options.marker) < 0)) {
-          succeeded = false;
+      if (succeeded) {
+        if (cb) cb();
+      } else {
+        if (cb) {
+          var message = `SSH command hasn\'t completed successfully.\nFailed command: ${cmd}\n` +
+            (stdout ? `stdout: ${stdout}` : '') +
+            (stderr ? `stderr: ${stderr}` : '');
+          var e = new Error(message);
+          e.stack = message;
+          cb(e);
         }
-
-        if (succeeded) {
-          if (cb) cb();
-        } else {
-          // dump output in non-verbose error if command was not successful
-          if (!(options && options.verbose)) {
-            process.stdout.write(output);
-          }
-
-          if (cb) {
-            cb(new Error('SSH command hasn\'t completed successfully.\nFailed command: ' + cmd));
-          }
-        }
-      }, 1000);
+      }
     }
   }).start();
 }
