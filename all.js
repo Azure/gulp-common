@@ -77,12 +77,16 @@ function localExecCmd(cmd, verbose, cb) {
     cmd = args.splice(0, 1);
     var cp = require('child_process').spawn(cmd[0], args);
 
+    var stdout = '';
     cp.stdout.on('data', function (data) {
       if (verbose) process.stdout.write(String(data));
+      stdout += String(data);
     });
 
+    var stderr = '';
     cp.stderr.on('data', function (data) {
       if (verbose) process.stdout.write(String(data));
+      stderr += String(data);
     });
 
     cp.on('close', function (code) {
@@ -91,8 +95,11 @@ function localExecCmd(cmd, verbose, cb) {
         if (0 == code) {
           cb();
         } else {
-          var e = new Error("External command failed");
-          e.stack = "exit code: " + code;
+          var message = `External command failed\nFailed command: ${cmd}\n` +
+            (stdout ? `stdout: ${stdout}` : '') +
+            (stderr ? `stderr: ${stderr}` : '');
+          var e = new Error(message);
+          e.stack = e.message;
           cb(e);
         }
       }
@@ -158,6 +165,10 @@ function sshExecCmd(cmd, options, cb) {
     timeout: 30000
   };
 
+  if (options.baseDir) {
+    sshOptions.baseDir = options.baseDir;
+  }
+
   var sshKey = findSshKey();
 
   if (sshKey) {
@@ -165,7 +176,7 @@ function sshExecCmd(cmd, options, cb) {
   } else if (config.device_password) {
     sshOptions.pass = config.device_password;
   } else {
-    var err = new Error("No password or SSH key defined");
+    var err = new Error('No password or SSH key defined\nFailed command: ' + cmd);
     err.stack = err.message;
     cb(err);
     return;
@@ -173,13 +184,11 @@ function sshExecCmd(cmd, options, cb) {
 
   var ssh = new simssh(sshOptions);
 
-  var output = '';
-
   ssh.on('error', function (e) {
     // when we pass error via deferred.reject, stack will be displayed
     // as it is just string, we can just replace it with message
-    e.stack = "ERROR: " + e.message;
-    console.log("ERROR OCCURED");
+    e.stack = 'ERROR: ' + e.message + '\nFailed command: ' + cmd;
+    console.log('ERROR OCCURED');
     cb(e);
   });
 
@@ -193,32 +202,25 @@ function sshExecCmd(cmd, options, cb) {
       if (options && options.verbose) {
         process.stdout.write(o);
       }
-
-      output += String(o);
     },
-    exit: function (code) {
-      // setting short timeout, as exit handler may be called before remaining data
-      // arrives via out
-      setTimeout(function () {
-        var succeeded = true;
+    exit: function (code, stdout, stderr) {
+      var succeeded = true;
+      if (code != 0 || (options && options.marker && stdout.indexOf(options.marker) < 0)) {
+        succeeded = false;
+      }
 
-        if (code != 0 || (options && options.marker && output.indexOf(options.marker) < 0)) {
-          succeeded = false;
+      if (succeeded) {
+        if (cb) cb();
+      } else {
+        if (cb) {
+          var message = `SSH command hasn\'t completed successfully.\nFailed command: ${cmd}\n` +
+            (stdout ? `stdout: ${stdout}` : '') +
+            (stderr ? `stderr: ${stderr}` : '');
+          var e = new Error(message);
+          e.stack = message;
+          cb(e);
         }
-
-        if (succeeded) {
-          if (cb) cb();
-        } else {
-          // dump output in non-verbose error if command was not successful
-          if (!(options && options.verbose)) {
-            process.stdout.write(output);
-          }
-
-          if (cb) {
-            cb(new Error("SSH command hasn't completed successfully"));
-          }
-        }
-      }, 1000);
+      }
     }
   }).start();
 }
@@ -446,8 +448,14 @@ function getToolsFolder() {
  */
 function findSshKey() {
   if (config.device_key_path) {
-    if (fileExistsSync(config.device_key_path)) {
-      return fs.readFileSync(config.device_key_path, { encoding: 'ascii' });
+
+    // if no directory we have only filename and assume it's in ~/.ssh
+    let p = path.dirname(config.device_key_path) === '.' ?
+      path.join(process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'], '.ssh', config.device_key_path) :
+      path.resolve(config.device_key_path);
+
+    if (fileExistsSync(p)) {
+      return fs.readFileSync(p, { encoding: 'ascii' });
     }
   }
 
@@ -462,7 +470,7 @@ function findSshKey() {
 function readCombinedConfig(postfix) {
   var config = {};
   var globalConfig = readGlobalConfig(postfix);
-  var localConfig = require(process.cwd() + '/config.json');
+  var localConfig = readLocalConfig();
   var combinedConfig = Object.assign(config, globalConfig, localConfig);
   return combinedConfig;
 }
@@ -482,6 +490,19 @@ function getConfig() {
  */
 function readGlobalConfig(postfix) {
   var filename = getToolsFolder() + '/config-' + postfix + '.json';
+
+  if (fileExistsSync(filename)) {
+    return require(filename);
+  }
+
+  return {};
+}
+
+/**
+ * Load config.json from current folder
+ */
+function readLocalConfig() {
+  var filename = process.cwd() + '/config.json';
 
   if (fileExistsSync(filename)) {
     return require(filename);
@@ -535,7 +556,7 @@ function getDeviceConnectionString(postfix) {
 }
 
 function getDeviceId(postfix) {
-  var connectionString = getDeviceConnectionString(postfix);
+  var connectionString = postfix ? getDeviceConnectionString(postfix) : config.iot_device_connection_string;
   var elements = connectionString.split(';');
   var dict = {};
   for (var i = 0; i < elements.length; i++) {

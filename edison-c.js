@@ -4,6 +4,8 @@
 'use strict';
 
 var args = require('get-gulp-args')();
+var fs = require('fs');
+var path = require('path');
 
 var all;
 
@@ -30,10 +32,6 @@ function initTasks(gulp, options) {
     }
 
     cb();
-  });
-
-  gulp.task('install-mraa', false, function (cb) {
-    all.sshExecCmd("opkg install mraa", { verbose: args.verbose }, cb);
   });
 
   gulp.task('clone-iot-sdk', false, function (cb) {
@@ -68,7 +66,8 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('build-iot-sdk', false, function (cb) {
-    all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests"],
+    all.sshExecCmds(["test -e ~/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client_mqtt_transport.a || " +
+      "(cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests --no-amqp --no-http --no_uploadtoblob)"],
       {
         verbose: args.verbose,
         sshPrintCommands: true,
@@ -77,9 +76,18 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('install-tools', 'Installs required software on the device', function (cb) {
-    runSequence('install-mraa', 'clone-iot-sdk', 'change-make-parallelism-to-2', 'build-iot-sdk', cb);
+    runSequence('clone-iot-sdk', 'change-make-parallelism-to-2', 'build-iot-sdk', cb);
   });
 
+  gulp.task('clean', 'Remove installed SDK and deployed sample code from device', function (cb) {
+    all.sshExecCmds(["rm -rf ~/azure-iot-sdks",
+      "rm -rf " + targetFolder],
+      {
+        verbose: args.verbose,
+        sshPrintCommands: true,
+        validate: true
+      }, cb);
+  });
 
   gulp.task('deploy', 'Deploy and build sample code on the device', function (cb) {
     let src = [];
@@ -93,11 +101,30 @@ function initTasks(gulp, options) {
       }
     }
 
+    // optionally copy X.509 certificate(s) and associated private key(s) to the device
+    if (config.iot_device_connection_string &&
+      config.iot_device_connection_string.toLowerCase().indexOf('x509=true')) {
+      var toolsFolder = all.getToolsFolder();
+      var certName = all.getDeviceId() + '-cert.pem';
+      var certPath = path.join(toolsFolder, certName);
+      var keyName = all.getDeviceId() + '-key.pem';
+      var keyPath = path.join(toolsFolder, keyName);
+
+      if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+        src.push(certPath);
+        dst.push(targetFolder + '/' + certName);
+
+        src.push(keyPath);
+        dst.push(targetFolder + '/' + keyName);
+      }
+    }
+
     all.uploadFilesViaScp(src, dst, function (err) {
       if (err) {
         cb(err);
       } else {
-        all.sshExecCmds(['cd ' + targetFolder + ' && cmake .',
+        all.sshExecCmds(['cd ' + targetFolder + ' && file=(*.pem) && if [ -e "$file" ]; then chmod 600 *.pem; fi',
+          'cd ' + targetFolder + ' && cmake .',
           'cd ' + targetFolder + ' && make'],
           {
             verbose: args.verbose,
@@ -110,8 +137,9 @@ function initTasks(gulp, options) {
 
   gulp.task('run-internal', false, function (cb) {
     var param = options.appParams || '';
-    all.sshExecCmd('sudo chmod +x ' + targetFolder + '/' + startFile + ' ; sudo '
-      + targetFolder + '/' + startFile + ' ' + param, { verbose: true, sshPrintCommands: true }, cb);
+
+    all.sshExecCmd('sudo chmod +x ' + './' + startFile + ' ; sudo ' + './' + startFile + ' ' + param,
+      { verbose: true, sshPrintCommands: true, baseDir: targetFolder }, cb);
   });
 
   gulp.task('run', 'Runs deployed sample on the board', ['run-internal']);

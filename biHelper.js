@@ -45,7 +45,7 @@ biHelper.gulpTaskBI = function (gulpInst, language, board, sample) {
       board: board,
       sample: sample,
       duration: e.duration,
-      error: e.err || e.message
+      error: e.err ? e.err.toString() : e.message
     });
     bi.flush();
   });
