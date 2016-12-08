@@ -103,7 +103,7 @@ function initTasks(gulp, options) {
 
     // optionally copy X.509 certificate(s) and associated private key(s) to the device
     if (config.iot_device_connection_string &&
-      config.iot_device_connection_string.toLowerCase().indexOf('x509=true')) {
+      config.iot_device_connection_string.toLowerCase().indexOf('x509=true') != -1) {
       var toolsFolder = all.getToolsFolder();
       var certName = all.getDeviceId() + '-cert.pem';
       var certPath = path.join(toolsFolder, certName);
