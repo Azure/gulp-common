@@ -71,7 +71,7 @@ function initTasks(gulp, options) {
       }, cb);
   })
 
-  gulp.task('rpi-build-azure-iot-sdk', false, function (cb) {    
+  gulp.task('rpi-build-azure-iot-sdk', false, function (cb) {
     all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/setup.sh",
       "cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests"],
       {
