@@ -16,8 +16,6 @@ function initTasks(gulp, options) {
   var targetFolder = config.project_folder ? config.project_folder : '.';
   var startFile = config.start_file ? config.start_file : 'app';
 
-  var localazureiothubsdks = '';
-  
   // stick config into gulp object
   gulp.config = config;
 
