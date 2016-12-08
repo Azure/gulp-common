@@ -86,7 +86,7 @@ function initTasks(gulp, options) {
       if (err) {
         cb(err);
       } else {
-        all.sshExecCmds(['cd ' + targetFolder + ' && cmake .',
+        all.sshExecCmds(['cd ' + targetFolder + ' && cmake -Dazure_IoT_Sdks=~/azure-iot-sdks/ .',
           'cd ' + targetFolder + ' && make'],
           {
             verbose: args.verbose,
