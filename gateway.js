@@ -7,11 +7,14 @@ var fs = require('fs');
 var args = require('get-gulp-args')();
 
 var all;
+var runSequence;
 
 function initTasks(gulp, options) {
   gulp = require('gulp-help')(gulp, {
     hideDepsMessage: true
   });
+
+  runSequence = require('run-sequence').use(gulp);
 
   all = require('./all.js')(options);
 
@@ -125,7 +128,11 @@ function initTasks(gulp, options) {
 
   gulp.task('run', 'Run the BLE sample application in the Gateway SDK.', ['run-internal']);
 
-  gulp.task('run-internal', false, ['install-tools', 'upload-config'], function(cb) {
+  gulp.task('deploy', false, function(cb) {
+    runSequence('install-tools', 'upload-config', cb);
+  });
+
+  gulp.task('run-internal', false, ['deploy'], function(cb) {
     var script = config.has_sensortag ? 'run-ble-sample.js' : 'run-simudev-sample.js';
     all.sshExecCmd('cd ' + workspace + '; ' + nodeCmd + ' ' + script, {
       verbose: true
