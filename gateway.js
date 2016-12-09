@@ -28,7 +28,8 @@ function initTasks(gulp, options) {
   gulp.config = config;
 
   if (typeof all.gulpTaskBI === 'function') {
-    all.gulpTaskBI(gulp, 'nodejs', 'gateway', ((options && options.appName) ? options.appName : 'unknown'));
+    var sample = config.has_sensortag ? 'BLE' : 'simulated';
+    all.gulpTaskBI(gulp, 'nodejs', 'gateway-' + sample, ((options && options.appName) ? options.appName : 'unknown'));
   }
 
   gulp.task('init', 'Initialize config files in user\'s profile folder.', function(cb) {
