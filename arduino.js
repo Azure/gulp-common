@@ -56,8 +56,7 @@ function initTasks(gulp, options) {
         } else {
           // install arduino
           all.localExecCmds(['sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
-            'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/',
-            'sudo chmod 777 node_modules/gulp-common/arduino-headless.sh'], args.verbose, cb);
+            'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/'], args.verbose, cb);
         }
       });
     } else if (process.platform == 'darwin') {
@@ -140,7 +139,7 @@ function getArduinoCommand() {
     // i assume that that it's available in the path
     return all.getToolsFolder() + '/arduino-1.6.11/arduino_debug.exe';
   } else if (process.platform === 'linux') {
-    return './node_modules/gulp-common/arduino-headless.sh';
+    return 'arduino';
   } else if (process.platform === 'darwin') {
     return 'open ' + all.getToolsFolder() + '/Arduino.app --wait-apps --args';
   }
