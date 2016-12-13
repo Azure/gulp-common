@@ -109,6 +109,10 @@ function initTasks(gulp, options) {
     }
   });
 
+  gulp.task('verify', function (cb) {
+    all.localExecCmd(getArduinoCommand() + ' --verify ' + process.cwd() + '/app/app.ino', args.verbose, cb);
+  });
+
   gulp.task('deploy', function (cb) {
     if (args.listen) {
       runSequence('deploy-internal', 'listen', cb);
