@@ -110,6 +110,9 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('verify', function (cb) {
+    if (options.app && options.app.indexOf('config.h') > -1) {
+      all.writeConfigH();
+    }
     all.localExecCmd(getArduinoCommand() + ' --verify ' + process.cwd() + '/app/app.ino', args.verbose, cb);
   });
 
