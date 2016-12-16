@@ -35,20 +35,20 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('clone-iot-sdk', false, function (cb) {
-    all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; " +
-      "then git clone https://github.com/Azure/azure-iot-sdks.git && cd ~/azure-iot-sdks && git checkout a291a82; fi",
-      'cd ~/azure-iot-sdks/c/uamqp && if ! [ "$(ls -A .)" ]; ' +
-    'then git clone https://github.com/Azure/azure-uamqp-c.git . && git checkout 6f05a06; fi',
-      'cd ~/azure-iot-sdks/c/umqtt && if ! [ "$(ls -A .)" ]; ' +
-    'then git clone https://github.com/Azure/azure-umqtt-c.git . && git checkout d09ed25; fi',
-      'cd ~/azure-iot-sdks/c/parson && if ! [ "$(ls -A .)" ]; ' +
+    all.sshExecCmds(["if [ ! -d ~/azure-iot-sdk-c ]; " +
+      "then git clone https://github.com/Azure/azure-iot-sdk-c.git && cd ~/azure-iot-sdk-c && git checkout 76906dc; fi",
+      'cd ~/azure-iot-sdk-c/uamqp && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-uamqp-c.git . && git checkout 5bf09d3; fi',
+      'cd ~/azure-iot-sdk-c/umqtt && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-umqtt-c.git . && git checkout 51da812; fi',
+      'cd ~/azure-iot-sdk-c/parson && if ! [ "$(ls -A .)" ]; ' +
     'then git clone https://github.com/kgabis/parson.git . && git checkout c22be79; fi',
-      'cd ~/azure-iot-sdks/c/c-utility && if ! [ "$(ls -A .)" ]; ' +
-    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout d42faec; fi',
-      'cd ~/azure-iot-sdks/c/uamqp/c-utility && if ! [ "$(ls -A .)" ]; ' +
-    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi',
-      'cd ~/azure-iot-sdks/c/umqtt/c-utility && if ! [ "$(ls -A .)" ]; ' +
-    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 749fdbd; fi'],
+      'cd ~/azure-iot-sdk-c/c-utility && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout 9073d21; fi',
+      'cd ~/azure-iot-sdk-c/uamqp/c-utility && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout b0b5b1b; fi',
+      'cd ~/azure-iot-sdk-c/umqtt/c-utility && if ! [ "$(ls -A .)" ]; ' +
+    'then git clone https://github.com/Azure/azure-c-shared-utility.git . && git checkout b0b5b1b; fi'],
       {
         verbose: args.verbose,
         sshPrintCommands: true,
@@ -57,7 +57,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('change-make-parallelism-to-2', false, function (cb) {
-    all.sshExecCmds(["sed -i 's/--jobs=$CORES/--jobs=2/g' ~/azure-iot-sdks/c/build_all/linux/build.sh"],
+    all.sshExecCmds(["sed -i 's/--jobs=$CORES/--jobs=2/g' ~/azure-iot-sdk-c/build_all/linux/build.sh"],
       {
         verbose: args.verbose,
         sshPrintCommands: true,
@@ -66,8 +66,8 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('build-iot-sdk', false, function (cb) {
-    all.sshExecCmds(["test -e ~/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/libiothub_client_mqtt_transport.a || " +
-      "(cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests --no-amqp --no-http --no_uploadtoblob)"],
+    all.sshExecCmds(["test -e ~/azure-iot-sdk-c/cmake/iotsdk_linux/iothub_client/libiothub_client_mqtt_transport.a || " +
+      "(cd ~/azure-iot-sdk-c && sudo build_all/linux/build.sh --skip-unittests --no-amqp --no-http --no_uploadtoblob)"],
       {
         verbose: args.verbose,
         sshPrintCommands: true,
@@ -80,7 +80,7 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('clean', 'Remove installed SDK and deployed sample code from device', function (cb) {
-    all.sshExecCmds(["rm -rf ~/azure-iot-sdks",
+    all.sshExecCmds(["rm -rf ~/azure-iot-sdk-c",
       "rm -rf " + targetFolder],
       {
         verbose: args.verbose,
