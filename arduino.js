@@ -93,7 +93,7 @@ function initTasks(gulp, options) {
       'install-tools-arduino-init-libraries', 'install-tools-package', 'install-tools-libraries', callback);
   });
 
-  gulp.task('deploy-internal', false, ['generate-confidential'], function (cb) {
+  gulp.task('deploy-internal', false, ['gen-key'], function (cb) {
     var port = null;
     if (config.device_port) {
       port = config.device_port.trim();
@@ -106,7 +106,7 @@ function initTasks(gulp, options) {
     }
   });
 
-  gulp.task('generate-confidential', 'generate confidential header file for your arduino app', function (cb) {
+  gulp.task('gen-key', 'generate confidential header file for your arduino app', function (cb) {
     if (options.app && options.app.indexOf('config.h') > -1) {
       all.writeConfigH();
     }
