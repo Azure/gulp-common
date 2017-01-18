@@ -20,6 +20,11 @@ function initTasks(gulp, options) {
   options.libraries.push('AzureIoTProtocol_HTTP');
   options.libraries.push('AzureIoTProtocol_MQTT');
   require('./arduino.js')(gulp, options);
+
+  // hide task for 8266
+  gulp.task('run', false);
+  gulp.task('install-tools', false);
+  gulp.task('default', false, ['help']);
 }
 
 module.exports = initTasks;
