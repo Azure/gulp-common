@@ -51,36 +51,6 @@ function initTasks(gulp, options) {
       }, cb);
   })
 
-  gulp.task('buildsdk', 'Build azure iothub sdk on the device', function (cb) {
-    runSequence('rpi-clone-azure-sdk', 'rpi-build-azure-iot-sdk', cb);
-  })
-
-  gulp.task('rpi-clone-azure-sdk', false, function (cb) {
-    all.sshExecCmds(["if [ ! -d ~/azure-iot-sdks ]; then git clone https://github.com/Azure/azure-iot-sdks.git; fi",
-      "cd azure-iot-sdks && git submodule update --init -- c/uamqp",
-      "cd azure-iot-sdks && git submodule update --init -- c/umqtt",
-      "cd azure-iot-sdks && git submodule update --init -- c/c-utility",
-      "cd azure-iot-sdks && git submodule update --init -- c/parson",
-      "cd azure-iot-sdks/c/uamqp && git submodule update --init -- c-utility",
-      "cd azure-iot-sdks/c/umqtt && git submodule update --init -- c-utility",
-    ],
-      {
-        verbose: args.verbose,
-        sshPrintCommands: true,
-        validate: true
-      }, cb);
-  })
-
-  gulp.task('rpi-build-azure-iot-sdk', false, function (cb) {
-    all.sshExecCmds(["cd ~/azure-iot-sdks && sudo c/build_all/linux/setup.sh",
-      "cd ~/azure-iot-sdks && sudo c/build_all/linux/build.sh --skip-unittests"],
-      {
-        verbose: args.verbose,
-        sshPrintCommands: true,
-        validate: true
-      }, cb);
-  })
-
   gulp.task('deploy', 'Deploy and build sample code on the device', function (cb) {
 
     let src = [];
@@ -96,7 +66,7 @@ function initTasks(gulp, options) {
 
     // optionally copy X.509 certificate(s) and associated private key(s) to the device
     if (config.iot_device_connection_string &&
-      config.iot_device_connection_string.toLowerCase().indexOf('x509=true') != -1) {
+      config.iot_device_connection_string.toLowerCase().indexOf('x509=true')) {
 
       var toolsFolder = all.getToolsFolder();
       var certName = all.getDeviceId() + '-cert.pem';
@@ -116,11 +86,7 @@ function initTasks(gulp, options) {
       if (err) {
         cb(err);
       } else {
-        var cmakecmd = 'cmake .';
-        if (args.localsdk === 'true') {
-          cmakecmd = 'cmake -Dazure_IoT_Sdks=~/azure-iot-sdks .';
-        }
-        all.sshExecCmds(['cd ' + targetFolder + ' && '+ cmakecmd,
+        all.sshExecCmds(['cd ' + targetFolder + ' && cmake .',
           'cd ' + targetFolder + ' && make'],
           {
             verbose: args.verbose,
@@ -136,6 +102,10 @@ function initTasks(gulp, options) {
     var param = '';
     if (config.iot_device_connection_string) {
       param = '"' + config.iot_device_connection_string + '"';
+    }
+
+    for(var i = 0; config.args && i < config.args.length; i++) {
+      param  = param + ' ' + config.args[i];
     }
 
     all.sshExecCmd('sudo chmod +x ./' + startFile + ' ; sudo ./' + startFile + ' ' + param,
