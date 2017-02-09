@@ -84,6 +84,10 @@ function initTasks(gulp, options) {
       nodejsParam = ' "' + config.iot_device_connection_string + '"';
     }
 
+    for(var i = 0; config.args && i < config.args.length; i++) {
+      nodejsParam = nodejsParam + ' ' + config.args[i];
+    }
+
     all.sshExecCmd('sudo' + ' ' + nodeCommand + ' ' + targetFolder + '/' + startFile + nodejsParam + ' && exit', { verbose: true }, cb);
   });
 

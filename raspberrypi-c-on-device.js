@@ -138,6 +138,10 @@ function initTasks(gulp, options) {
       param = '"' + config.iot_device_connection_string + '"';
     }
 
+    for(var i = 0; config.args && i < config.args.length; i++) {
+      param  = param + ' ' + config.args[i];
+    }
+
     all.sshExecCmd('sudo chmod +x ./' + startFile + ' ; sudo ./' + startFile + ' ' + param,
       { verbose: true, sshPrintCommands: true, baseDir: targetFolder }, cb);
   });
