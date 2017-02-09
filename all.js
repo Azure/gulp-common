@@ -541,14 +541,25 @@ function updateGlobalConfig(postfix, template) {
  * Writes app/config.h file (for C and Arduino)
  */
 function writeConfigH() {
-  if (config.iot_device_connection_string) {
-    var headerContent = `static const char* connectionString = "${config.iot_device_connection_string}";`;
-    if (config.hasOwnProperty('wifi_ssid') && config.hasOwnProperty('wifi_password')) {
-      headerContent =
-        `${headerContent}${os.EOL}static const char* ssid="${config.wifi_ssid}";${os.EOL}static const char* pass="${config.wifi_password}";`;
+  var headerContent = '';
+  if (config.macros) {
+    for(var i = 0; i < config.macros.length; i++) {
+      var item = config.macros[i];
+      if(typeof item.value === 'number' || typeof item.value === 'boolean') {
+        headerContent = `${headerContent}#define ${item.key} ${item.value}${os.EOL}`;
+      } else {
+        headerContent = `${headerContent}#define ${item.key} "${item.value}"${os.EOL}`;
+      }
     }
-    fs.writeFileSync('./app/config.h', headerContent);
   }
+  if (config.iot_device_connection_string) {
+    headerContent = `${headerContent}static const char* connectionString = "${config.iot_device_connection_string}";`;
+  }
+  if (config.hasOwnProperty('wifi_ssid') && config.hasOwnProperty('wifi_password')) {
+    headerContent =
+      `${headerContent}${os.EOL}static const char* ssid="${config.wifi_ssid}";${os.EOL}static const char* pass="${config.wifi_password}";`;
+  }
+  fs.writeFileSync('./app/config.h', headerContent);
 }
 
 function getDeviceConnectionString(postfix) {
