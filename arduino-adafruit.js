@@ -23,7 +23,7 @@ function initTasks(gulp, options) {
   options.libraries.push('AzureIoTUtility');
   options.libraries.push('AzureIoTProtocol_HTTP');
   options.libraries.push('AzureIoTProtocol_MQTT');
-  options.libraries.push('Adafruit Unified Sensor');
+  options.libraries.push('https://github.com/adafruit/Adafruit_Sensor.git');
   options.libraries.push('Adafruit_BME280_Library');
 
   // init base arduino tasks
