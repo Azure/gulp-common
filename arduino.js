@@ -51,7 +51,8 @@ function initTasks(gulp, options) {
     if (process.platform == 'win32') {
       all.localRetrieve('https://downloads.arduino.cc/arduino-' + ideVersion + '-windows.zip', { folder: 'arduino-' + ideVersion }, cb);
     } else if (process.platform == 'linux') {
-      all.localRetrieve('https://downloads.arduino.cc/arduino-' + ideVersion + '-linux64.tar.xz', { folder: 'arduino-' + ideVersion }, function (err) {
+      all.localRetrieve(
+        'https://downloads.arduino.cc/arduino-' + ideVersion + '-linux64.tar.xz', { folder: 'arduino-' + ideVersion }, function (err) {
         if (err) {
           cb(err);
         } else {
