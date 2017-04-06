@@ -53,14 +53,14 @@ function initTasks(gulp, options) {
     } else if (process.platform == 'linux') {
       all.localRetrieve(
         'https://downloads.arduino.cc/arduino-' + ideVersion + '-linux64.tar.xz', { folder: 'arduino-' + ideVersion }, function (err) {
-        if (err) {
-          cb(err);
-        } else {
-          // install arduino
-          all.localExecCmds(['sudo ln -s -f ' + all.getToolsFolder() + '/arduino-' + ideVersion + '/arduino /usr/local/bin/',
-            'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-' + ideVersion + '/arduino-builder /usr/local/bin/'], args.verbose, cb);
-        }
-      });
+          if (err) {
+            cb(err);
+          } else {
+            // install arduino
+            all.localExecCmds(['sudo ln -s -f ' + all.getToolsFolder() + '/arduino-' + ideVersion + '/arduino /usr/local/bin/',
+              'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-' + ideVersion + '/arduino-builder /usr/local/bin/'], args.verbose, cb);
+          }
+        });
     } else if (process.platform == 'darwin') {
       // at the moment we will attempt the same approach as for windows
       if (all.folderExistsSync(all.getToolsFolder() + '/Arduino.app')) {
