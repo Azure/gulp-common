@@ -47,26 +47,28 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('install-tools-arduino', false, function (cb) {
+    var ideVersion = '1.8.1';
     if (process.platform == 'win32') {
-      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-windows.zip', { folder: 'arduino-1.6.11' }, cb);
+      all.localRetrieve('https://downloads.arduino.cc/arduino-' + ideVersion + '-windows.zip', { folder: 'arduino-' + ideVersion }, cb);
     } else if (process.platform == 'linux') {
-      all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-linux64.tar.xz', { folder: 'arduino-1.6.11' }, function (err) {
-        if (err) {
-          cb(err);
-        } else {
-          // install arduino
-          all.localExecCmds(['sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino /usr/local/bin/',
-            'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-1.6.11/arduino-builder /usr/local/bin/'], args.verbose, cb);
-        }
-      });
+      all.localRetrieve(
+        'https://downloads.arduino.cc/arduino-' + ideVersion + '-linux64.tar.xz', { folder: 'arduino-' + ideVersion }, function (err) {
+          if (err) {
+            cb(err);
+          } else {
+            // install arduino
+            all.localExecCmds(['sudo ln -s -f ' + all.getToolsFolder() + '/arduino-' + ideVersion + '/arduino /usr/local/bin/',
+              'sudo ln -s -f ' + all.getToolsFolder() + '/arduino-' + ideVersion + '/arduino-builder /usr/local/bin/'], args.verbose, cb);
+          }
+        });
     } else if (process.platform == 'darwin') {
       // at the moment we will attempt the same approach as for windows
       if (all.folderExistsSync(all.getToolsFolder() + '/Arduino.app')) {
         console.log('Arduino tools were already installed');
         cb();
       } else {
-        all.localRetrieve('https://downloads.arduino.cc/arduino-1.6.11-macosx.zip',
-          { folder: path.join(all.getToolsFolder(), 'arduino-1.6.11') }, cb);
+        all.localRetrieve('https://downloads.arduino.cc/arduino-' + ideVersion + '-macosx.zip',
+          { folder: path.join(all.getToolsFolder(), 'arduino-' + ideVersion) }, cb);
       }
     }
   })
