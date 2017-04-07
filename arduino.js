@@ -9,6 +9,7 @@ var chalk = require('chalk');
 
 var all;
 
+const ideVersion = '1.8.1';
 /**
  * Main entry point for all Arduino configurations.
  * @param {object} gulp     - Gulp instance
@@ -47,7 +48,6 @@ function initTasks(gulp, options) {
   })
 
   gulp.task('install-tools-arduino', false, function (cb) {
-    var ideVersion = '1.8.1';
     if (process.platform == 'win32') {
       all.localRetrieve('https://downloads.arduino.cc/arduino-' + ideVersion + '-windows.zip', { folder: 'arduino-' + ideVersion }, cb);
     } else if (process.platform == 'linux') {
@@ -150,7 +150,7 @@ function getArduinoCommand() {
   if (process.platform === 'win32') {
     // we don't have arduino setup for windows yet, so in current version
     // i assume that that it's available in the path
-    return all.getToolsFolder() + '/arduino-1.6.11/arduino_debug.exe';
+    return all.getToolsFolder() + '/arduino-' + ideVersion + '/arduino_debug.exe';
   } else if (process.platform === 'linux') {
     return 'arduino';
   } else if (process.platform === 'darwin') {
