@@ -1,6 +1,6 @@
 {
   "name": "gulp-common",
-  "version": "v0.12.17",
+  "version": "v0.12.18",
   "description": "Azure IoT Samples common gulp tasks",
   "main": "index.js",
   "scripts": {
