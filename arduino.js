@@ -83,7 +83,13 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('install-tools-package', false, function (cb) {
-    installPackage(options.board.package, options.board.arch, options.board.packageUrl, cb);
+    installPackage(options.board.package, options.board.arch, options.board.packageUrl, function() {
+      if (options.board.arch === 'samd' && options.board.package === 'adafruit') {
+        installPackage('arduino', 'samd', null, cb);
+      } else {
+        cb();
+      }
+    });
   })
 
   gulp.task('install-tools-libraries', false, function (cb) {
@@ -280,7 +286,7 @@ function installLibraries(libs, cb) {
 function installPackage(name, arch, addUrl, cb) {
 
   // make sure package index exists, if it doesn't exist, try to clean up directory to make sure no uncomplete installation exists
-  if (!all.fileExistsSync(getArduino15Folder() + '/' + addUrl.split('/').slice(-1)[0])) {
+  if (addUrl && !all.fileExistsSync(getArduino15Folder() + '/' + addUrl.split('/').slice(-1)[0])) {
     all.deleteFolderRecursivelySync(getPackageFolder() + '/' + name);
   }
 
