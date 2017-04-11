@@ -83,8 +83,12 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('install-tools-package', false, function (cb) {
-    installPackage('arduino', 'samd', null, function() {
-      installPackage(options.board.package, options.board.arch, options.board.packageUrl, cb);
+    installPackage(options.board.package, options.board.arch, options.board.packageUrl, function() {
+      if (options.board.arch === 'samd' && options.board.package === 'adafruit') {
+        installPackage('arduino', 'samd', null, cb);
+      } else {
+        cb();
+      }
     });
   })
 
