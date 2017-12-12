@@ -128,6 +128,13 @@ function initTasks(gulp, options) {
     all.localExecCmd(getArduinoCommand() + ' --verify ' + process.cwd() + '/app/app.ino', args.verbose, cb);
   });
 
+  gulp.task('build', false,  function (cb) {
+    if (options.app && options.app.indexOf('config.h') > -1) {
+      all.writeConfigH();
+    }
+    all.localExecCmd(getArduinoCommand() + ' --verify --pref build.path=' + process.cwd() + '/build/ ' + process.cwd() + '/app/app.ino', args.verbose, cb);
+  });
+
   gulp.task('deploy', false, function (cb) {
     if (args.listen) {
       runSequence('deploy-internal', 'listen', cb);
