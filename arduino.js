@@ -9,7 +9,7 @@ var chalk = require('chalk');
 
 var all;
 
-const ideVersion = '1.8.1';
+const ideVersion = '1.8.5';
 /**
  * Main entry point for all Arduino configurations.
  * @param {object} gulp     - Gulp instance
