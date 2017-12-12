@@ -6,6 +6,7 @@
 var path = require('path');
 var args = require('get-gulp-args')();
 var chalk = require('chalk');
+var serialPort = require('serialport');
 
 var all;
 
@@ -114,6 +115,26 @@ function initTasks(gulp, options) {
     }
   });
 
+  gulp.task('deploy-binary', 'Uploads the compiled bin file.', function(cb) {
+    serialPort.list(function(err, ports) {
+      ports.forEach(function(p) {
+          if (p.manufacturer === 'Adafruit Industries LLC') {
+            var port = new serialPort(p.comName, {"autoOpen": false, "baudRate": 1200});
+  
+            port.open(function(err) {
+                port.close();
+  
+                setTimeout(function() {
+                    console.log('Uploading...');
+                      all.localExecCmd(getBossacCommand() + ' -i -d --port=COM4 -U true -e -w -v build/app.ino.bin -R', true, null);
+                }, 1000)
+            });
+          }
+      });
+    });
+    cb();
+  });
+
   gulp.task('gen-key', 'generate confidential header file for your arduino app', function (cb) {
     if (options.app && options.app.indexOf('config.h') > -1) {
       all.writeConfigH();
@@ -169,6 +190,14 @@ function getArduinoCommand() {
   } else if (process.platform === 'darwin') {
     return 'open ' + all.getToolsFolder() + '/Arduino.app --wait-apps --args';
   }
+}
+
+/**
+ * Get Bossac command prefix for underlying operating system.
+ * @returns {string}
+ */
+function getBossacCommand() {
+  return getPackageFolder() + '/arduino/tools/bossac/1.7.0/bossac.exe';
 }
 
 /**

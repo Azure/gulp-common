@@ -15,4 +15,3 @@ function initTasks(gulp, boardId, options) {
 }
 
 module.exports = initTasks;
-module.exports.all = require('./all.js')();
