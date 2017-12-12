@@ -433,7 +433,7 @@ function localRetrieve(url, options, cb) {
  * @returns {string}
  */
 function getToolsFolder() {
-  var folder = path.join(process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'], '.iot-hub-getting-started');
+  var folder = path.join(process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'], '.gulp-common');
 
   if (!folderExistsSync(folder)) {
     fs.mkdirSync(folder);
