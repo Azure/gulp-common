@@ -136,7 +136,9 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('deploy-binary-ota', 'Uploads the compiled bin file over the air.', function(cb) {
-    all.localExecCmd(getArduinoOTACommand() + ' -address 192.168.1.103 -port 65280 -username arduino -password password -sketch build/app.ino.bin -upload /sketch -b', true, cb);
+    let deployment = options.deployment;
+    console.log(`Deploying build/app.ino.bin to ${deployment.ip}:${deployment.port}...`);
+    all.localExecCmd(`${getArduinoOTACommand()} -address ${deployment.ip} -port ${deployment.port} -username ${deployment.username} -password ${deployment.password} -sketch build/app.ino.bin -upload /sketch -b`, true, cb);
   });
 
   gulp.task('gen-key', 'generate confidential header file for your arduino app', function (cb) {
@@ -205,7 +207,7 @@ function getBossacCommand() {
 }
 
 function getArduinoOTACommand() {
-  return getPackageFolder() + '/arduino/tools/arduino/1.2.0/bin/arduinoOTA.exe';
+  return getPackageFolder() + '/arduino/tools/arduinoOTA/1.2.0/bin/arduinoOTA.exe';
 }
 
 /**
