@@ -126,7 +126,7 @@ function initTasks(gulp, options) {
   
                 setTimeout(function() {
                     console.log('Uploading...');
-                      all.localExecCmd(getBossacCommand() + ' -i -d --port=COM4 -U true -e -w -v build/app.ino.bin -R', true, null);
+                      all.localExecCmd(getBossacCommand() + ' -i -d --port=' + p.comName + ' -U true -e -w -v build/app.ino.bin -R', true, null);
                 }, 1000)
             });
           }
