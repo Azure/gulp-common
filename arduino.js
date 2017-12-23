@@ -136,9 +136,13 @@ function initTasks(gulp, options) {
   });
 
   gulp.task('deploy-binary-ota', 'Uploads the compiled bin file over the air.', function(cb) {
+    if (!args.username || !args.password) {
+      throw new Error('Please specify username and password for deployment using the arguments --username <username> --password <password>.')
+    }
+
     let deployment = options.deployment;
     console.log(`Deploying build/app.ino.bin to ${deployment.ip}:${deployment.port}...`);
-    all.localExecCmd(`${getArduinoOTACommand()} -address ${deployment.ip} -port ${deployment.port} -username ${deployment.username} -password ${deployment.password} -sketch build/app.ino.bin -upload /sketch -b`, true, cb);
+    all.localExecCmd(`${getArduinoOTACommand()} -address ${deployment.ip} -port ${deployment.port} -username ${args.username} -password ${args.password} -sketch build/app.ino.bin -upload /sketch -b`, true, cb);
   });
 
   gulp.task('gen-key', 'generate confidential header file for your arduino app', function (cb) {
