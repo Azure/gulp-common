@@ -6,10 +6,11 @@
 var path = require('path');
 var args = require('get-gulp-args')();
 var chalk = require('chalk');
+var serialPort = require('serialport');
 
 var all;
 
-const ideVersion = '1.8.1';
+const ideVersion = '1.8.5';
 /**
  * Main entry point for all Arduino configurations.
  * @param {object} gulp     - Gulp instance
@@ -114,6 +115,36 @@ function initTasks(gulp, options) {
     }
   });
 
+  gulp.task('deploy-binary', 'Uploads the compiled bin file.', function(cb) {
+    serialPort.list(function(err, ports) {
+      ports.forEach(function(p) {
+          if (p.manufacturer === 'Adafruit Industries LLC') {
+            var port = new serialPort(p.comName, {"autoOpen": false, "baudRate": 1200});
+  
+            port.open(function(err) {
+                port.close();
+  
+                setTimeout(function() {
+                    console.log('Uploading...');
+                      all.localExecCmd(getBossacCommand() + ' -i -d --port=' + p.comName + ' -U true -e -w -v build/app.ino.bin -R', true, null);
+                }, 1000)
+            });
+          }
+      });
+    });
+    cb();
+  });
+
+  gulp.task('deploy-binary-ota', 'Uploads the compiled bin file over the air.', function(cb) {
+    if (!args.username || !args.password) {
+      throw new Error('Please specify username and password for deployment using the arguments --username <username> --password <password>.')
+    }
+
+    let deployment = options.deployment;
+    console.log(`Deploying build/app.ino.bin to ${deployment.ip}:${deployment.port}...`);
+    all.localExecCmd(`${getArduinoOTACommand()} -address ${deployment.ip} -port ${deployment.port} -username ${args.username} -password ${args.password} -sketch build/app.ino.bin -upload /sketch -b`, true, cb);
+  });
+
   gulp.task('gen-key', 'generate confidential header file for your arduino app', function (cb) {
     if (options.app && options.app.indexOf('config.h') > -1) {
       all.writeConfigH();
@@ -126,6 +157,13 @@ function initTasks(gulp, options) {
       all.writeConfigH();
     }
     all.localExecCmd(getArduinoCommand() + ' --verify ' + process.cwd() + '/app/app.ino', args.verbose, cb);
+  });
+
+  gulp.task('build', false,  function (cb) {
+    if (options.app && options.app.indexOf('config.h') > -1) {
+      all.writeConfigH();
+    }
+    all.localExecCmd(getArduinoCommand() + ' --verify --pref build.path=' + process.cwd() + '/build/ ' + process.cwd() + '/app/app.ino', args.verbose, cb);
   });
 
   gulp.task('deploy', false, function (cb) {
@@ -162,6 +200,18 @@ function getArduinoCommand() {
   } else if (process.platform === 'darwin') {
     return 'open ' + all.getToolsFolder() + '/Arduino.app --wait-apps --args';
   }
+}
+
+/**
+ * Get Bossac command prefix for underlying operating system.
+ * @returns {string}
+ */
+function getBossacCommand() {
+  return getPackageFolder() + '/arduino/tools/bossac/1.7.0/bossac.exe';
+}
+
+function getArduinoOTACommand() {
+  return getPackageFolder() + '/arduino/tools/arduinoOTA/1.2.0/bin/arduinoOTA.exe';
 }
 
 /**

@@ -17,6 +17,7 @@ function initTasks(gulp, options) {
 
   // add adafruit specific libraries
   options.libraries.push('https://github.com/adafruit/Adafruit_WINC1500.git');
+  options.libraries.push('https://github.com/PaulStoffregen/Time.git');
   options.libraries.push('RTCZero');
   options.libraries.push('NTPClient');
   options.libraries.push('AzureIoTHub');
